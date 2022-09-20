@@ -1,0 +1,59 @@
+{
+  "id_transaccion": 0,
+    "cuenta": "demo",
+    "user": "administrador",
+    "password": "Administr4dor",
+	"getPdf": "true",
+	"enviarFactura":"true",
+    "conceptos": [{
+        "ClaveProdServ": "01010101",
+        "ClaveUnidad": "ACT",
+        "Importe": 100,
+        "Cantidad": 1,
+        "descripcion": "Venta",
+        "ValorUnitario": 100,
+		"ObjetoImp":"02",
+        "Impuestos": {
+            "Traslados": [{
+                "Base": 100,
+                "Impuesto": "002",
+                "TipoFactor": "Tasa",
+                "TasaOCuota": "0.160000",
+                "Importe": "16.00"
+            }]
+        }
+    }],
+    "datos_factura": {
+        "Version": "4.0",
+        "FormaPago": "01",
+        "TipoCambio": "1",
+        "MetodoPago": "PUE",
+        "RegimenFiscal": "601",
+        "LugarExpedicion": "21000",
+        "Moneda": "MXN",
+        "TipoDeComprobante": "I",
+		"Exportacion":"01",
+        "SubTotal": "100.00",
+		"Total":"116.00",
+        "Impuestos": {
+            "TotalImpuestosTrasladados": "16.00",
+            "Traslados": [{
+                "Base": "100.00",
+                "Impuesto": "002",
+                "TipoFactor": "Tasa",
+                "TasaOCuota": "0.160000",
+                "Importe": "16.00"
+            }]
+        }
+    },
+    "method": "nueva_factura",
+    "cliente": {
+        "id": "1000",
+        "UsoCFDI": "G03",
+        "Nombre": "NUEVA EMPRESA DE EJEMPLO",
+        "Rfc": "XAXX010101000",
+		"DomicilioFiscalReceptor":"22530",
+		"RegimenFiscalReceptor":"601",
+		"correo":"soporte@itimbre.com"
+    }
+}

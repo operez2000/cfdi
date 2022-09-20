@@ -1,0 +1,69 @@
+{
+    "cuenta": "demo",
+    "user": "administrador",
+    "password": "Administr4dor",
+	"getPdf": "false",
+	"enviarFactura":"true",
+    "conceptos": [{
+        "ClaveProdServ": "01010101",
+        "ClaveUnidad": "ACT",
+        "Importe": 100,
+        "Cantidad": 1,
+        "descripcion": "Venta",
+        "ValorUnitario": 100,
+		"ObjetoImp":"02",
+        "Impuestos": {
+            "Traslados": [{
+                "Base": 100,
+                "Impuesto": "002",
+                "TipoFactor": "Tasa",
+                "TasaOCuota": "0.160000",
+                "Importe": "16.00"
+            }]
+        }
+    }],
+    "datos_factura": {
+        "Version": "4.0",
+        "FormaPago": "01",
+        "TipoCambio": "1",
+        "MetodoPago": "PUE",
+        "RegimenFiscal": "601",
+        "LugarExpedicion": "21000",
+        "Moneda": "MXN",
+        "TipoDeComprobante": "I",
+		"Exportacion":"01",
+        "SubTotal": "100.00",
+		"Total":"116.00",
+		"CfdiRelacionados": [{
+                "TipoRelacion": "06",
+                "CfdiRelacionado": [{
+                    "UUID": "E11CE473-AD18-4187-A981-18E0EECCF0B5"
+                }]
+            },{
+                "TipoRelacion": "04",
+                "CfdiRelacionado": [{
+                    "UUID": "6A2521CF-2754-4A95-9FBA-145177153FB1"
+                }]
+            }],
+        "Impuestos": {
+            "TotalImpuestosTrasladados": "16.00",
+            "Traslados": [{
+                "Base": "100.00",
+                "Impuesto": "002",
+                "TipoFactor": "Tasa",
+                "TasaOCuota": "0.160000",
+                "Importe": "16.00"
+            }]
+        }
+    },
+    "method": "nueva_factura",
+    "cliente": {
+        "id": "1000",
+        "UsoCFDI": "G03",
+        "Nombre": "TME DEMO SA",
+        "Rfc": "TME960709LR2",
+		"DomicilioFiscalReceptor":"22530",
+		"RegimenFiscalReceptor":"601",
+		"correo":"soporte@itimbre.com"
+    }
+}
