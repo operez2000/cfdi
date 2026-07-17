@@ -1,0 +1,294 @@
+{
+    "cliente": {
+        "correo": "fridagledon@gmail.com",
+        "DomicilioFiscalReceptor": "14210",
+        "id": "030789",
+        "nombre": "FRIDA ALEJANDRA GONZALEZ LEDON",
+        "RegimenFiscalReceptor": "612",
+        "rfc": "GOLF930206NM1",
+        "UsoCFDI": "G01"
+    },
+    "conceptos": [
+        {
+            "Cantidad": "1",
+            "ClaveProdServ": "51182014",
+            "ClaveUnidad": "H87",
+            "Descripcion": "COMBODART 0.5/0.4MG C/30 CAP / Lote 4944349A Cad 30-Jun-24",
+            "Descuento": "458.60",
+            "Importe": "1433.11",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "974.51",
+                        "Importe": "0.00",
+                        "Impuesto": "002",
+                        "TasaOCuota": "0.000000",
+                        "TipoFactor": "Tasa"
+                    }
+                ]
+            },
+            "NoIdentificacion": "10290",
+            "Numero_CuentaPredial": "",
+            "ObjetoImp": "02",
+            "subTotal": "1433.11",
+            "total": "974.51",
+            "Unidad": "Pza",
+            "ValorUnitario": "1433.110000"
+        },
+        {
+            "Cantidad": "1",
+            "ClaveProdServ": "51171909",
+            "ClaveUnidad": "H87",
+            "Descripcion": "OMEPRAZOL 20MG C/120 C ULTRA / Lote 2AM301A Cad 30-Ene-25",
+            "Descuento": "79.68",
+            "Importe": "249.00",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "169.32",
+                        "Importe": "0.00",
+                        "Impuesto": "002",
+                        "TasaOCuota": "0.000000",
+                        "TipoFactor": "Tasa"
+                    }
+                ]
+            },
+            "NoIdentificacion": "12085",
+            "Numero_CuentaPredial": "",
+            "ObjetoImp": "02",
+            "subTotal": "249.00",
+            "total": "169.32",
+            "Unidad": "Pza",
+            "ValorUnitario": "249.000000"
+        },
+        {
+            "Cantidad": "2",
+            "ClaveProdServ": "51191905",
+            "ClaveUnidad": "H87",
+            "Descripcion": "EMULSION SCOTT 400ML CEREZA / Lote RR9T Cad 30-Ene-24",
+            "Descuento": "124.33",
+            "Importe": "388.54",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "264.21",
+                        "Importe": "0.00",
+                        "Impuesto": "002",
+                        "TasaOCuota": "0.000000",
+                        "TipoFactor": "Tasa"
+                    }
+                ]
+            },
+            "NoIdentificacion": "16221",
+            "Numero_CuentaPredial": "",
+            "ObjetoImp": "02",
+            "subTotal": "388.54",
+            "total": "264.21",
+            "Unidad": "Pza",
+            "ValorUnitario": "194.270000"
+        },
+        {
+            "Cantidad": "1",
+            "ClaveProdServ": "41116201",
+            "ClaveUnidad": "H87",
+            "Descripcion": "ONE TOUCH ULTRASOFT LANCET 25",
+            "Descuento": "32.36",
+            "Importe": "101.14",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "68.78",
+                        "Importe": "5.50",
+                        "Impuesto": "002",
+                        "TasaOCuota": "0.080000",
+                        "TipoFactor": "Tasa"
+                    }
+                ]
+            },
+            "NoIdentificacion": "16626",
+            "Numero_CuentaPredial": "",
+            "ObjetoImp": "02",
+            "subTotal": "101.14",
+            "total": "68.78",
+            "Unidad": "Pza",
+            "ValorUnitario": "101.138889"
+        },
+        {
+            "Cantidad": "7",
+            "ClaveProdServ": "51181500",
+            "ClaveUnidad": "H87",
+            "Descripcion": "GLIOZAC 15MG C/7 TAB / Lote 220833 Cad 28-Feb-24",
+            "Descuento": "206.19",
+            "Importe": "644.35",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "438.16",
+                        "Importe": "0.00",
+                        "Impuesto": "002",
+                        "TasaOCuota": "0.000000",
+                        "TipoFactor": "Tasa"
+                    }
+                ]
+            },
+            "NoIdentificacion": "4926",
+            "Numero_CuentaPredial": "",
+            "ObjetoImp": "02",
+            "subTotal": "644.35",
+            "total": "438.16",
+            "Unidad": "Pza",
+            "ValorUnitario": "92.050000"
+        },
+        {
+            "Cantidad": "1",
+            "ClaveProdServ": "51131600",
+            "ClaveUnidad": "H87",
+            "Descripcion": "XARELTO 15MG C/28 TABS / Lote BXJRA71 Cad 30-Nov-23",
+            "Descuento": "958.08",
+            "Importe": "2994.00",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "2035.92",
+                        "Importe": "0.00",
+                        "Impuesto": "002",
+                        "TasaOCuota": "0.000000",
+                        "TipoFactor": "Tasa"
+                    }
+                ]
+            },
+            "NoIdentificacion": "6052",
+            "Numero_CuentaPredial": "",
+            "ObjetoImp": "02",
+            "subTotal": "2994.00",
+            "total": "2035.92",
+            "Unidad": "Pza",
+            "ValorUnitario": "2994.000000"
+        },
+        {
+            "Cantidad": "1",
+            "ClaveProdServ": "51121725",
+            "ClaveUnidad": "H87",
+            "Descripcion": "BICONCOR 5/6.25MG C/30 GRAG / Lote M20936 Cad 30-Jun-24",
+            "Descuento": "480.08",
+            "Importe": "1500.24",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "1020.16",
+                        "Importe": "0.00",
+                        "Impuesto": "002",
+                        "TasaOCuota": "0.000000",
+                        "TipoFactor": "Tasa"
+                    }
+                ]
+            },
+            "NoIdentificacion": "6607",
+            "Numero_CuentaPredial": "",
+            "ObjetoImp": "02",
+            "subTotal": "1500.24",
+            "total": "1020.16",
+            "Unidad": "Pza",
+            "ValorUnitario": "1500.240000"
+        },
+        {
+            "Cantidad": "1",
+            "ClaveProdServ": "41116201",
+            "ClaveUnidad": "H87",
+            "Descripcion": "ONE TOUCH ULTRA TIRAS C/25",
+            "Descuento": "104.93",
+            "Importe": "327.92",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "222.99",
+                        "Importe": "17.84",
+                        "Impuesto": "002",
+                        "TasaOCuota": "0.080000",
+                        "TipoFactor": "Tasa"
+                    }
+                ]
+            },
+            "NoIdentificacion": "6681",
+            "Numero_CuentaPredial": "",
+            "ObjetoImp": "02",
+            "subTotal": "327.92",
+            "total": "222.99",
+            "Unidad": "Pza",
+            "ValorUnitario": "327.916667"
+        },
+        {
+            "Cantidad": "1",
+            "ClaveProdServ": "51121511",
+            "ClaveUnidad": "H87",
+            "Descripcion": "CORDARONE 200MG C/20 TABS / Lote CMXA002 Cad 30-May-24",
+            "Descuento": "179.61",
+            "Importe": "561.29",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "381.68",
+                        "Importe": "0.00",
+                        "Impuesto": "002",
+                        "TasaOCuota": "0.000000",
+                        "TipoFactor": "Tasa"
+                    }
+                ]
+            },
+            "NoIdentificacion": "7159",
+            "Numero_CuentaPredial": "",
+            "ObjetoImp": "02",
+            "subTotal": "561.29",
+            "total": "381.68",
+            "Unidad": "Pza",
+            "ValorUnitario": "561.290000"
+        }
+    ],
+    "cuenta": "gusher",
+    "datos_factura": {
+        "cfdiVersion": "4.0",
+        "comentarios": "Caja-Folio: 01-132 | 02-Ene-2023 | Cajero 034 | Vendedor 005 | Cuenta 6894",
+        "CondicionesDePago": "Contado",
+        "Descuento": "2623.86",
+        "Exportacion": "01",
+        "Folio": "00110875",
+        "FormaPago": "04",
+        "Impuestos": {
+            "TotalImpuestosTrasladados": "23.34",
+            "Traslados": [
+                {
+                    "Base": "291.77",
+                    "Importe": "23.34",
+                    "Impuesto": "002",
+                    "TasaOCuota": "0.080000",
+                    "TipoFactor": "Tasa"
+                },
+                {
+                    "Base": "5283.95",
+                    "Importe": "0.00",
+                    "Impuesto": "002",
+                    "TasaOCuota": "0.000000",
+                    "TipoFactor": "Tasa"
+                }
+            ]
+        },
+        "LugarExpedicion": "22010",
+        "MetodoPago": "PUE",
+        "Moneda": "MXN",
+        "no_sucursal": "0",
+        "RegimenFiscal": "601",
+        "Serie": "A",
+        "SubTotal": "8199.59",
+        "TipoCambio": "1",
+        "TipoDeComprobante": "I",
+        "tipoDeComprobante": "0",
+        "Total": "5599.06",
+        "Version": "4.0"
+    },
+    "enviarFactura": true,
+    "getPdf": true,
+    "id_transaccion": 0,
+    "method": "nueva_factura",
+    "password": "$9KVnl81",
+    "user": "administrador"
+}

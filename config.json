@@ -1,0 +1,43 @@
+{
+  "backEndUrl": "http://192.168.184.1:8888",
+  "baseUrl": "http://192.168.184.1:3001",
+  "dbfLocation": "d:/oscar/gusher",
+  "pac": {
+    "url": "https://ifacturacion.itimbre.com/service.php",
+    "cuenta": "gusher",
+    "user": "administrador",
+    "password": "$9KVnl81"
+  },
+  "mail": {
+    "host": "mail.gusher.com.mx",
+    "user": "suc.rio@gusher.com.mx",
+    "pass": "gusherrio811107"
+  },
+  "emisor": {
+    "nombre": "Farmacia Gusher, S.A de C.V.",
+    "rfc": "FGU811107SV0",
+    "regimenFiscal": "601"
+  },
+  "config_rio": {
+    "backEndUrl": "http://192.168.1.79",
+    "baseUrl": "http://192.168.1.79:3001",
+    "dbfLocation": "f:/caja",
+    "pac": {
+      "cuenta": "demo",
+      "user": "administrador",
+      "password": "Administr4dor",
+      "cuenta_prod": "gusher",
+      "user_prod": "administrador",
+      "password_prod": "$9KVnl81"
+    }
+  },
+  "database": {
+    "local": {
+      "dialect": "mysql",
+      "host": "127.0.0.1",
+      "dbname": "traspasos",
+      "username": "root",
+      "password": ""
+    }
+  }
+}

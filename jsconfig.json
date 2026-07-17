@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "pdfmake/build/vfs_fonts": ["./shims-pdfmake.d.ts"]
+    }
+  },
+  "include": ["**/*.vue", "**/*.js"]
+}

@@ -1,0 +1,28 @@
+*Mon
+*Ota
+*Pal
+*Rio
+*Ros
+
+npm install pdf-parse@1.1.1
+npm install xml2js
+actualizar api/index.js
+crear c:\servidora1\temp
+actualizar ws.prg => function 
+actualizar pac{} en config.json
+    ,
+    "pac": {
+        "url": "https://ifacturacion.itimbre.com/service.php",
+        "cuenta": "gusher",
+        "user": "administrador",
+        "password": "$9KVnl81"
+    }
+revisar afectación de FacCli02.dbf desde timbrado de Global
+después del punto anterior, quitar la afectación desde global/*.dbf (ws.prg -> globalConsec())
+
+Revisar actualización de Lotes creaArchivo() y /rango para después enviarlo al backend
+Revisar (parámetros incompletos)
+
+
+----------------------------------------
+
