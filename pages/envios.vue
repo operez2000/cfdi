@@ -357,7 +357,8 @@ export default {
       const fixed = [
         { text: '', value: 'acciones', sortable: false, width: '50px' },
         { text: 'Código', value: 'codigo' },
-        { text: 'Descripción', value: 'descripcion' }
+        { text: 'Descripción', value: 'descripcion' },
+        { text: 'Código barras', value: 'barcode', sortable: false, width: '130px' }
       ]
       const dynamic = this.sucursales.map(suc => ({
         text: suc.abreviacion || suc.nombre,
@@ -372,6 +373,7 @@ export default {
     detalleFlat () {
       return this.detalle.map(item => {
         const flat = { ...item }
+        flat.barcode = item.mBarCode || item.barcode || item.codigoBarras || ''
         this.sucursales.forEach(suc => {
           flat['suc_' + suc.id] = item.sucursales[suc.id] || ''
         })
@@ -468,6 +470,7 @@ export default {
       // Siempre usar el campo 'codigo' de la respuesta
       const codigo = data.codigo || data.mPart || data.mpart || ''
       const descripcion = data.mDesc || data.mdesc || data.descripcion || ''
+      const mBarCode = data.mBarCode || data.mBarcode || data.barcode || data.codigoBarras || ''
 
       // Verificar si el artículo ya existe en la tabla
       const existente = this.detalle.find(r => r.codigo === codigo)
@@ -477,6 +480,9 @@ export default {
         if (this.form.id_sucursal_destino) {
           const actual = existente.sucursales[this.form.id_sucursal_destino] || 0
           this.$set(existente.sucursales, this.form.id_sucursal_destino, actual + cantidad)
+        }
+        if (mBarCode && !existente.mBarCode) {
+          existente.mBarCode = mBarCode
         }
         this.captura.codigo = ''
         this.captura.cantidad = 1
@@ -498,6 +504,7 @@ export default {
         _uid: Date.now() + Math.random(),
         codigo,
         descripcion,
+        mBarCode,
         sucursales: sucursalesObj
       })
 
@@ -805,13 +812,14 @@ export default {
           abreviacion: s.abreviacion || s.nombre
         }))
 
-        // Anchos de tabla: Código | Descripción | suc1 | suc2 | ...
-        const colWidths = [55, '*', ...sucCols.map(() => 40)]
+        // Anchos de tabla: Código | Descripción | Código barras | suc1 | suc2 | ...
+        const colWidths = [55, '*', 65, ...sucCols.map(() => 30)]
 
         // Headers de la tabla
         const tableHeaders = [
           { text: 'Código', style: 'tableHeader' },
           { text: 'Descripción', style: 'tableHeader' },
+          { text: 'Código barras', style: 'tableHeader', alignment: 'center' },
           ...sucCols.map(sc => ({ text: sc.abreviacion, style: 'tableHeader', alignment: 'center' }))
         ]
 
@@ -819,6 +827,7 @@ export default {
         const dataRows = this.detalle.map(item => [
           { text: item.codigo || '', fontSize: 8 },
           { text: item.descripcion || '', fontSize: 8 },
+          { text: item.mBarCode || item.barcode || item.codigoBarras || '', fontSize: 8, alignment: 'center' },
           ...sucCols.map(sc => ({
             text: item.sucursales[sc.id] ? String(item.sucursales[sc.id]) : '',
             alignment: 'center',
@@ -841,7 +850,7 @@ export default {
                     colSpan: colWidths.length,
                     border: noBorder,
                     stack: [
-                      { text: 'SALIDA DE MERCANCÍA A SUCURSALES', style: 'sectionTitle', fontSize: 16, alignment: 'center' },
+                      { text: 'TRASPASOS', style: 'sectionTitle', fontSize: 16, alignment: 'center' },
                       { text: '', fontSize: 6 }
                     ]
                   },
@@ -903,7 +912,7 @@ export default {
 
         const docDefinition = {
           pageSize: 'LETTER',
-          pageOrientation: sucCols.length > 4 ? 'landscape' : 'portrait',
+          pageOrientation: 'portrait',
           pageMargins: [30, 40, 30, 50],
           info: {
             title: 'Envíos de Mercancía'

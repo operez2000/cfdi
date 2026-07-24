@@ -1375,12 +1375,15 @@ export default {
         const destinoIds = Object.keys(grupos)
         const pageRanges = []
         let currentPageStart = 1
-        const ROWS_PER_PAGE = 28
-        const EXTRA_ROWS = 8
 
         destinoIds.forEach((destId) => {
           const items = grupos[destId]
-          const estimatedPages = Math.max(1, Math.ceil((items.length + EXTRA_ROWS) / ROWS_PER_PAGE))
+          const itemsPerPage = 37
+          const footerRows = 12
+          const itemPages = Math.max(1, Math.ceil(items.length / itemsPerPage))
+          const lastPageItems = items.length - itemsPerPage * (itemPages - 1)
+          const estimatedPages = (lastPageItems + footerRows > itemsPerPage) ? itemPages + 1 : itemPages
+
           pageRanges.push({
             destId,
             startPage: currentPageStart,
@@ -1521,16 +1524,15 @@ export default {
           },
           ...(logo ? { images: { logo } } : {}),
           content,
-          footer: (currentPage) => {
+          header: (currentPage) => {
             const section = pageRanges.find(range => currentPage >= range.startPage && currentPage <= range.endPage)
             const relativePage = section ? currentPage - section.startPage + 1 : currentPage
             const totalPages = section ? section.pageCount : 1
-            const footerText = `Pag. ${relativePage}/${totalPages}`
             return {
-              text: footerText,
-              alignment: 'center',
+              text: `Pag: ${relativePage}/${totalPages}`,
+              alignment: 'right',
               fontSize: 7,
-              margin: [0, 8, 0, 0]
+              margin: [0, 30, 40, 0]
             }
           },
           styles: {
