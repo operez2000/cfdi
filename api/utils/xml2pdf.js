@@ -411,7 +411,32 @@ export async function parseCfdiXml(xmlString) {
   const rfcReceptor = receptor.Rfc || ''
   const totalStr = total.toFixed(6)
   const sello8 = selloCFD.length >= 8 ? selloCFD.substring(selloCFD.length - 8) : selloCFD
-  const qrUrl = `https://consulta.sat.gob.mx/detallecfdi.aspx?id=${uuid}&re=${rfcEmisor}&rr=${rfcReceptor}&tt=${totalStr}&fe=${sello8}`
+  const qrUrl = `verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?id=${uuid}&re=${rfcEmisor}&rr=${rfcReceptor}&tt=${totalStr}&fe=${sello8}`
+  // https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?id=F325CEF4-D97C-42D5-BB64-F6DBC54B3234&re=FGU811107SV0&rr=XAXX010101000&tt=387.18&fe=OerVqA==
+
+
+  // Observaciones en XML (Addenda, Comprobante o InformacionGlobal)
+  let autoObservaciones = comp.Observaciones || comp.comentarios || comp['cfdi:Observaciones'] || ''
+  const addenda = comp['cfdi:Addenda'] || comp.Addenda || {}
+  if (!autoObservaciones && addenda) {
+    if (typeof addenda === 'string') {
+      autoObservaciones = addenda.trim()
+    } else if (typeof addenda === 'object') {
+      autoObservaciones = addenda.Observaciones || addenda.observaciones || addenda.comentarios || addenda.texto || addenda['#text'] || ''
+    }
+  }
+  if (!autoObservaciones && (comp['cfdi:InformacionGlobal'] || comp.InformacionGlobal || receptor.Rfc === 'XAXX010101000')) {
+    if (comp.Fecha) {
+      const mesesNom = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+      const fParts = String(comp.Fecha).split('T')[0].split('-')
+      if (fParts.length === 3) {
+        const d = fParts[2]
+        const m = mesesNom[parseInt(fParts[1], 10) - 1] || fParts[1]
+        const y = fParts[0]
+        autoObservaciones = `Factura Global del ${d}/${m}/${y}`
+      }
+    }
+  }
 
   return {
     version: comp.Version || '4.0',
@@ -427,6 +452,7 @@ export async function parseCfdiXml(xmlString) {
     formaPago: CATALOGOS.formaPago[comp.FormaPago] || comp.FormaPago || '',
     moneda: monedaTexto,
     tipoCambio: comp.TipoCambio || '1.0000',
+    observaciones: autoObservaciones,
     emisor: {
       rfc: rfcEmisor,
       nombre: emisor.Nombre || 'FARMACIA GUSHER',
@@ -582,7 +608,7 @@ function buildDocDefinition(cfdi, observacionesCustom = '') {
   ]
 
   // Observaciones a mostrar
-  const observacionesTexto = observacionesCustom || ''
+  const observacionesTexto = observacionesCustom || cfdi.observaciones || ''
 
   // Desglose de impuestos trasladados texto
   const desglosesImp = []
@@ -782,9 +808,9 @@ function buildDocDefinition(cfdi, observacionesCustom = '') {
         columns: [
           // QR Code SAT
           {
-            width: 112,
+            width: 122,
             stack: [
-              { qr: cfdi.qrUrl, fit: 106, margin: [0, 0, 0, 0] }
+              { qr: cfdi.qrUrl, fit: 118, margin: [0, 0, 0, 0] }
             ]
           },
           // Datos Fiscales Centrales
@@ -802,7 +828,7 @@ function buildDocDefinition(cfdi, observacionesCustom = '') {
           },
           // Método y Forma de Pago Derecha
           {
-            width: 195,
+            width: 190,
             alignment: 'right',
             stack: [
               { text: `*Método de pago: ${cfdi.metodoPago}`, fontSize: 7.5 },
@@ -815,14 +841,12 @@ function buildDocDefinition(cfdi, observacionesCustom = '') {
       },
 
       // 7. Observaciones (Debajo de los totales / bloque fiscal)
-      ...(observacionesTexto ? [
-        {
-          text: `Observaciones = ${observacionesTexto}`,
-          fontSize: 7.5,
-          alignment: 'center',
-          margin: [0, 4, 0, 4]
-        }
-      ] : []),
+      {
+        text: `Observaciones = ${observacionesTexto}`,
+        fontSize: 7.5,
+        alignment: 'center',
+        margin: [0, 3, 0, 3]
+      },
 
       // 8. Sellos Digitales y Cadena Original
       {
