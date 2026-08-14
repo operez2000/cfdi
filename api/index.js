@@ -16,6 +16,7 @@ import util from 'util'
 import traspasosRouter from './routes/traspasos'
 import sucursalesRouter from './routes/sucursales'
 import motivosRouter from './routes/motivos'
+import { xml2pdfHandler } from './utils/xml2pdf'
 
 const app = Express();
 const connection = ADODB.open(`Provider=Microsoft.Jet.OLEDB.4.0;Data Source=${config.dbfLocation}/novartis.mdb;`);
@@ -2193,6 +2194,7 @@ app.get('/lee-nota-credito/:serie/:folio', mdi, async (req, res) => {
 app.use('/traspasos', traspasosRouter)
 app.use('/sucursales', sucursalesRouter)
 app.use('/motivos', motivosRouter)
+app.post('/xml2pdf', xml2pdfHandler)
 
 
 // Final => exportación del módulo para el Server

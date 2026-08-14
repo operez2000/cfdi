@@ -1,12 +1,24 @@
 import Express from 'express'
 import nodemailer from 'nodemailer'
 import config from '../../config.json'
+import Utils from '../../assets/utils'
 import { query, queryOne, execute, transaction, getHeaderById, getNextFolio } from '../db'
 import { sendOk, sendBadRequest, sendNotFound, sendError } from '../utils/response'
 
 const router = Express.Router()
+const utils = new Utils()
 
 const ESTADOS_VALIDOS = ['BORRADOR', 'GUARDADO', 'CANCELADO']
+
+/** Timestamp MySQL en PST (America/Tijuana) */
+function nowPst () {
+  return utils.nowDateTime()
+}
+
+/** Normaliza fechas de negocio a YYYY-MM-DD en PST */
+function fechaPst (value) {
+  return utils.formatDateYMD(value)
+}
 
 const mailConfig = {
   host: config.mail.host,
@@ -135,7 +147,7 @@ async function insertDetalle(idTraspaso, detalle, destinos, destinoIds, t) {
       item.descripcion || '',
       item.etiqueta || null,
       item.lote || null,
-      item.fecha_caducidad || null,
+      item.fecha_caducidad ? fechaPst(item.fecha_caducidad) || null : null,
       Math.floor(Number(item.cantidad)),
       lookup[item.id_traspaso_destino]
     ], opts)
@@ -157,7 +169,20 @@ async function buildEditPayload(header) {
     WHERE d.id_traspaso = ? AND d.borrado = 0
   `, [header.id])
 
-  return { header, destinos, detalle }
+  return {
+    header: {
+      ...header,
+      fecha: fechaPst(header.fecha),
+      fecha_actualizacion: header.fecha_actualizacion
+        ? utils.nowDateTime(header.fecha_actualizacion)
+        : header.fecha_actualizacion
+    },
+    destinos,
+    detalle: detalle.map(row => ({
+      ...row,
+      fecha_caducidad: row.fecha_caducidad ? fechaPst(row.fecha_caducidad) : row.fecha_caducidad
+    }))
+  }
 }
 
 router.post('/email', async (req, res) => {
@@ -195,7 +220,10 @@ router.get('/', async (req, res) => {
       WHERE h.borrado = 0
       ORDER BY h.id DESC
     `)
-    sendOk(res, rows)
+    sendOk(res, rows.map(row => ({
+      ...row,
+      fecha: fechaPst(row.fecha)
+    })))
   } catch (err) {
     sendError(res, err)
   }
@@ -223,6 +251,11 @@ router.post('/', async (req, res) => {
     }
 
     const estado = body.estado || 'GUARDADO'
+    const fecha = fechaPst(body.fecha)
+    if (!fecha) {
+      return sendBadRequest(res, 'La fecha es obligatoria')
+    }
+    const creado = nowPst()
     let createdId = null
 
     await transaction(async (t) => {
@@ -232,12 +265,13 @@ router.post('/', async (req, res) => {
       const result = await execute(`
         INSERT INTO traspaso_header (
           prefijo, folio, fecha, persona_surte, persona_captura, persona_revisa,
-          persona_autoriza, chofer, id_sucursal_origen, observaciones, estado
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          persona_autoriza, chofer, id_sucursal_origen, observaciones, estado,
+          fecha_actualizacion
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
         prefijo,
         folio,
-        body.fecha,
+        fecha,
         body.persona_surte || null,
         body.persona_captura || null,
         body.persona_revisa || null,
@@ -245,7 +279,8 @@ router.post('/', async (req, res) => {
         body.chofer || null,
         body.id_sucursal_origen,
         body.observaciones || null,
-        estado
+        estado,
+        creado
       ], { transaction: t })
 
       createdId = result.insertId
@@ -274,6 +309,12 @@ router.put('/:id', async (req, res) => {
       return sendBadRequest(res, validationMsg)
     }
 
+    const fecha = fechaPst(body.fecha)
+    if (!fecha) {
+      return sendBadRequest(res, 'La fecha es obligatoria')
+    }
+    const actualizado = nowPst()
+
     await transaction(async (t) => {
       await execute(`
         UPDATE traspaso_header SET
@@ -286,10 +327,10 @@ router.put('/:id', async (req, res) => {
           id_sucursal_origen = ?,
           observaciones = ?,
           estado = ?,
-          fecha_actualizacion = CURRENT_TIMESTAMP
+          fecha_actualizacion = ?
         WHERE id = ? AND borrado = 0
       `, [
-        body.fecha,
+        fecha,
         body.persona_surte || null,
         body.persona_captura || null,
         body.persona_revisa || null,
@@ -298,18 +339,19 @@ router.put('/:id', async (req, res) => {
         body.id_sucursal_origen,
         body.observaciones || null,
         body.estado || existing.estado,
+        actualizado,
         id
       ], { transaction: t })
 
       await execute(`
-        UPDATE traspaso_destino SET borrado = 1, fecha_actualizacion = CURRENT_TIMESTAMP
+        UPDATE traspaso_destino SET borrado = 1, fecha_actualizacion = ?
         WHERE id_traspaso = ? AND borrado = 0
-      `, [id], { transaction: t })
+      `, [actualizado, id], { transaction: t })
 
       await execute(`
-        UPDATE traspaso_detail SET borrado = 1, fecha_actualizacion = CURRENT_TIMESTAMP
+        UPDATE traspaso_detail SET borrado = 1, fecha_actualizacion = ?
         WHERE id_traspaso = ? AND borrado = 0
-      `, [id], { transaction: t })
+      `, [actualizado, id], { transaction: t })
 
       const destinoIds = await insertDestinos(id, body.destinos, t)
       await insertDetalle(id, body.detalle, body.destinos, destinoIds, t)
@@ -334,9 +376,9 @@ router.patch('/:id/cancelar', async (req, res) => {
       UPDATE traspaso_header SET
         cancelado = 1,
         estado = 'CANCELADO',
-        fecha_actualizacion = CURRENT_TIMESTAMP
+        fecha_actualizacion = ?
       WHERE id = ? AND borrado = 0
-    `, [id])
+    `, [nowPst(), id])
 
     const header = await getHeaderById(id)
     sendOk(res, await buildEditPayload(header))
@@ -353,21 +395,22 @@ router.delete('/:id', async (req, res) => {
       return sendNotFound(res)
     }
 
+    const ts = nowPst()
     await transaction(async (t) => {
       await execute(`
-        UPDATE traspaso_header SET borrado = 1, fecha_actualizacion = CURRENT_TIMESTAMP
+        UPDATE traspaso_header SET borrado = 1, fecha_actualizacion = ?
         WHERE id = ?
-      `, [id], { transaction: t })
+      `, [ts, id], { transaction: t })
 
       await execute(`
-        UPDATE traspaso_destino SET borrado = 1, fecha_actualizacion = CURRENT_TIMESTAMP
+        UPDATE traspaso_destino SET borrado = 1, fecha_actualizacion = ?
         WHERE id_traspaso = ?
-      `, [id], { transaction: t })
+      `, [ts, id], { transaction: t })
 
       await execute(`
-        UPDATE traspaso_detail SET borrado = 1, fecha_actualizacion = CURRENT_TIMESTAMP
+        UPDATE traspaso_detail SET borrado = 1, fecha_actualizacion = ?
         WHERE id_traspaso = ?
-      `, [id], { transaction: t })
+      `, [ts, id], { transaction: t })
     })
 
     sendOk(res, { id })

@@ -264,6 +264,7 @@
 import SnackBar from '../components/SnackBar.vue'
 import Catalogo from '../components/Catalogo.vue'
 import config from '../config.json'
+import Utils from '../assets/utils'
 
 const MESES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -271,6 +272,7 @@ const MESES = [
 ]
 
 const LS_KEY = 'envios_data'
+const utils = new Utils()
 
 export default {
   name: 'Envios',
@@ -297,7 +299,7 @@ export default {
         cantidad: 1
       },
       form: {
-        fecha: new Date().toISOString().substr(0, 10),
+        fecha: utils.todayYMD(),
         id_sucursal_origen: null,
         id_sucursal_destino: null
       },
@@ -613,7 +615,7 @@ export default {
 
     nuevo () {
       this.form = {
-        fecha: new Date().toISOString().substr(0, 10),
+        fecha: utils.todayYMD(),
         id_sucursal_origen: null,
         id_sucursal_destino: null
       }
@@ -648,6 +650,9 @@ export default {
         const data = JSON.parse(raw)
         if (data.form) {
           this.form = { ...this.form, ...data.form }
+          if (this.form.fecha) {
+            this.form.fecha = this.formatDateYMD(this.form.fecha) || utils.todayYMD()
+          }
         }
         if (data.detalle && Array.isArray(data.detalle)) {
           // Asegurar que cada item tiene las sucursales actuales
@@ -672,17 +677,7 @@ export default {
     },
 
     formatDateYMD (isoDate) {
-      if (!isoDate) return ''
-      const datePart = isoDate.includes('T') ? isoDate.split('T')[0] : isoDate.split(' ')[0]
-      const parts = datePart.split('-')
-      if (parts.length === 3) {
-        if (parts[0].length === 4) {
-          return datePart
-        } else if (parts[2].length === 4) {
-          return `${parts[2]}-${parts[1]}-${parts[0]}`
-        }
-      }
-      return datePart
+      return utils.formatDateYMD(isoDate)
     },
 
     formatFechaPdf (fechaIso) {

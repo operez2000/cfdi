@@ -1,8 +1,15 @@
 import Express from 'express'
+import Utils from '../../assets/utils'
 import { query, queryOne, execute } from '../db'
 import { sendOk, sendBadRequest, sendNotFound, sendError } from '../utils/response'
 
 const router = Express.Router()
+const utils = new Utils()
+
+/** Timestamp MySQL en PST (America/Tijuana) */
+function nowPst () {
+  return utils.nowDateTime()
+}
 
 router.get('/', async (req, res) => {
   try {
@@ -79,9 +86,9 @@ router.put('/:id', async (req, res) => {
       UPDATE motivo_traspaso SET
         descripcion = ?,
         activo = ?,
-        fecha_actualizacion = CURRENT_TIMESTAMP
+        fecha_actualizacion = ?
       WHERE id = ?
-    `, [body.descripcion, activo, id])
+    `, [body.descripcion, activo, nowPst(), id])
 
     const row = await queryOne(`
       SELECT id, descripcion, activo
@@ -103,9 +110,9 @@ router.delete('/:id', async (req, res) => {
     }
 
     await execute(`
-      UPDATE motivo_traspaso SET borrado = 1, fecha_actualizacion = CURRENT_TIMESTAMP
+      UPDATE motivo_traspaso SET borrado = 1, fecha_actualizacion = ?
       WHERE id = ?
-    `, [id])
+    `, [nowPst(), id])
 
     sendOk(res, { id })
   } catch (err) {

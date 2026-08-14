@@ -3,8 +3,20 @@
   "baseUrl": "http://192.168.184.1:3001",
   "dbfLocation": "d:/oscar/gusher",
   "pac": {
-    "url": "https://ifacturacion.itimbre.com/service.php",
-    "cuenta": "gusher",
+    "url": "https://facturacion.itimbre.com/service.php",
+    "cuenta": "FGU811107SV0",
+    "user": "administrador",
+    "password": "$9KVnl81"
+  },
+  "pac_demo": {
+    "url": "https://facturacion.itimbre.com/service.php",
+    "cuenta": "demo",
+    "user": "administrador",
+    "password": "Administr4dor"
+  },
+  "pac_prod": {
+    "url": "https://facturacion.itimbre.com/service.php",
+    "cuenta": "FGU811107SV0",
     "user": "administrador",
     "password": "$9KVnl81"
   },
@@ -39,5 +51,6 @@
       "username": "root",
       "password": ""
     }
-  }
+  },
+  "tarjetaSupervisor": "8441326305"
 }

@@ -23,11 +23,24 @@
       </v-tooltip>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn icon v-on="on" :disabled="form.estado === 'CANCELADO'" :loading="loading.guardar" @click="guardar">
+          <v-btn icon v-on="on" :disabled="deshabilitarEdicion || !puedeGuardar" :loading="loading.guardar" @click="guardar">
             <v-icon>mdi-content-save</v-icon>
           </v-btn>
         </template>
         <span>Guardar</span>
+      </v-tooltip>
+      <v-tooltip bottom v-if="form.id && form.estado !== 'CANCELADO'">
+        <template v-slot:activator="{ on }">
+          <v-btn
+            icon
+            v-on="on"
+            :color="autorizado ? 'success' : undefined"
+            @click="abrirDialogoAutorizacion"
+          >
+            <v-icon>{{ autorizado ? 'mdi-shield-check' : 'mdi-shield-lock-outline' }}</v-icon>
+          </v-btn>
+        </template>
+        <span>{{ autorizado ? 'Modificación autorizada por Supervisor' : 'Autorizar modificación (Supervisor)' }}</span>
       </v-tooltip>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
@@ -90,7 +103,7 @@
                 dense
                 filled
                 v-on="on"
-                :disabled="form.estado === 'CANCELADO'"
+                :disabled="deshabilitarEdicion"
               />
             </template>
             <v-date-picker v-model="form.fecha" locale="es-MX" @input="menuFecha = false" />
@@ -105,7 +118,7 @@
             label="Sucursal Origen *"
             dense
             filled
-            :disabled="form.estado === 'CANCELADO'"
+            :disabled="deshabilitarEdicion"
           />
         </v-col>
         <v-col cols="12" sm="6" md="2">
@@ -117,7 +130,7 @@
             label="Sucursal Destino *"
             dense
             filled
-            :disabled="form.estado === 'CANCELADO'"
+            :disabled="deshabilitarEdicion"
           />
         </v-col>
         <v-col cols="12" sm="6" md="2">
@@ -130,7 +143,7 @@
             dense
             filled
             clearable
-            :disabled="form.estado === 'CANCELADO'"
+            :disabled="deshabilitarEdicion"
           />
         </v-col>
         <v-col cols="12" sm="6" md="2">
@@ -139,7 +152,7 @@
             label="Caja"
             dense
             filled
-            :disabled="form.estado === 'CANCELADO'"
+            :disabled="deshabilitarEdicion"
           />
         </v-col>
         <v-col cols="12" sm="6" md="1">
@@ -149,19 +162,19 @@
 
       <v-row dense>
         <v-col cols="12" sm="6" md="3">
-          <v-text-field v-model="form.persona_surte" label="Persona que surte" dense filled :disabled="form.estado === 'CANCELADO'" />
+          <v-text-field v-model="form.persona_surte" label="Persona que surte" dense filled :disabled="deshabilitarEdicion" />
         </v-col>
         <v-col cols="12" sm="6" md="3">
-          <v-text-field v-model="form.persona_captura" label="Persona que captura" dense filled :disabled="form.estado === 'CANCELADO'" />
+          <v-text-field v-model="form.persona_captura" label="Persona que captura" dense filled :disabled="deshabilitarEdicion" />
         </v-col>
         <!-- <v-col cols="12" sm="6" md="2">
-          <v-text-field v-model="form.persona_revisa" label="Persona que revisa" dense filled :disabled="form.estado === 'CANCELADO'" />
+          <v-text-field v-model="form.persona_revisa" label="Persona que revisa" dense filled :disabled="deshabilitarEdicion" />
         </v-col> -->
         <v-col cols="12" sm="6" md="3">
-          <v-text-field v-model="form.persona_autoriza" label="Persona que autoriza" dense filled :disabled="form.estado === 'CANCELADO'" />
+          <v-text-field v-model="form.persona_autoriza" label="Persona que autoriza" dense filled :disabled="deshabilitarEdicion" />
         </v-col>
         <v-col cols="12" sm="6" md="3">
-          <v-text-field v-model="form.chofer" label="Chofer" dense filled :disabled="form.estado === 'CANCELADO'" />
+          <v-text-field v-model="form.chofer" label="Chofer" dense filled :disabled="deshabilitarEdicion" />
         </v-col>
       </v-row>
 
@@ -175,7 +188,7 @@
             maxlength="400"
             dense
             filled
-            :disabled="form.estado === 'CANCELADO'"
+            :disabled="deshabilitarEdicion"
           />
         </v-col>
       </v-row>
@@ -192,7 +205,7 @@
             step="1"
             dense
             filled
-            :disabled="form.estado === 'CANCELADO'"
+            :disabled="deshabilitarEdicion"
             @keyup.enter.native="focusInputCodigo"
           />
         </v-col>
@@ -206,13 +219,13 @@
             clearable
             append-icon="mdi-magnify"
             :loading="loading.codigo"
-            :disabled="form.estado === 'CANCELADO'"
+            :disabled="deshabilitarEdicion"
             @click:append="dialog.catalogo = true"
             @keyup.enter.native="capturarCodigo"
           />
         </v-col>
         <v-col cols="12" sm="2" md="2">
-          <v-btn block color="primary" :disabled="form.estado === 'CANCELADO'" @click="dialog.catalogo = true">
+          <v-btn block color="primary" :disabled="deshabilitarEdicion" @click="dialog.catalogo = true">
             Catálogo
           </v-btn>
         </v-col>
@@ -240,13 +253,14 @@
         </template>
 
         <template v-slot:item.acciones="{ item }">
-          <v-btn icon small color="error" :disabled="form.estado === 'CANCELADO'" @click="eliminarRenglon(item)">
+          <v-btn icon small color="error" :disabled="deshabilitarEdicion" @click="eliminarRenglon(item)">
             <v-icon small>mdi-delete</v-icon>
           </v-btn>
         </template>
 
         <template v-slot:item.etiqueta="{ item }">
           <v-edit-dialog
+            v-if="!deshabilitarEdicion"
             :return-value.sync="item.etiqueta"
             large
             cancel-text="Cancelar"
@@ -258,10 +272,12 @@
               <v-text-field v-model="item.etiqueta" label="Etiqueta" single-line counter />
             </template>
           </v-edit-dialog>
+          <span v-else>{{ item.etiqueta || '—' }}</span>
         </template>
 
         <template v-slot:item.lote="{ item }">
           <v-edit-dialog
+            v-if="!deshabilitarEdicion"
             :return-value.sync="item.lote"
             large
             cancel-text="Cancelar"
@@ -273,10 +289,12 @@
               <v-text-field v-model="item.lote" label="Lote" single-line counter />
             </template>
           </v-edit-dialog>
+          <span v-else>{{ item.lote || '—' }}</span>
         </template>
 
         <template v-slot:item.fecha_caducidad="{ item }">
           <v-edit-dialog
+            v-if="!deshabilitarEdicion"
             :return-value.sync="item.fecha_caducidad"
             large
             cancel-text="Cancelar"
@@ -288,10 +306,12 @@
               <v-text-field v-model="item.fecha_caducidad" label="Fecha caducidad" type="text" placeholder="yyyy-mm-dd" single-line />
             </template>
           </v-edit-dialog>
+          <span v-else>{{ formatDateYMD(item.fecha_caducidad) || '—' }}</span>
         </template>
 
         <template v-slot:item.cantidad="{ item }">
           <v-edit-dialog
+            v-if="!deshabilitarEdicion"
             :return-value.sync="item.cantidad"
             large
             cancel-text="Cancelar"
@@ -303,10 +323,12 @@
               <v-text-field v-model.number="item.cantidad" label="Cantidad" type="number" min="1" single-line />
             </template>
           </v-edit-dialog>
+          <span v-else>{{ item.cantidad }}</span>
         </template>
 
         <template v-slot:item.id_traspaso_destino="{ item }">
           <v-edit-dialog
+            v-if="!deshabilitarEdicion"
             :return-value.sync="item.id_traspaso_destino"
             large
             cancel-text="Cancelar"
@@ -325,10 +347,12 @@
               />
             </template>
           </v-edit-dialog>
+          <span v-else>{{ nombreSucursal(item.id_traspaso_destino) }}</span>
         </template>
 
         <template v-slot:item.id_motivo_traspaso="{ item }">
           <v-edit-dialog
+            v-if="!deshabilitarEdicion"
             :return-value.sync="item.id_motivo_traspaso"
             large
             cancel-text="Cancelar"
@@ -348,10 +372,12 @@
               />
             </template>
           </v-edit-dialog>
+          <span v-else>{{ nombreMotivo(item.id_motivo_traspaso) }}</span>
         </template>
 
         <template v-slot:item.caja="{ item }">
           <v-edit-dialog
+            v-if="!deshabilitarEdicion"
             :return-value.sync="item.caja"
             large
             cancel-text="Cancelar"
@@ -363,6 +389,7 @@
               <v-text-field v-model="item.caja" label="Caja" single-line counter />
             </template>
           </v-edit-dialog>
+          <span v-else>{{ item.caja || '—' }}</span>
         </template>
       </v-data-table>
     </v-card>
@@ -516,6 +543,42 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Autorización de Supervisor -->
+    <v-dialog v-model="dialog.autorizacion" max-width="480" persistent>
+      <v-card>
+        <v-card-title class="pa-0">
+          <v-toolbar color="blue-grey" dense dark flat>
+            <v-icon left>mdi-shield-lock</v-icon>
+            <v-toolbar-title class="subtitle-1">Autorización de Supervisor</v-toolbar-title>
+            <v-spacer />
+            <v-btn icon @click="cerrarDialogoAutorizacion"><v-icon>mdi-close</v-icon></v-btn>
+          </v-toolbar>
+        </v-card-title>
+        <v-card-text class="pt-4">
+          <p class="mb-3 text-body-2">
+            Escanee el código de barras o ingrese el número de tarjeta del supervisor para autorizar modificaciones.
+          </p>
+          <v-text-field
+            ref="inputSupervisor"
+            v-model="tarjetaSupervisorInput"
+            label="Tarjeta Supervisor"
+            type="password"
+            dense
+            filled
+            autofocus
+            autocomplete="off"
+            :error-messages="errorSupervisor"
+            @keyup.enter.native="validarSupervisor"
+          />
+        </v-card-text>
+        <v-card-actions class="pb-4 px-4">
+          <v-spacer />
+          <v-btn text @click="cerrarDialogoAutorizacion">Cancelar</v-btn>
+          <v-btn color="primary" @click="validarSupervisor">Autorizar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -523,11 +586,13 @@
 import SnackBar from '../components/SnackBar.vue'
 import Catalogo from '../components/Catalogo.vue'
 import config from '../config.json'
+import Utils from '../assets/utils'
 
 const MESES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ]
+const utils = new Utils()
 
 export default {
   name: 'Traspasos',
@@ -535,6 +600,9 @@ export default {
 
   data () {
     return {
+      autorizado: false,
+      tarjetaSupervisorInput: '',
+      errorSupervisor: '',
       menuFecha: false,
       filtroDetalle: '',
       filtroConsulta: '',
@@ -548,6 +616,8 @@ export default {
         subject: '',
         body: ''
       },
+      defaultSucursalOrigenId: null,
+      serie: '',
       sucursales: [],
       motivos: [],
       listaTraspasos: [],
@@ -576,7 +646,8 @@ export default {
         sucursales: false,
         motivos: false,
         pdf: false,
-        email: false
+        email: false,
+        autorizacion: false
       },
       headersDetalle: [
         { text: '', value: 'acciones', sortable: false, width: '60px' },
@@ -615,6 +686,9 @@ export default {
   },
 
   computed: {
+    deshabilitarEdicion () {
+      return this.form.estado === 'CANCELADO' || (!!this.form.id && !this.autorizado)
+    },
     folioDisplay () {
       if (!this.form.folio) return ''
       const folio = String(this.form.folio).padStart(5, '0')
@@ -632,7 +706,7 @@ export default {
     },
     puedeGuardar () {
       const { destinos, sinMotivo } = this.validarDestinosParaGuardar()
-      return this.form.estado !== 'CANCELADO' &&
+      return !this.deshabilitarEdicion &&
         !!this.form.fecha &&
         !!this.form.id_sucursal_origen &&
         destinos.length > 0 &&
@@ -692,13 +766,13 @@ export default {
         id: null,
         prefijo: 'TRA',
         folio: null,
-        fecha: new Date().toISOString().substr(0, 10),
+        fecha: utils.todayYMD(),
         persona_surte: '',
         persona_captura: '',
         persona_revisa: '',
         persona_autoriza: '',
         chofer: '',
-        id_sucursal_origen: null,
+        id_sucursal_origen: this.defaultSucursalOrigenId || null,
         id_traspaso_destino: null,
         id_motivo_traspaso: null,
         caja: '',
@@ -752,21 +826,85 @@ export default {
 
     async cargarCatalogos () {
       try {
-        const [respSuc, respMot] = await Promise.all([
+        const [respParams, respSuc, respMot] = await Promise.all([
+          this.$axios(`${config.backEndUrl}/gusher/ws.prg?mod=parametros`),
           this.$axios.get('/api/sucursales'),
           this.$axios.get('/api/motivos')
         ])
+        if (respParams.data.response === 200) this.serie = respParams.data.data.serie
         if (respSuc.data.response === 200) this.sucursales = respSuc.data.data
         if (respMot.data.response === 200) this.motivos = respMot.data.data.map(m => ({
           ...m,
           activo: !!m.activo
         }))
+        if (respParams.data.response === 200 && respParams.data.data.sucursal) {
+          const codSuc = (respParams.data.data.sucursal || '').trim().toUpperCase()
+          const sucursal = this.sucursales.find(s =>
+            (s.abreviacion && s.abreviacion.trim().toUpperCase() === codSuc) ||
+            (s.nombre && s.nombre.trim().toUpperCase().startsWith(codSuc))
+          )
+          if (sucursal) {
+            this.defaultSucursalOrigenId = sucursal.id
+            if (!this.form.id_sucursal_origen) {
+              this.form.id_sucursal_origen = sucursal.id
+            }
+          }
+        }
       } catch (err) {
         this.showSnack('Error al cargar catálogos', 'error')
       }
     },
 
+    abrirDialogoAutorizacion () {
+      this.tarjetaSupervisorInput = ''
+      this.errorSupervisor = ''
+      this.dialog.autorizacion = true
+      this.$nextTick(() => {
+        setTimeout(() => {
+          if (this.$refs.inputSupervisor) {
+            this.$refs.inputSupervisor.focus()
+          }
+        }, 100)
+      })
+    },
+
+    cerrarDialogoAutorizacion () {
+      this.dialog.autorizacion = false
+      this.tarjetaSupervisorInput = ''
+      this.errorSupervisor = ''
+    },
+
+    validarSupervisor () {
+      const input = (this.tarjetaSupervisorInput || '').trim()
+      const supervisorEsperado = String(config.tarjetaSupervisor || '').trim()
+
+      if (!input) {
+        this.errorSupervisor = 'Ingrese o escanee la tarjeta'
+        return
+      }
+
+      if (input === supervisorEsperado) {
+        this.autorizado = true
+        this.dialog.autorizacion = false
+        this.tarjetaSupervisorInput = ''
+        this.errorSupervisor = ''
+        this.showSnack('Modificación autorizada por Supervisor', 'success')
+      } else {
+        this.errorSupervisor = 'Tarjeta de supervisor no válida'
+        this.tarjetaSupervisorInput = ''
+        this.showSnack('Tarjeta de supervisor no válida', 'error')
+        this.$nextTick(() => {
+          if (this.$refs.inputSupervisor) {
+            this.$refs.inputSupervisor.focus()
+          }
+        })
+      }
+    },
+
     nuevo () {
+      this.autorizado = false
+      this.tarjetaSupervisorInput = ''
+      this.errorSupervisor = ''
       this.form = this.formInicial()
       this.detalle = []
       this.destinoMotivos = {}
@@ -788,12 +926,16 @@ export default {
     },
 
     agregarArticulo (data) {
+      if (this.deshabilitarEdicion) {
+        this.showSnack('Se requiere autorización de supervisor para modificar', 'warning')
+        return
+      }
       if (!this.form.id_traspaso_destino) {
         this.showSnack('Seleccione sucursal destino', 'warning')
         return
       }
       const cantidad = Math.floor(Number(this.captura.cantidad)) || 1
-      this.detalle.push({
+      this.detalle.unshift({
         _uid: Date.now() + Math.random(),
         clave: data.mPart || data.codigo || data.mpart || '',
         codigo_barras: data.mBarCode || data.mbarcode || '',
@@ -813,6 +955,10 @@ export default {
     },
 
     async capturarCodigo () {
+      if (this.deshabilitarEdicion) {
+        this.showSnack('Se requiere autorización de supervisor para modificar', 'warning')
+        return
+      }
       const id = (this.captura.codigo || '').trim()
       if (!id) return
       this.loading.codigo = true
@@ -832,6 +978,10 @@ export default {
     },
 
     seleccionCatalogo (item) {
+      if (this.deshabilitarEdicion) {
+        this.showSnack('Se requiere autorización de supervisor para modificar', 'warning')
+        return
+      }
       this.dialog.catalogo = false
       if (!item || !item.mpart) return
       this.agregarArticulo({
@@ -845,6 +995,10 @@ export default {
     },
 
     eliminarRenglon (item) {
+      if (this.deshabilitarEdicion) {
+        this.showSnack('Se requiere autorización de supervisor para modificar', 'warning')
+        return
+      }
       this.detalle = this.detalle.filter(r => r._uid !== item._uid)
     },
 
@@ -937,6 +1091,9 @@ export default {
     },
 
     aplicarTraspaso (data) {
+      this.autorizado = false
+      this.tarjetaSupervisorInput = ''
+      this.errorSupervisor = ''
       const h = data.header
       this.destinoMotivos = {}
       this.form = {
@@ -988,6 +1145,10 @@ export default {
     },
 
     async guardar () {
+      if (this.deshabilitarEdicion) {
+        this.showSnack('Se requiere autorización de supervisor para modificar', 'warning')
+        return
+      }
       if (!this.form.fecha) {
         this.showSnack('La fecha es obligatoria', 'warning')
         return
@@ -1196,17 +1357,7 @@ export default {
     },
 
     formatDateYMD (isoDate) {
-      if (!isoDate) return ''
-      const datePart = isoDate.includes('T') ? isoDate.split('T')[0] : isoDate.split(' ')[0]
-      const parts = datePart.split('-')
-      if (parts.length === 3) {
-        if (parts[0].length === 4) {
-          return datePart
-        } else if (parts[2].length === 4) {
-          return `${parts[2]}-${parts[1]}-${parts[0]}`
-        }
-      }
-      return datePart
+      return utils.formatDateYMD(isoDate)
     },
 
     formatFechaPdf (fechaIso) {

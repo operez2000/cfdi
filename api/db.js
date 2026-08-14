@@ -10,6 +10,12 @@ const dbConfig = config.database.local
 const sequelize = new Sequelize(dbConfig.dbname, dbConfig.username, dbConfig.password, {
   host: dbConfig.host,
   dialect: 'mysql',
+  // Devolver DATE/DATETIME como string (YYYY-MM-DD[ HH:mm:ss]) para no
+  // reinterpretar wall-clock PST según la zona del proceso Node.
+  dialectOptions: {
+    dateStrings: true,
+    typeCast: true
+  },
   logging: (sql, timing) => console.log(`[SQL] ${sql}`),
   define: { freezeTableName: true }
 })

@@ -24,5 +24,18 @@ Revisar actualización de Lotes creaArchivo() y /rango para después enviarlo al
 Revisar (parámetros incompletos)
 
 
-----------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Revisar fechas PST ✓ (America/Tijuana: utils, traspasos, envios, routes traspasos/sucursales/motivos; dateStrings en db.js)
+Revisar cambio de zona horaria
+Revisar cambios en celdas cuando exite un traspaso.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Guardar , "tarjetaSupervisor": "8441326305" en config.json
+Copiar ws.prg
+
+Guardar observaciones en Faccli02.dbf 
+
+
 
