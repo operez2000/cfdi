@@ -635,15 +635,15 @@ function buildDocDefinition(cfdi, observacionesCustom = '') {
   return {
     pageSize: 'LETTER',
     pageOrientation: 'portrait',
-    pageMargins: [25, 28, 25, 25],
+    pageMargins: [25, 40, 25, 42],
 
     // Pie de página con numeración y leyenda SAT
     footer: function (currentPage, pageCount) {
       return {
-        margin: [25, 0, 25, 0],
-        stack: [
-          { text: '*Este Documento es una Representación Impresa de un CFDI', fontSize: 6.5, color: '#0070c0', alignment: 'center' },
-          { text: `Página ${currentPage} de ${pageCount}`, fontSize: 6.5, color: '#0070c0', alignment: 'center' }
+        margin: [25, 2, 25, 0],
+        columns: [
+          { text: '*Este Documento es una Representación Impresa de un CFDI', fontSize: 6.5, color: '#0070c0', alignment: 'left' },
+          { text: `Página ${currentPage} de ${pageCount}`, fontSize: 6.5, color: '#0070c0', alignment: 'right' }
         ]
       }
     },
@@ -718,6 +718,7 @@ function buildDocDefinition(cfdi, observacionesCustom = '') {
       {
         table: {
           headerRows: 1,
+          dontBreakRows: true,
           widths: tableWidths,
           body: tableBody
         },
