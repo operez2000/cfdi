@@ -16,7 +16,9 @@ import util from 'util'
 import traspasosRouter from './routes/traspasos'
 import sucursalesRouter from './routes/sucursales'
 import motivosRouter from './routes/motivos'
-import { xml2pdfHandler } from './utils/xml2pdf'
+import facturacionRouter, { guardarFacturaEnDb } from './routes/facturacion'
+import { queryOne as queryOneFactura } from './db_facturacion.js'
+import { xml2pdfHandler, generatePdfFromXml } from './utils/xml2pdf'
 
 const app = Express();
 const connection = ADODB.open(`Provider=Microsoft.Jet.OLEDB.4.0;Data Source=${config.dbfLocation}/novartis.mdb;`);
@@ -1149,15 +1151,92 @@ app.use("/faltantes-lotes/:fecha", mdi, (req, res) => {
 
 // Recuperar CFDI
 app.get("/recuperarCFDI/:folio", mdi, async (req, res) => {
+  const folioParam = (req.params.folio || '').trim()
+
+  // 1. Intentar buscar primero en la base de datos local `facturacion`
+  try {
+    let row = null
+    const match = folioParam.match(/^([A-Za-z]+)(\d+)$/)
+    if (match) {
+      const s = match[1]
+      const f = match[2]
+      row = await queryOneFactura(
+        `SELECT * FROM factura WHERE (serie = ? AND (folio = ? OR CAST(folio AS UNSIGNED) = CAST(? AS UNSIGNED))) LIMIT 1`,
+        [s, f, f]
+      )
+    }
+    if (!row) {
+      row = await queryOneFactura(
+        `SELECT * FROM factura WHERE CONCAT(serie, folio) = ? OR folio = ? LIMIT 1`,
+        [folioParam, folioParam]
+      )
+    }
+
+    if (row && row.xml) {
+      let pdfBase64 = ''
+      try {
+        pdfBase64 = await generatePdfFromXml({ xml: row.xml, observaciones: row.observaciones || '' })
+      } catch (errPdf) {
+        console.error('Error al generar PDF en /recuperarCFDI desde BD:', errPdf)
+      }
+
+      return res.json({
+        id_transaccion: 0,
+        result: {
+          retcode: 1,
+          UUID: row.uuid,
+          data: row.xml,
+          pdfBase64,
+          result: {
+            retcode: 1,
+            uuid: row.uuid,
+            xml: row.xml,
+            pdfBase64,
+            observaciones: row.observaciones || ''
+          }
+        }
+      })
+    }
+  } catch (errDb) {
+    console.error('Error consultando factura en BD local en /recuperarCFDI:', errDb)
+  }
+
+  // 2. Fallback: Si no está en BD local, llamar a la API de iTimbre
   let params = `{
     "method": "recuperar",
     "cuenta": "${config.pac.cuenta}",
     "user": "${config.pac.user}",
     "password": "${config.pac.password}",
     "folio": "${req.params.folio}",
-    "getPdf": true
+    "getPdf": false
   }`.trim().replace(/^\s+|\s+$/gm,'')
+
   const response = await recuperarCfdi(params, req.params.folio)
+
+  // Si iTimbre regresa exitosamente el XML, generar PDF propio y guardar en BD local
+  if (response && response.result) {
+    let xmlRecuperado = ''
+    if (response.result.result && response.result.result.xml) {
+      xmlRecuperado = response.result.result.xml
+    } else if (response.result.data) {
+      xmlRecuperado = response.result.data
+    }
+
+    if (xmlRecuperado) {
+      try {
+        const pdfBase64Propio = await generatePdfFromXml({ xml: xmlRecuperado })
+        if (response.result.result) {
+          response.result.result.pdfBase64 = pdfBase64Propio
+        }
+        response.result.pdfBase64 = pdfBase64Propio
+
+        await guardarFacturaEnDb({ xml: xmlRecuperado })
+      } catch (errGen) {
+        console.error('Error al procesar PDF/guardar en BD tras recuperar de iTimbre:', errGen)
+      }
+    }
+  }
+
   res.json(response)
 })  // //recuperarCFDI/:folio
 
@@ -1320,7 +1399,7 @@ app.get("/siguiente-factura", mdi, (req, res) => {
 
 
 // Timbrar CFDI
-app.post("/facturar", mdi, (req, res) => {
+app.post("/facturar", mdi, async (req, res) => {
   let json = req.body.data  // La estructura que se crea y viene como body desde los módulos (facturacion, etc...)
   json.cuenta = config.pac.cuenta
   json.user = config.pac.user
@@ -1330,35 +1409,59 @@ app.post("/facturar", mdi, (req, res) => {
   json.method = "nueva_factura"
   let params = JSON.stringify(json).replace(/\s+/gm,' ')
 
-  fs.writeFileSync(`c:/cfdi/${json.datos_factura.Serie}${json.datos_factura.Folio}.json`, params)
+  try {
+    fs.writeFileSync(`c:/cfdi/${json.datos_factura.Serie}${json.datos_factura.Folio}.json`, params)
+  } catch (errLog) {
+    console.log("Aviso al guardar json local:", errLog.message)
+  }
 
-  /* Ejemplo...
-    https://facturacion33.itimbre.com/service.php?q={"method":"recuperar","cuenta":"msi961203md0","user":"facturacion","password":"S0port3TI664","folio":"PRS178","getPdf":false}
-  */
-  let url = `${config}?q=${params}`
-  console.log(url)
   let response = {}
 
   // Agrego a req.body.tipo
-  req.body.factura.tipo = " "
+  if (req.body.factura) {
+    req.body.factura.tipo = " "
+  }
 
-  axios({
-    url: "https://gusher.code-ware.com/cfdi.php",  // "http://74.208.101.117/cfdi/cfdi.php",
-    method: "post",
-    data: req.body.data
-  }).then(resp => {
+  try {
+    const resp = await axios({
+      url: "https://gusher.code-ware.com/cfdi.php",  // "http://74.208.101.117/cfdi/cfdi.php",
+      method: "post",
+      data: req.body.data
+    })
     response = resp.data
-  }).catch(error => {
-    console.log("error", error)
-    response.result = {
-      retcode: -1,
-      message: error.message + " | " + error.stack.replace(/\s+/gm, ' ')
-    }
-  }).finally(() => {
-    res.json( response )
-    if (response.result.retcode == 1) { // Todo bien, se timbró la facura
+
+    if (response && response.result && (response.result.retcode == 1 || response.result.retcode == 0)) {
+      const xmlTimbrado = response.result.data || ''
+      const observaciones = (req.body.data && (req.body.data.comentarios || req.body.data.Observaciones)) ||
+                            (req.body.factura && (req.body.factura.observaciones || req.body.factura.comentarios)) || ''
+      
+      // 1. Generar PDF propio con xml2pdf.js
+      if (xmlTimbrado) {
+        try {
+          const pdfBase64Propio = await generatePdfFromXml({ xml: xmlTimbrado, observaciones })
+          response.result.pdfBase64 = pdfBase64Propio
+          if (response.result.result) {
+            response.result.result.pdfBase64 = pdfBase64Propio
+          }
+        } catch (pdfErr) {
+          console.error("Error al generar PDF propio con xml2pdf:", pdfErr)
+        }
+
+        // 2. Guardar en BD facturacion
+        try {
+          await guardarFacturaEnDb({
+            xml: xmlTimbrado,
+            observaciones,
+            noCliente: req.body.factura?.numero || '',
+            cuentaPago: req.body.factura?.numCtaPago || req.body.data?.numCtaPago || '',
+            uuidRelacionado: req.body.factura?.uuidRel || ''
+          })
+        } catch (dbErr) {
+          console.error("Error al guardar factura en BD facturacion:", dbErr)
+        }
+      }
+
       req.body.factura.uuid = response.result.UUID
-      // Agrego la nueva factura a FacCli02.dbf
       if (req.body.factura.tipo == undefined) {
         req.body.factura.tipo = ' '
       }
@@ -1379,48 +1482,16 @@ app.post("/facturar", mdi, (req, res) => {
         pdfBase64: response.result.pdfBase64,
         xml: response.result.data
       })
-
     }
-  })
-
-/*
-  axios({
-    method: 'post',
-    url: url,
-    //data: {}
-  }).then( resp => {
-    console.log(resp.data)
-    response = resp.data
-  }).catch( err => {
-    console.error('Error resp', err)
-    response = err
-  }).finally( () => {
-    res.json(response)
-    if (response.result.retcode == 1) { // Todo bien, se timbró la facura
-      req.body.factura.uuid = response.result.UUID
-      // Agrego la nueva factura a FacCli02.dbf
-      afectaFactura({
-        params: {
-          mod: "factura",
-          opt: "insert"
-        },
-        data: req.body.factura
-      })
-
-      sendEmail({
-        serie_folio: `${json.datos_factura.Serie}${json.datos_factura.Folio}`,
-        subject: 'Envío de Factura',
-        emailTo: req.body.factura.email,
-        cc: '',
-        body: '',
-        pdfBase64: response.result.pdfBase64,
-        xml: response.result.data
-      })
-
+  } catch (error) {
+    console.log("error en /facturar:", error)
+    response.result = {
+      retcode: -1,
+      message: error.message + " | " + (error.stack ? error.stack.replace(/\s+/gm, ' ') : '')
     }
-  }) // axios()
-*/
-
+  } finally {
+    res.json( response )
+  }
 })  // //facturar
 
 
@@ -1479,11 +1550,36 @@ app.post("/cancelarFactura", mdi, (req, res) => {
     } else {
       retcode = -1
     }
-    if (retcode == 1) { // Todo bien, se canceló la facura
-      if (req.body.serie.indexOf('NC') >= 0) {
+    if (retcode == 1) { // Todo bien, se canceló la factura
+      if (req.body.serie && req.body.serie.indexOf('NC') >= 0) {
         // Nota de Crédito
         CancelaNotaDeCredito(req.body.serie, req.body.folio)
       } 
+
+      // Actualizar estatus en BD facturacion
+      try {
+        const uuidCancelado = req.body.dataPac?.uuid || req.body.uuid || ''
+        const motivoCanc = req.body.dataPac?.motivo || req.body.motivo || 'Cancelación'
+        const uuidRel = req.body.dataPac?.FolioSustitucion || req.body.uuidRel || null
+        const usuarioCanc = req.body.usuario || req.body.user || 'Sistema'
+
+        if (uuidCancelado) {
+          let sqlCanc = `UPDATE factura SET estatus = 'Cancelada', usuario_cancela = ?, motivo_cancelacion = ?, fecha_cancelacion = ?`
+          const paramsCanc = [usuarioCanc, motivoCanc, utils.nowDateTime()]
+          if (uuidRel) {
+            sqlCanc += `, uuid_relacionado = ?`
+            paramsCanc.push(uuidRel)
+          }
+          sqlCanc += ` WHERE uuid = ?`
+          paramsCanc.push(uuidCancelado)
+
+          import('./db_facturacion.js').then(({ execute }) => {
+            execute(sqlCanc, paramsCanc).catch(e => console.error("Error al actualizar cancelación en BD:", e))
+          })
+        }
+      } catch (errDbCanc) {
+        console.error("Error al registrar cancelación en BD facturacion:", errDbCanc)
+      }
     }
 
     // Cancelo factura en FacCli02.dbf
@@ -2031,7 +2127,31 @@ app.post("/timbra-global", async (req, res) => {
     console.error('response', response)
   } finally {
     res.json( response )
-    if (response.result.retcode == 1) { // Todo bien, se timbró la facura
+    if (response.result && (response.result.retcode == 1 || response.result.retcode == 0)) { // Todo bien, se timbró la factura
+      const xmlTimbrado = response.result.data || ''
+      if (xmlTimbrado) {
+        try {
+          const pdfBase64Propio = await generatePdfFromXml({ xml: xmlTimbrado, observaciones: 'Factura Global' })
+          response.result.pdfBase64 = pdfBase64Propio
+          if (response.result.result) {
+            response.result.result.pdfBase64 = pdfBase64Propio
+          }
+        } catch (pdfErr) {
+          console.error("Error al generar PDF de factura global:", pdfErr)
+        }
+
+        try {
+          await guardarFacturaEnDb({
+            xml: xmlTimbrado,
+            observaciones: 'Factura Global',
+            noCliente: '000000',
+            tipoFacturaCustom: 'Global'
+          })
+        } catch (dbErr) {
+          console.error("Error al guardar factura global en BD facturacion:", dbErr)
+        }
+      }
+
       let iva = Number(req.body.estructura.datos_factura.Total) - Number(req.body.estructura.datos_factura.SubTotal)
       iva = Number(iva.toFixed(2))
       let importe = Number(req.body.estructura.datos_factura.Total)
@@ -2194,6 +2314,7 @@ app.get('/lee-nota-credito/:serie/:folio', mdi, async (req, res) => {
 app.use('/traspasos', traspasosRouter)
 app.use('/sucursales', sucursalesRouter)
 app.use('/motivos', motivosRouter)
+app.use('/facturacion', facturacionRouter)
 app.post('/xml2pdf', xml2pdfHandler)
 
 

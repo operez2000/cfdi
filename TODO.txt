@@ -36,5 +36,14 @@ Facturacion
     Formato: Caja-Folio: 02-12345 | 20/Mar/2026 | Cajero 050 | Vendedor 012 | Cuenta 7373
     Cambiar el despliegue del PDF en /facturacion, /global y /recuperar
     En /recuperar primero buscar en ./cfdiFiles/{RFC}/{serie}{folio}.pdf y ./cfdiFiles/{RFC}/{serie}{folio}.xml
+    Crear Base de Datos de Facturación en el mismo servidor de Traspasos
 
 
+,
+  "facturacion": {
+    "dialect": "mysql",
+    "host": "127.0.0.1",
+    "dbname": "facturacion",
+    "username": "root",
+    "password": ""
+  }

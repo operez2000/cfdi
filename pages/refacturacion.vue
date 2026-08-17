@@ -671,15 +671,27 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
-    <!-- </v-layout> -->
-
     <snack-bar ref="snackBar"/>
+
+    <!-- Modal to view the invoice in PDF -->
+    <v-dialog v-model="modalFactura" fullscreen>
+      <v-card>
+        <v-toolbar dark color="primary">
+          <v-btn icon dark @click="modalFactura = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+          <v-toolbar-title>{{ tituloModalFactura }}</v-toolbar-title>
+        </v-toolbar>
+        <VerFactura :pdf="pdfParaVer"/>
+      </v-card>
+    </v-dialog>
 
   </div>
 </template>
 
 <script>
 import SnackBar from '../components/SnackBar.vue'
+import VerFactura from '../components/VerFactura.vue'
 import Utils from "../assets/utils"
 import config from "../config.json"
 
@@ -687,10 +699,14 @@ const window_location = window.location
 
 export default {
   components: {
-    SnackBar
+    SnackBar,
+    VerFactura
   },
   data() {
     return {
+      modalFactura: false,
+      pdfParaVer: '',
+      tituloModalFactura: '',
       dialog: {
         login: true
       },
@@ -985,9 +1001,9 @@ export default {
 
       } else if (origen == "ABRIR_PDF") {
         this.loaders.abrirPdf = true
-        let win = window.open()
-        win.document.write(`<iframe src="data:application/pdf;base64,${this.facturaOriginal.pdfBase64}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`)
-        win.document.title = this.serie + "-" + this.facturaOriginal.folio
+        this.pdfParaVer = this.facturaOriginal.pdfBase64
+        this.tituloModalFactura = `Factura Original ${this.serie}-${this.facturaOriginal.folio}`
+        this.modalFactura = true
         this.loaders.abrirPdf = false
 
       } else if (origen == "BUSCAR_CLIENTE") {
@@ -1263,10 +1279,9 @@ export default {
             this.factura.uuid = resp.data.result.UUID
             this.warning.type = "success"
             this.warning.msg = "Factura generada correctamente"
-            let win = window.open()
-            win.document.title = this.serie + "-" + this.folio
-            win.document.header = this.serie + "-" + this.folio
-            win.document.write(`<iframe src="data:application/pdf;base64,${encodeURI(resp.data.result.pdfBase64)}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`)
+            this.pdfParaVer = resp.data.result.pdfBase64
+            this.tituloModalFactura = `Factura ${this.serie}-${this.folio}`
+            this.modalFactura = true
             this.recibo.cancelada = 'S'
           } else {
             //this.alert.msg = resp.data.result

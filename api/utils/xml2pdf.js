@@ -3,6 +3,8 @@ import fs from 'fs'
 import xml2js from 'xml2js'
 import PdfPrinter from 'pdfmake'
 import vfsFonts from 'pdfmake/build/vfs_fonts.js'
+import axios from 'axios'
+import config from '../../config.json'
 
 // Inicializar fuentes de pdfmake usando vfs embebido
 const vfsObj = (vfsFonts && vfsFonts.pdfMake && vfsFonts.pdfMake.vfs)
@@ -229,6 +231,29 @@ function numeroALetras(monto, moneda = 'MXN') {
 }
 
 /**
+ * Obtiene el nombre de la sucursal de manera dinámica consultando el backend ws.prg
+ * @returns {Promise<string>}
+ */
+async function getSucursalParametros() {
+  try {
+    const url = `${config.backEndUrl}/gusher/ws.prg?mod=parametros`
+    const resp = await axios.get(url, { timeout: 5000 })
+    let resData = resp && resp.data
+    if (typeof resData === 'string') {
+      try {
+        resData = JSON.parse(resData)
+      } catch (_) {}
+    }
+    if (resData && resData.data && resData.data.mSucu) {
+      return String(resData.data.mSucu).trim()
+    }
+  } catch (error) {
+    console.warn('No se pudo obtener la sucursal dinámica de parametros:', error.message)
+  }
+  return 'SUCURSAL: RIO'
+}
+
+/**
  * Parsea el XML de CFDI y extrae todos los datos estructurados.
  */
 export async function parseCfdiXml(xmlString) {
@@ -238,7 +263,10 @@ export async function parseCfdiXml(xmlString) {
     mergeAttrs: true
   })
 
-  const raw = await parser.parseStringPromise(xmlString)
+  const [raw, sucursalDinamica] = await Promise.all([
+    parser.parseStringPromise(xmlString),
+    getSucursalParametros()
+  ])
 
   // Obtener Comprobante (con o sin namespace)
   const comp = raw['cfdi:Comprobante'] || raw.Comprobante || {}
@@ -457,7 +485,7 @@ export async function parseCfdiXml(xmlString) {
       rfc: rfcEmisor,
       nombre: emisor.Nombre || 'FARMACIA GUSHER',
       regimenFiscal: CATALOGOS.regimenFiscal[emisor.RegimenFiscal] || emisor.RegimenFiscal || '601 - General de Ley Personas Morales',
-      sucursal: 'SUCURSAL: RIO',
+      sucursal: sucursalDinamica,
       direccion: 'Av Paseo de los Heroes 9550 27 B, Zona Urbana Rio Tijuana\nTijuana, Baja California México C.P. 22010\nTeléfono: 664 684 02 35 Y 664 684 02 29'
     },
     receptor: {

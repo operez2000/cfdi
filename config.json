@@ -50,6 +50,13 @@
       "dbname": "traspasos",
       "username": "root",
       "password": ""
+    },
+    "facturacion": {
+      "dialect": "mysql",
+      "host": "127.0.0.1",
+      "dbname": "facturacion",
+      "username": "root",
+      "password": ""
     }
   },
   "tarjetaSupervisor": "8441326305"
