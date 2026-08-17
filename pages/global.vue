@@ -43,6 +43,16 @@
       <v-card-text>
         <div class="d-flex justify-end">
           <v-btn
+            ref="refBtnOpenPdf"
+            plain
+            dark
+            v-show="showBtnPdf"
+            @click="openPdf"
+            title="Ver PDF"
+          >
+            <v-icon large color="primary">mdi-file-pdf-box</v-icon>
+          </v-btn>
+          <v-btn
             plain
             dark
             :disabled="tablaVentas.items.length == 0 || loaders.excel"
@@ -230,11 +240,25 @@
       </v-card-actions>
     </v-card>
 
+    <!-- Modal to view the invoice in PDF -->
+    <v-dialog v-model="modalFactura" fullscreen>
+      <v-card>
+        <v-toolbar dark color="primary">
+          <v-btn icon dark @click="modalFactura = false;reloadPage()">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+          <v-toolbar-title>Factura Global {{ serie + folio }}</v-toolbar-title>
+        </v-toolbar>
+        <VerFactura :pdf="factura.pdfBase64"/>
+      </v-card>
+    </v-dialog>
+
   </div>
 </template>
 <script>
 //import { defineComponent } from '@vue/composition-api'
 import Utils from '@/assets/utils'
+import VerFactura from '@/components/VerFactura'
 import config from "../config.json"
 let parametros = {}
 let globalData = {}
@@ -243,7 +267,12 @@ let mes = ""
 let ejercicio = ""
 let fechaFactura = ""
 
+const window_location = window.location
+
 export default {
+  components: {
+    VerFactura,
+  },
   data() {
     return {
       menuFecha: false,
@@ -363,6 +392,7 @@ export default {
       showBtnPdf: false,
       utils: new Utils(),
       uuid_relacionado: '',
+      modalFactura: false,
     } // return data()
   }, // data()
   mounted() {
@@ -491,29 +521,7 @@ export default {
     }, // revisarFacturasSinTimbrar()
 
     openPdf() {
-      let win = window.open()
-      win.document.title = this.serie + "-" + this.folio
-      win.document.header = this.serie + "-" + this.folio
-      win.document.write(`
-        <iframe
-          id="Pdf"
-          title="Pdf..."
-          alt="PDF..."
-          src="data:application/pdf;base64,${this.factura.pdfBase64}"
-          frameborder="0"
-          style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;"
-          allowfullscreen>
-        </iframe>`
-      )
-
-      /*
-      let link = document.createElement('a')
-      link.href = 'data:application/octet-stream;base64,' + data.pdfBase64
-      link.download = this.serie + this.folio + '.pdf'
-      link.click()
-      link = null
-      */
-
+      this.modalFactura = true
     },  // openPdf()
 
     async globalConsec() {
@@ -523,6 +531,9 @@ export default {
       })
       console.log('globalConsec', response.data)
     }, // globalConsec()
+    reloadPage() {
+      window_location.reload()
+    },
     getParametros() {
       this.alert.msg = ""
       this.$axios({
@@ -573,15 +584,21 @@ export default {
           // resp.data.result.retcode == 1 todo ok... mostrar factura
           this.loaders.timbraFactura = false
           this.factura.uuid = response.data.result.UUID
+          this.factura.pdfBase64 = ""
+          if (response.data.result.pdfBase64) {
+            this.factura.pdfBase64 = response.data.result.pdfBase64
+          } else if (response.data.result.result && response.data.result.result.pdfBase64) {
+            this.factura.pdfBase64 = response.data.result.result.pdfBase64
+          }
+          if (response.data.result.data) {
+            this.factura.xml = response.data.result.data
+          }
           this.alert.type = "success"
           this.alert.msg = "Factura global generada correctamente"
-          let win = window.open()
-            //let link = document.createElement('a')
-            win.document.write(`<iframe title="${this.serie}${this.folio}" src="data:application/pdf;base64,${encodeURI(response.data.result.pdfBase64)}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`)
-            win.document.title = this.serie + "-" + this.folio
-            if (!win) {
-              this.alert.msg = "El navegador no está configurado para abrir ventanas emergentes (popups)"
-            }
+          if (this.factura.pdfBase64 != "") {
+            this.showBtnPdf = true
+            this.modalFactura = true
+          }
         } else {
           this.loaders.timbraFactura = false
           this.alert.msg = response.data.result.error

@@ -39,11 +39,13 @@ export default class Utils {
 
   usosCfdi = [
     "G01 - Adquisicion de Mercancias",
+    "G02 - Devoluciones, descuentos o bonificaciones",
     "G03 - Gastos en General",
     "D01 - Honorarios médicos, dentales y gastos hospitalarios",
     "D02 - Gastos médicos por incapacidad o discapacidad",
     "D07 - Primas por seguros de gastos médicos",
-    "S01 - Sin efectos fiscales"
+    "S01 - Sin efectos fiscales",
+    "CP01 - Pagos"
   ]
 
   metodosDePago = [

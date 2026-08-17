@@ -47,3 +47,13 @@ Facturacion
     "username": "root",
     "password": ""
   }
+
+
+
+*********************************************
+Factura global:
+    Observaciones guardar Factura Global del día {fecha}
+    Utilizar el mismo flujo y procedimiento que /facturas.vue para ignorar el pdfBase64 de la respuesta que da la API de iTimbre y hacer todo el proceso que se hace con la ruta /facturar, luego construir el PDF en xml2pdf.js y mostrar la factura en un fullscreen dialog tal 
+    como se hace en /facturas.vue
+    ¿Tienes dudas?
+

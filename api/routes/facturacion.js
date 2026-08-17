@@ -255,4 +255,86 @@ router.put('/cancelar/:uuid', async (req, res) => {
   }
 })
 
+/**
+ * GET /api/facturacion/buscar-uuid-relacionado
+ * Busca el UUID de la factura cliente o de la primera factura global del día de la venta
+ */
+router.get('/buscar-uuid-relacionado', async (req, res) => {
+  try {
+    const { caja = '', folio = '', fecha = '' } = req.query
+    let fechaYmd = ''
+
+    if (fecha) {
+      const cleanFecha = String(fecha).trim()
+      if (/^\d{4}-\d{2}-\d{2}/.test(cleanFecha)) {
+        fechaYmd = cleanFecha.substring(0, 10)
+      } else if (/^\d{2}\/\d{2}\/\d{4}/.test(cleanFecha)) {
+        const [d, m, y] = cleanFecha.split('/')
+        fechaYmd = `${y}-${m}-${d}`
+      }
+    }
+
+    let uuidEncontrado = ''
+    let facturaInfo = null
+
+    // 1. Intentar buscar por factura individual de la venta (Caja y Folio en observaciones) en el último año
+    if (caja && folio) {
+      const cajaPad = String(caja).trim().padStart(2, '0')
+      const folioPad = String(folio).trim()
+      const searchPat1 = `%${cajaPad}%${folioPad}%`
+      const searchPat2 = `%${caja.trim()}-${folioPad}%`
+
+      let sqlIndividual = `
+        SELECT uuid, serie, folio, fecha_facturacion, tipo_factura
+        FROM factura
+        WHERE estatus != 'Cancelada'
+          AND tipo_factura NOT IN ('Nota de Crédito', 'Cancelada')
+          AND (
+            observaciones LIKE ? OR observaciones LIKE ?
+          )
+      `
+      const paramsInd = [searchPat1, searchPat2]
+      if (fechaYmd) {
+        sqlIndividual += ` AND fecha_facturacion >= DATE_SUB(?, INTERVAL 1 YEAR)`
+        paramsInd.push(fechaYmd)
+      } else {
+        sqlIndividual += ` AND fecha_facturacion >= DATE_SUB(NOW(), INTERVAL 1 YEAR)`
+      }
+      sqlIndividual += ` ORDER BY id DESC LIMIT 1`
+
+      const rowInd = await queryOne(sqlIndividual, paramsInd)
+      if (rowInd && rowInd.uuid) {
+        uuidEncontrado = rowInd.uuid
+        facturaInfo = rowInd
+      }
+    }
+
+    // 2. Si no se encontró factura individual, buscar la primer Factura Global del día de la venta
+    if (!uuidEncontrado && fechaYmd) {
+      const sqlGlobal = `
+        SELECT uuid, serie, folio, fecha_facturacion, tipo_factura
+        FROM factura
+        WHERE DATE(fecha_facturacion) = ?
+          AND (tipo_factura = 'Global' OR rfc_receptor = 'XAXX010101000' OR razon_social LIKE '%PUBLICO EN GENERAL%' OR razon_social LIKE '%PÚBLICO EN GENERAL%')
+          AND estatus != 'Cancelada'
+        ORDER BY fecha_facturacion ASC, id ASC
+        LIMIT 1
+      `
+      const rowGlobal = await queryOne(sqlGlobal, [fechaYmd])
+      if (rowGlobal && rowGlobal.uuid) {
+        uuidEncontrado = rowGlobal.uuid
+        facturaInfo = rowGlobal
+      }
+    }
+
+    return sendOk(res, {
+      uuid: uuidEncontrado,
+      factura: facturaInfo
+    })
+  } catch (error) {
+    return sendError(res, error)
+  }
+})
+
 export default router
+

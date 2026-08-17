@@ -242,7 +242,7 @@ async function getSucursalParametros() {
     if (typeof resData === 'string') {
       try {
         resData = JSON.parse(resData)
-      } catch (_) {}
+      } catch (_) { }
     }
     if (resData && resData.data && resData.data.mSucu) {
       return String(resData.data.mSucu).trim()
@@ -418,7 +418,7 @@ export async function parseCfdiXml(xmlString) {
   // Título Comprobante
   const serie = comp.Serie || ''
   const folio = comp.Folio || ''
-  let tituloComprobante = `CFDI # ${serie}${folio}`
+  let tituloComprobante = `FACTURA # ${serie}${folio}`
   if (tipoCompCode === 'E') {
     tituloComprobante = `NOTA DE CREDITO # ${serie}${folio}`
   } else if (receptor.Rfc === 'XAXX010101000' || comp['cfdi:InformacionGlobal'] || comp.InformacionGlobal) {
@@ -965,19 +965,23 @@ export function saveCfdiFiles(cfdi, xml, pdfBuffer) {
 }
 
 /**
- * Genera el PDF en Base64 a partir de una cadena XML y observaciones opcionales.
+ * Genera el PDF en Base64 a partir de una cadena XML, observaciones opcionales y número de cliente opcional.
  * Guarda además una copia física del PDF y XML en @/cfdiFiles/{receptor.rfc}/
  * @param {Object} params
  * @param {string} params.xml - Cadena XML de CFDI 4.0 o 3.3
  * @param {string} [params.observaciones] - Observaciones a incluir
+ * @param {string} [params.noCliente] - Número de cliente a incluir
  * @returns {Promise<string>} Base64 del PDF generado
  */
-export async function generatePdfFromXml({ xml, observaciones = '' }) {
+export async function generatePdfFromXml({ xml, observaciones = '', noCliente = '' }) {
   if (!xml || typeof xml !== 'string') {
     throw new Error('El parámetro xml es requerido y debe ser una cadena válida.')
   }
 
   const cfdi = await parseCfdiXml(xml)
+  if (noCliente) {
+    cfdi.receptor.numeroCliente = noCliente
+  }
   const docDefinition = buildDocDefinition(cfdi, observaciones)
 
   const pdfDoc = printer.createPdfKitDocument(docDefinition)
@@ -1004,7 +1008,18 @@ export async function generatePdfFromXml({ xml, observaciones = '' }) {
 export async function xml2pdfHandler(req, res) {
   try {
     const xml = req.body && req.body.xml
-    const observaciones = req.body && (req.body.observaciones || req.body.comentarios || '')
+    const observaciones = req.body && (
+      req.body.observaciones ||
+      req.body.comentarios ||
+      (req.body.datos_factura && req.body.datos_factura.comentarios) ||
+      ''
+    )
+    const noCliente = req.body && (
+      req.body.noCliente ||
+      req.body.no_cliente ||
+      (req.body.cliente && req.body.cliente.id) ||
+      ''
+    )
 
     if (!xml) {
       return res.status(400).json({
@@ -1014,7 +1029,7 @@ export async function xml2pdfHandler(req, res) {
       })
     }
 
-    const pdfBase64 = await generatePdfFromXml({ xml, observaciones })
+    const pdfBase64 = await generatePdfFromXml({ xml, observaciones, noCliente })
 
     return res.json({
       response: 200,

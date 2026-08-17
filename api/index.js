@@ -587,26 +587,28 @@ const NotaDeCreditoDetalle = async (idNota) => {
         Cantidad,
         Precio AS ValorUnitario,
         PorDes,
-        ImpDes Descuento,
+        ImpDes AS Descuento,
         Importe,
         PorIVA AS porIva,
         ImpIVA AS impIva,
-        tipoIVA
+        tipoIVA,
         cveSat AS ClaveProdServ
       FROM NotasDetalle
       WHERE IDNota = ${idNota}
     `
-    data = await connection.query(qry) //`SELECT * FROM Notas WHERE fecha = #${fecha}#`)
+    data = await connection.query(qry)
 
-    // Voy al BackEnd de mod-harbour paa traerme los nombres de los articulos
+    // Voy al BackEnd de mod-harbour para traerme los nombres de los articulos
     try {
       const url = `${config.backEndUrl}/gusher/ws.prg?mod=items-from-array`
-      data = await axios({
+      const respItems = await axios({
         method: 'post',
         url,
         data
       })
-      data = await data.data
+      if (respItems.data && Array.isArray(respItems.data)) {
+        data = respItems.data
+      }
     } catch (error) {
       console.log(error)
     }
@@ -615,7 +617,90 @@ const NotaDeCreditoDetalle = async (idNota) => {
   }
   return data
 } // NotaDeCreditoDetalle(idNota)
-//NotaDeCreditoDetalle(721).then(resp => console.log(JSON.stringify(resp)))
+
+// Guardar Nota de Crédito en Access MDB (novartis.mdb)
+const guardarNotaEnAccess = async ({
+  serie,
+  folioNota,
+  caja,
+  folioVenta,
+  fecha,
+  subTotal,
+  importeIva,
+  totalNota,
+  clienteId,
+  tc,
+  tipoVenta,
+  userId,
+  cajeroId,
+  vendedorId,
+  fechaVenta,
+  uuid,
+  uuidOrigen,
+  observaciones,
+  formaDePago,
+  usoCfdi,
+  items
+}) => {
+  try {
+    const dNota = fecha ? new Date(fecha) : new Date()
+    const dVenta = fechaVenta ? new Date(fechaVenta) : new Date()
+    const fNotaStr = `${dNota.getDate().toString().padStart(2, '0')}/${(dNota.getMonth() + 1).toString().padStart(2, '0')}/${dNota.getFullYear()}`
+    const fVentaStr = `${dVenta.getDate().toString().padStart(2, '0')}/${(dVenta.getMonth() + 1).toString().padStart(2, '0')}/${dVenta.getFullYear()}`
+    const obsLimpia = String(observaciones || '').replace(/'/g, "''").substring(0, 250)
+
+    const qryInsertNota = `
+      INSERT INTO Notas (
+        Serie, FolioNota, Caja, FolioVenta, Fecha, SubTotal, ImporteIVA, TotalNota,
+        ClienteID, TC, TipoVenta, Estatus, UserID, CajeroID, VendedorID, FechaVenta,
+        UUID, UUIDOrigen, observaciones, formaDePago, UsoCFDI
+      ) VALUES (
+        '${serie}', ${Number(folioNota) || 0}, '${caja || ''}', ${Number(folioVenta) || 0},
+        '${fNotaStr}', ${Number(subTotal) || 0}, ${Number(importeIva) || 0}, ${Number(totalNota) || 0},
+        '${clienteId || ''}', ${Number(tc) || 1}, '${tipoVenta || 'CO'}', '1',
+        '${userId || 'ADMIN'}', '${cajeroId || ''}', '${vendedorId || ''}', '${fVentaStr}',
+        '${uuid || ''}', '${uuidOrigen || ''}', '${obsLimpia}',
+        '${formaDePago || '01'}', '${usoCfdi || 'G02'}'
+      )
+    `
+    await connection.execute(qryInsertNota)
+
+    // Obtener ID generado
+    const rowId = await connection.query(`SELECT TOP 1 ID FROM Notas WHERE Serie = '${serie}' AND FolioNota = ${Number(folioNota)} ORDER BY ID DESC`)
+    const idNota = (rowId && rowId.length > 0) ? rowId[0].ID : null
+
+    if (idNota && Array.isArray(items) && items.length > 0) {
+      for (const it of items) {
+        const parte = String(it.parte || it.NoIdentificacion || it.noIdentificacion || '').replace(/'/g, "''")
+        const desc = String(it.descripcion || it.Descripcion || '').replace(/'/g, "''").substring(0, 200)
+        const cant = Number(it.cantidad || it.Cantidad) || 0
+        const precio = Number(it.precio || it.ValorUnitario || it.precioBruto) || 0
+        const porDes = Number(it.porDes || it.DescuentoPorc) || 0
+        const impDes = Number(it.impDes || it.Descuento) || 0
+        const importe = Number(it.importe || it.totalNeto || it.Importe) || 0
+        const porIva = Number(it.porIva || it.porIVA || it.tasaIva) || 0
+        const impIva = Number(it.impIva || it.impIVA) || 0
+        const cveSat = String(it.cveSat || it.ClaveProdServ || '').replace(/'/g, "''")
+        const tipoIva = String(it.tipoIva || (porIva > 0 ? 'C' : 'B')).replace(/'/g, "''")
+
+        const qryDetalle = `
+          INSERT INTO NotasDetalle (
+            IDNota, Parte, descripcion, Cantidad, Precio, PorDes, ImpDes, Importe,
+            PorIVA, ImpIVA, comision, cveSat, tipoIva
+          ) VALUES (
+            ${idNota}, '${parte}', '${desc}', ${cant}, ${precio}, ${porDes}, ${impDes}, ${importe},
+            ${porIva}, ${impIva}, 0, '${cveSat}', '${tipoIva}'
+          )
+        `
+        await connection.execute(qryDetalle).catch(eDet => console.error("Error insertando en NotasDetalle:", eDet.message))
+      }
+    }
+    console.log(`[Access MDB] Nota de Crédito ${serie}${folioNota} guardada con ID ${idNota}`)
+  } catch (errMdb) {
+    console.error("[Access MDB] Error guardando Nota de Crédito en MDB:", errMdb)
+  }
+}
+
 
 
 const getJsonFromXml = async (xml) => {
@@ -1432,13 +1517,18 @@ app.post("/facturar", mdi, async (req, res) => {
 
     if (response && response.result && (response.result.retcode == 1 || response.result.retcode == 0)) {
       const xmlTimbrado = response.result.data || ''
-      const observaciones = (req.body.data && (req.body.data.comentarios || req.body.data.Observaciones)) ||
+      const observaciones = (req.body.data && req.body.data.datos_factura && req.body.data.datos_factura.comentarios) ||
+                            (req.body.datos_factura && req.body.datos_factura.comentarios) ||
+                            (req.body.data && (req.body.data.comentarios || req.body.data.Observaciones)) ||
                             (req.body.factura && (req.body.factura.observaciones || req.body.factura.comentarios)) || ''
+      const noCliente = (req.body.data && req.body.data.cliente && req.body.data.cliente.id) ||
+                        (req.body.cliente && req.body.cliente.id) ||
+                        (req.body.factura && req.body.factura.numero) || ''
       
       // 1. Generar PDF propio con xml2pdf.js
       if (xmlTimbrado) {
         try {
-          const pdfBase64Propio = await generatePdfFromXml({ xml: xmlTimbrado, observaciones })
+          const pdfBase64Propio = await generatePdfFromXml({ xml: xmlTimbrado, observaciones, noCliente })
           response.result.pdfBase64 = pdfBase64Propio
           if (response.result.result) {
             response.result.result.pdfBase64 = pdfBase64Propio
@@ -1448,16 +1538,52 @@ app.post("/facturar", mdi, async (req, res) => {
         }
 
         // 2. Guardar en BD facturacion
+        const esNotaCredito = (json.datos_factura && (json.datos_factura.TipoDeComprobante === 'E' || json.datos_factura.tipoDeComprobante === 'E')) ||
+                              (json.datos_factura && String(json.datos_factura.Serie).toUpperCase().startsWith('NC')) ||
+                              (req.body.factura && String(req.body.factura.tipo).toUpperCase() === 'NC')
+
         try {
           await guardarFacturaEnDb({
             xml: xmlTimbrado,
             observaciones,
-            noCliente: req.body.factura?.numero || '',
+            noCliente,
             cuentaPago: req.body.factura?.numCtaPago || req.body.data?.numCtaPago || '',
-            uuidRelacionado: req.body.factura?.uuidRel || ''
+            tipoFacturaCustom: esNotaCredito ? 'Nota de Crédito' : '',
+            uuidRelacionado: req.body.factura?.uuidRel || req.body.data?.datos_factura?.CfdiRelacionados?.CfdiRelacionado?.UUID || ''
           })
         } catch (dbErr) {
           console.error("Error al guardar factura en BD facturacion:", dbErr)
+        }
+
+        // 3. Si es Nota de Crédito, guardar en Access MDB (novartis.mdb) en Notas y NotasDetalle
+        if (esNotaCredito) {
+          try {
+            await guardarNotaEnAccess({
+              serie: json.datos_factura?.Serie || req.body.factura?.serie || 'NC',
+              folioNota: json.datos_factura?.Folio || req.body.factura?.folioNota || req.body.factura?.factura || 0,
+              caja: req.body.factura?.caja || '',
+              folioVenta: req.body.factura?.folioVenta || 0,
+              fecha: req.body.factura?.fecha || new Date(),
+              subTotal: json.datos_factura?.SubTotal || req.body.factura?.subTotal || 0,
+              importeIva: json.datos_factura?.Impuestos?.TotalImpuestosTrasladados || req.body.factura?.iva || 0,
+              totalNota: json.datos_factura?.Total || req.body.factura?.total || 0,
+              clienteId: noCliente || req.body.factura?.numero || '',
+              tc: json.datos_factura?.TipoCambio || 1,
+              tipoVenta: req.body.factura?.tipoVenta || 'CO',
+              userId: req.body.factura?.userId || 'ADMIN',
+              cajeroId: req.body.factura?.cajeroId || '',
+              vendedorId: req.body.factura?.vendedorId || '',
+              fechaVenta: req.body.factura?.fechaVenta || new Date(),
+              uuid: response.result.UUID || '',
+              uuidOrigen: req.body.factura?.uuidRel || req.body.data?.datos_factura?.CfdiRelacionados?.CfdiRelacionado?.UUID || '',
+              observaciones,
+              formaDePago: json.datos_factura?.FormaPago || req.body.factura?.formaPago || '01',
+              usoCfdi: json.cliente?.UsoCFDI || req.body.factura?.usoCfdi || 'G02',
+              items: req.body.factura?.items || req.body.data?.conceptos || []
+            })
+          } catch (accessErr) {
+            console.error("Error al guardar Nota de Crédito en Access MDB:", accessErr)
+          }
         }
       }
 
@@ -1465,17 +1591,24 @@ app.post("/facturar", mdi, async (req, res) => {
       if (req.body.factura.tipo == undefined) {
         req.body.factura.tipo = ' '
       }
-      afectaFactura({
-        params: {
-          mod: "factura",
-          opt: "insert"
-        },
-        data: req.body.factura
-      })
+
+      // Si NO es Nota de Crédito, enviamos afectación a ws.prg
+      const esNotaCreditoCheck = (json.datos_factura && (json.datos_factura.TipoDeComprobante === 'E' || json.datos_factura.tipoDeComprobante === 'E')) ||
+                                 (json.datos_factura && String(json.datos_factura.Serie).toUpperCase().startsWith('NC')) ||
+                                 (req.body.factura && String(req.body.factura.tipo).toUpperCase() === 'NC')
+      if (!esNotaCreditoCheck) {
+        afectaFactura({
+          params: {
+            mod: "factura",
+            opt: "insert"
+          },
+          data: req.body.factura
+        })
+      }
 
       sendEmail({
         serie_folio: `${json.datos_factura.Serie}${json.datos_factura.Folio}`,
-        subject: 'Envío de Factura',
+        subject: esNotaCreditoCheck ? 'Envío de Nota de Crédito' : 'Envío de Factura',
         emailTo: req.body.factura.email,
         cc: '',
         body: '',
@@ -2279,19 +2412,22 @@ app.get('/lee-nota-credito/:serie/:folio', mdi, async (req, res) => {
     // Query
     qry = `
       SELECT n.ID, Format(n.Fecha, 'yyyy-mm-dd') AS Fecha, n.CajeroID, n.VendedorID, n.Caja, n.FolioVenta, Format(n.FechaVenta, 'yyyy-mm-dd') AS FechaVenta,
-        n.SubTotal, n.ImporteIVA, n.TotalNota, n.ClienteID, n.TipoVenta, n.Estatus, n.UUIDOrigen
+        n.SubTotal, n.ImporteIVA, n.TotalNota, n.ClienteID, n.TipoVenta, n.Estatus, n.UUID, n.UUIDOrigen, n.observaciones, n.formaDePago, n.UsoCFDI
       FROM Notas n
       WHERE ( (n.Serie = '${req.params.serie}') AND (n.FolioNota = ${req.params.folio}) )
     `
     result = await connection.query(qry)
     json.response = (result.length > 0) ? 200 : 401
-    json.message = (result.length > 0) ? 'Ok' : 'No se ha enocntrado la Nota de Crédito'
+    json.message = (result.length > 0) ? 'Ok' : 'No se ha encontrado la Nota de Crédito'
     if (result.length > 0) {
       json.data = result[0]
       json.data.FechaFormat = utils.oFecha(json.data.Fecha)
       json.data.FechaVentaFormat = utils.oFecha(json.data.FechaVenta)
-      json.data.comentarios = (`Caja: ${json.data.Caja} | Folio Venta: ${json.data.FolioVenta} | Fecha Venta: ${json.data.FechaVentaFormat} |
-        Cajero: ${json.data.CajeroID} | Vendedor: ${json.data.VendedorID}`).replace(/\s+/gm, ' ')
+      if (!json.data.observaciones) {
+        json.data.observaciones = (`Caja: ${json.data.Caja} | Folio Venta: ${json.data.FolioVenta} | Fecha Venta: ${json.data.FechaVentaFormat} |
+          Cajero: ${json.data.CajeroID} | Vendedor: ${json.data.VendedorID}`).replace(/\s+/gm, ' ')
+      }
+      json.data.comentarios = json.data.observaciones
       json.data.items = await NotaDeCreditoDetalle(json.data.ID)
     } else {
       json.data = {}
@@ -2309,6 +2445,7 @@ app.get('/lee-nota-credito/:serie/:folio', mdi, async (req, res) => {
     res.json(json)
   }
 }) // /lee-nota-credito/:serie/:folio
+
 
 
 app.use('/traspasos', traspasosRouter)
