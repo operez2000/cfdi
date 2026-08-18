@@ -1,0 +1,78 @@
+{
+    "id_transaccion": 0,
+    "cliente": {
+        "id": "021761",
+        "UsoCFDI": "D01",
+        "nombre": "ARTURO AGUILAR ARREOLA",
+        "rfc": "AUAA5904189G8",
+        "DomicilioFiscalReceptor": "22117",
+        "RegimenFiscalReceptor": "605",
+        "correo": "aguilart.18@hotmail.com"
+    },
+    "datos_factura": {
+        "Serie": "A",
+        "Folio": "00133463",
+        "Version": "4.0",
+        "cfdiVersion": "4.0",
+        "FormaPago": "28",
+        "TipoCambio": "1",
+        "MetodoPago": "PUE",
+        "RegimenFiscal": "601",
+        "LugarExpedicion": "22010 ",
+        "Moneda": "MXN",
+        "TipoDeComprobante": "I",
+        "tipoDeComprobante": "0",
+        "Exportacion": "01",
+        "CondicionesDePago": "Contado",
+        "no_sucursal": "0",
+        "SubTotal": "1625.18",
+        "Total": "1625.18",
+        "Impuestos": {
+            "TotalImpuestosTrasladados": "0.00",
+            "Traslados": [
+                {
+                    "Base": "1625.18",
+                    "Impuesto": "002",
+                    "TipoFactor": "Tasa",
+                    "TasaOCuota": "0.000000",
+                    "Importe": "0.00"
+                }
+            ]
+        },
+        "comentarios": "Caja-Folio: 02-44839 | Fecha Venta: 31-Jul-2026 | Cajero: 006 | Vendedor: 012 | Cuenta 2705"
+    },
+    "conceptos": [
+        {
+            "Cantidad": "1",
+            "ClaveProdServ": "51121725",
+            "ClaveUnidad": "H87",
+            "Descripcion": "BICONCOR 5/6.25MG C/30 GRAG / Lote M54996 Cad 30-Jun-27",
+            "Importe": "1625.18",
+            "NoIdentificacion": "6607",
+            "noIdentificacion": "6607",
+            "Unidad": "Pza",
+            "ValorUnitario": "1625.179600",
+            "subTotal": "1625.18",
+            "total": "1625.18",
+            "ObjetoImp": "02",
+            "Numero_CuentaPredial": "",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "1625.18",
+                        "Impuesto": "002",
+                        "TipoFactor": "Tasa",
+                        "TasaOCuota": "0.000000",
+                        "Importe": "0.00"
+                    }
+                ]
+            }
+        }
+    ],
+    "cuenta": "FGU811107SV0",
+    "user": "administrador",
+    "password": "$9KVnl81",
+    "getPdf": true,
+    "enviarFactura": true,
+    "method": "nueva_factura"
+}

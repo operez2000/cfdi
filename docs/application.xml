@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Acuse Fecha="2026-06-22T21:26:15.6716572" RfcEmisor="FGU811107SV0" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" xmlns:ns3="http://cancelacfd.sat.gob.mx">
+    <ns3:Folios>
+        <ns3:UUID>B9343314-AC41-43B9-8891-AF4E5B7D6E4B</ns3:UUID>
+        <ns3:EstatusUUID>201</ns3:EstatusUUID>
+    </ns3:Folios>
+    <ns2:Signature Id="SelloSAT">
+        <ns2:SignedInfo>
+            <ns2:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+            <ns2:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#hmac-sha512"/>
+            <ns2:Reference URI="">
+                <ns2:Transforms>
+                    <ns2:Transform Algorithm="http://www.w3.org/TR/1999/REC-xpath-19991116">
+                        <ns2:XPath>not(ancestor-or-self::*[local-name()='Signature'])</ns2:XPath>
+                    </ns2:Transform>
+                </ns2:Transforms>
+                <ns2:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha512"/>
+                <ns2:DigestValue>B2rZdu1QhIpLoebldZZzb7YQVb0b+nRdNLV+Cq6Uc6DcpSd/jyLVGYwcWg9Q3yTdAckPUKsD0QGYgmlgUEBVQQ==</ns2:DigestValue>
+            </ns2:Reference>
+        </ns2:SignedInfo>
+        <ns2:SignatureValue>PEj5jCSveAng4xPdcnjKZY2AnWyvcVFICwhL7PZukWVGI7FUypIoXzJ4SbASfe3sf+xvilA5FMN8Da2BHe20Tw==</ns2:SignatureValue>
+        <ns2:KeyInfo>
+            <ns2:KeyName>00001088888800000038</ns2:KeyName>
+            <ns2:KeyValue>
+                <ns2:RSAKeyValue>
+                    <ns2:Modulus>qRWzHPVtRHYyDQTnnpPYtOBmb5Raaddb4XZH1DNlIhuhUrh7RKwfvcwh05wEu1lgUnej9BwsLd4u1SeYyawmaF2zIhzssP19yhOQUN9dRBeSg51m8XqCiodxoGilgNm7eDdZQ7j0ZYV0UOkMgGfomw/3L0z/O1gTbRDSg8gwM4BMSSu+iSMTcIKqn0oh4C+u77vKRui9NX6WZW2uRnmvEnDybxxtxTQVR3VlM4tdXeYTfkr5WUUrtaFyFW/B7zs9Mb+FO5Cr/TbWmu+xJP6LlN4UbZdPVe7+7rrv/hwzeYe2LeFT0Jtmvuy1NfR/uUZa35+UMou+RbsDOTm4vfJyuw==</ns2:Modulus>
+                    <ns2:Exponent>AQAB</ns2:Exponent>
+                </ns2:RSAKeyValue>
+            </ns2:KeyValue>
+        </ns2:KeyInfo>
+    </ns2:Signature>
+</Acuse>

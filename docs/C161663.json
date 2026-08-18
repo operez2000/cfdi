@@ -1,0 +1,91 @@
+{
+  "cliente": {
+    "DomicilioFiscalReceptor": "22010",
+    "id": -1,
+    "Nombre": "PÚBLICO EN GENERAL",
+    "RegimenFiscalReceptor": "616",
+    "Rfc": "XAXX010101000",
+    "UsoCFDI": "S01"
+  },
+  "conceptos": [
+    {
+      "Cantidad": "1",
+      "ClaveProdServ": "01010101",
+      "ClaveUnidad": "ACT",
+      "Descripcion": "Venta",
+      "Importe": "912.72",
+      "Impuestos": {
+        "Traslados": [
+          {
+            "Base": "789.68",
+            "Importe": "63.17",
+            "Impuesto": "002",
+            "TasaOCuota": "0.08",
+            "TipoFactor": "Tasa"
+          },
+          {
+            "Base": "123.04",
+            "Importe": "0.00",
+            "Impuesto": "002",
+            "TasaOCuota": "0.00",
+            "TipoFactor": "Tasa"
+          }
+        ]
+      },
+      "noIdentificacion": "01",
+      "NoIdentificacion": "01",
+      "ObjetoImp": "02",
+      "ValorUnitario": "912.72"
+    }
+  ],
+  "cuenta": "gusher",
+  "datos_factura": {
+    "cfdiVersion": "4.0",
+    "comentarios": "Factura Global del 09/Mar/2025",
+    "Exportacion": "01",
+    "Folio": "00161663",
+    "FormaPago": "01",
+    "Impuestos": {
+      "TotalImpuestosTrasladados": "63.17",
+      "Traslados": [
+        {
+          "Base": "123.04",
+          "Importe": "0.00",
+          "Impuesto": "002",
+          "TasaOCuota": "0.00",
+          "TipoFactor": "Tasa"
+        },
+        {
+          "Base": "789.68",
+          "Importe": "63.17",
+          "Impuesto": "002",
+          "TasaOCuota": "0.08",
+          "TipoFactor": "Tasa"
+        }
+      ]
+    },
+    "InformacionGlobal": {
+      "Año": "2025",
+      "Meses": "03",
+      "Periodicidad": "01"
+    },
+    "LugarExpedicion": "22010",
+    "MetodoPago": "PUE",
+    "Moneda": "MXN",
+    "no_sucursal": "0",
+    "RegimenFiscal": "601",
+    "Serie": "C",
+    "SubTotal": "912.72",
+    "TipoCambio": "1",
+    "TipoDeComprobante": "I",
+    "tipoDeComprobante": "0",
+    "Total": "975.89",
+    "Version": "4.0"
+  },
+  "enviarFactura": false,
+  "getPdf": true,
+  "id_transaccion": 0,
+  "method": "nueva_factura",
+  "password": "$9KVnl81",
+  "user": "administrador"
+}

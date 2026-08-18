@@ -1,0 +1,76 @@
+
+
+FARMACIA GUSHER
+RFC: FGU811107SV0
+601 - General de Ley Personas Morales
+Av Paseo de los Heroes 9550 27 B, Zona Urbana Rio Tijuana
+Tijuana, Baja California México C.P. 22010
+Teléfono: 664 684 02 35 Y 664 684 02 29   
+FACTURA # B00076270
+*Tipo de comprobante: I - Ingreso
+Fecha y hora de emisión:
+04/09/2025 14:05:55
+No. de Serie del Certificado:
+00001000000710965633
+Versión 4.0
+RECEPTOR
+Número de cliente: 310783Uso CFDI: G03 - Gastos en general
+Nombre: MARIO ALBERTO ALDRETE FEMATMoneda: MXN - Peso Mexicano
+R.F.C.: AEFM801123TW0Tipo de Cambio: 1.0000
+Régimen: 612Dirección: 21270
+CantidadCodigoClave
+Unidad
+Clave
+Producto
+Servicio
+ConceptoPrecio
+Unitario
+SubTotal
+Base
+ImpuestoTotal
+418957H87
+Pza
+51141634LAPRINZ 15MG C/20 TAB ARIPIPR / Lote
+L25F0320 Cad 30-Jun-27
+596.362,385.44002-IVA
+0.00%
+0.00
+2,385.44
+Desglose de Impuestos Trasladados: 
+Impuesto = 002-IVA Tasa = 0.000000 Tipo Factor = Tasa Importe = 0.00
+Ventas tasa Exento$ 0.00
+Ventas tasa 0%$ 2,385.44
+Ventas tasa 8%$ 0.00
+SubTotal$ 2,385.44
+IVA Trasladado$ 0.00
+TOTAL$ 2,385.44
+*Método de pago: PUE - Pago en una sola exhibición
+*Forma de Pago: 28 - Tarjeta de débito
+Contado
+IMPORTE CON LETRA: 
+(DOS MIL TRESCIENTOS OCHENTA Y CINCO PESOS 44/100 MXN)
+Folio Fiscal:
+90CE1911-C0A9-4835-B9D2-2FC92F1BEDE1
+Fecha y hora de certificación:
+04/09/2025 15:05:55
+Lugar de expedición:
+22010 - BCN
+Observaciones = Caja-Folio: 03-39227 | Fecha Venta: 04-Sep-2025 | Cajero: 001 | Vendedor: 022 | Cuenta 4316
+Sello Digital del CFDI:
+A4gHuIvYMXXbGxVBJpyoeEk9ZWuKko1c7edL0oI124i9Vwqv/TzPcvnimXVKfh9F/rQY4qCliZLLwY5OTtEbXWa5KhDp+/1NMCaRtvwpqVa4S5f5E1XDYOE52JT6Y/MNcaE
+mEwvOzABKaRWbc1LpxSiGDA1SvLST+QEW9kwL8gFi+mTAmRtR5mbdTk/9D/vDmGTEyNEBh+Ao5QhqWoaPhHR9iiD2YVwCISS9WDjkQfuUkIXNE0KRkvXUMQpK03O
+ikdIl44BHKrhhaxn/m/EOn7SedVZMqP9Fodj6MvYYULSZJbs79mI8TgH0ZelPX2Bo29v2I+yuMVb5931Vmt3Ueg==
+Sello del SAT:
+N6zY5BlazPymHnossJIIaRiF80PVs1tqWSorKRTn6Ygll8ulL0ykGxlDns0avlb2BpJnJ78Ko54AimG+4nWqWfYln1lvx+Bdlcfuiq9jE2/nfhzRVPDls3kUpfN2OS+21Qysn7duId3n2
+eMwRa7+O6bHJfzxWfKX/s7tQ4R/mzTlGLSLehMCHuuGMmiHl+AXxqyN7siD8xqpmVkHIBWao3whpqMvhDeI1Ia0Jd76a+aLm2VN/iKm0I3D127xWmWefStA+S7df+2/JFjM
+GoxcRhmb8fF7Z+wWImLICPr8t0pZ+7Z3E/RE0qALJrptvywVGvtJ6NZb7mEFZoQ76euAMw==
+Cadena Original del complemento de certificación digital del SAT:
+||1.1|90CE1911-C0A9-4835-B9D2-2FC92F1BEDE1|2025-09-04T15:05:55|PPD101129EA3|A4gHuIvYMXXbGxVBJpyoeEk9ZWuKko1c7edL0oI124i9Vwqv/TzPcvnimXVKfh
+9F/rQY4qCliZLLwY5OTtEbXWa5KhDp+/1NMCaRtvwpqVa4S5f5E1XDYOE52JT6Y/MNcaEmEwvOzABKaRWbc1LpxSiGDA1SvLST+QEW9kwL8gFi+mTAmRtR5mbdTk/9
+D/vDmGTEyNEBh+Ao5QhqWoaPhHR9iiD2YVwCISS9WDjkQfuUkIXNE0KRkvXUMQpK03OikdIl44BHKrhhaxn/m/EOn7SedVZMqP9Fodj6MvYYULSZJbs79mI8TgH0ZelPX
+2Bo29v2I+yuMVb5931Vmt3Ueg==|00001000000705928441||
+No. de Serie del Certificado del SAT:
+00001000000705928441
+*Este Documento es una Representación Impresa de un CFDI
+Creado por www.itimbre.com
+Página 1 de 1

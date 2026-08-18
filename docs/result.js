@@ -1,0 +1,85 @@
+const result = {
+    "cfdi:Comprobante": {
+      "xmlns:cfdi": "http://www.sat.gob.mx/cfd/4",
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "Certificado": "MIIGDTCCA/WgAwIBAgIUMDAwMDEwMDAwMDA3MTA5NjU2MzMwDQYJKoZIhvcNAQELBQAwggGVMTUwMwYDVQQDDCxBQyBERUwgU0VSVklDSU8gREUgQURNSU5JU1RSQUNJT04gVFJJQlVUQVJJQTEuMCwGA1UECgwlU0VSVklDSU8gREUgQURNSU5JU1RSQUNJT04gVFJJQlVUQVJJQTEaMBgGA1UECwwRU0FULUlFUyBBdXRob3JpdHkxMjAwBgkqhkiG9w0BCQEWI3NlcnZpY2lvc2FsY29udHJpYnV5ZW50ZUBzYXQuZ29iLm14MSYwJAYDVQQJDB1Bdi4gSGlkYWxnbyA3NywgQ29sLiBHdWVycmVybzEOMAwGA1UEEQwFMDYzMDAxCzAJBgNVBAYTAk1YMQ0wCwYDVQQIDARDRE1YMRMwEQYDVQQHDApDVUFVSFRFTU9DMRUwEwYDVQQtEwxTQVQ5NzA3MDFOTjMxXDBaBgkqhkiG9w0BCQITTXJlc3BvbnNhYmxlOiBBRE1JTklTVFJBQ0lPTiBDRU5UUkFMIERFIFNFUlZJQ0lPUyBUUklCVVRBUklPUyBBTCBDT05UUklCVVlFTlRFMB4XDTI0MTAyNDE2NDUzMFoXDTI4MTAyNDE2NDUzMFowgcoxITAfBgNVBAMTGEZBUk1BQ0lBIEdVU0hFUiBTQSBERSBDVjEhMB8GA1UEKRMYRkFSTUFDSUEgR1VTSEVSIFNBIERFIENWMSEwHwYDVQQKExhGQVJNQUNJQSBHVVNIRVIgU0EgREUgQ1YxJTAjBgNVBC0THEZHVTgxMTEwN1NWMCAvIENPREwzODA0MDJIWTMxHjAcBgNVBAUTFSAvIENPREwzODA0MDJITU5OWk4wMjEYMBYGA1UECxMPRkFSTUFDSUEgR1VTSEVSMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArh8amOCdYvSLieUHR/2m8OpMrNATB+rRjheiyDZIDixB7DN01P0RGMj3ZKapOdWxNLYnJNCwBzwy4OrfRbpnI2g+skvxHVLKmsEdIRXIJJnS5HTs7W9rxToBvdFKSpkLJG/7keGs29Mo+CEcjGzckwYLJ+D8wd2dceLXx02c/DFY+nnvFZInWaUXy2w3yBa9eLAJ5ZIdB0bKdRb3VkBem9EXo+2iaLxgaJ6jbh3RpEJsscBLr0R84J+odYLepdRrpK+eVzgMohztVDYWsFg7OXAYtXBMiYHV2+nHJAqr/UCipcpWTexYx+I5kKeliP7Uzgy2Sw4j/YMztgYatGlSowIDAQABox0wGzAMBgNVHRMBAf8EAjAAMAsGA1UdDwQEAwIGwDANBgkqhkiG9w0BAQsFAAOCAgEAQS9zo0TD9zf1SDDwLq624xCmogiAh8d3iSvXBwwBezI5VXnbgtS0/9H1QbeZYzGzvmB4+CTsRkvY59vIXtVFTq2bwV+Il2bxl/Uli3ODdh8/YRbeieJDGwLQsRu+fVS3xVREqgKn3WQNKY9d13HM1L4Gk7X5629QWrahDP2Kpuvd0YrYbGAq8WcrgtdK+FPfTLec3C5JFPLKCELh8IzpVj05+AvaNgyLfxcNSxG6C4Ag1amLSiEo3GTC09Pq5rWrNFEMHCZ+VT4+7mRWT49oOcetapEdd/GazaxDYjvFeXPCpVtfFyzRzgjDx4/YdLKd8GB+mfVQeuTnBKpAKt7QrljFkmW4nQHlBFtEm1K/Uduk53urT7VQMuv5TFJJSq+9yZmwnYYtCYC4nwi/CUU12BF/+/WumZK/sTT4RnQl+J1kH7Xsf78SIFkO0FUb1ilJEC39wi34Fwxq/Dth2BO+NJ5WM9bIWH2K2HbhaxOext4epOzx0zld8VlOi6QnipI60bSy4Vt6kgJs0A0C8irtpselW1Auk6j3ePUxPdTjmLV5onjrEtv7yMI0PbzoJ9Rwqg4vOgw1J1TP88v2O6jHs2FqHufwio2LR/Hd2hAVrAyQr7mAORZZEe3TkZg7Xue1IQu6aAXUBW1tVBNrkYyzAwDMJIO2Wi9sNn0CviA6+JE=",
+      "CondicionesDePago": "Contado",
+      "Exportacion": "01",
+      "Fecha": "2025-09-04T14:05:55",
+      "Folio": "00076270",
+      "FormaPago": "28",
+      "LugarExpedicion": "22010",
+      "MetodoPago": "PUE",
+      "Moneda": "MXN",
+      "NoCertificado": "00001000000710965633",
+      "Sello": "A4gHuIvYMXXbGxVBJpyoeEk9ZWuKko1c7edL0oI124i9Vwqv/TzPcvnimXVKfh9F/rQY4qCliZLLwY5OTtEbXWa5KhDp+/1NMCaRtvwpqVa4S5f5E1XDYOE52JT6Y/MNcaEmEwvOzABKaRWbc1LpxSiGDA1SvLST+QEW9kwL8gFi+mTAmRtR5mbdTk/9D/vDmGTEyNEBh+Ao5QhqWoaPhHR9iiD2YVwCISS9WDjkQfuUkIXNE0KRkvXUMQpK03OikdIl44BHKrhhaxn/m/EOn7SedVZMqP9Fodj6MvYYULSZJbs79mI8TgH0ZelPX2Bo29v2I+yuMVb5931Vmt3Ueg==",
+      "Serie": "B",
+      "SubTotal": "2385.44",
+      "TipoCambio": "1",
+      "TipoDeComprobante": "I",
+      "Total": "2385.44",
+      "Version": "4.0",
+      "xsi:schemaLocation": "http://www.sat.gob.mx/cfd/4 http://www.sat.gob.mx/sitio_internet/cfd/4/cfdv40.xsd",
+      "cfdi:Emisor": {
+        "Nombre": "FARMACIA GUSHER",
+        "RegimenFiscal": "601",
+        "Rfc": "FGU811107SV0"
+      },
+      "cfdi:Receptor": {
+        "DomicilioFiscalReceptor": "21270",
+        "Nombre": "MARIO ALBERTO ALDRETE FEMAT",
+        "RegimenFiscalReceptor": "612",
+        "Rfc": "AEFM801123TW0",
+        "UsoCFDI": "G03"
+      },
+      "cfdi:Conceptos": {
+        "cfdi:Concepto": {
+          "Cantidad": "4",
+          "ClaveProdServ": "51141634",
+          "ClaveUnidad": "H87",
+          "Descripcion": "LAPRINZ 15MG C/20 TAB ARIPIPR / Lote L25F0320 Cad 30-Jun-27",
+          "Importe": "2385.44",
+          "NoIdentificacion": "18957",
+          "ObjetoImp": "02",
+          "Unidad": "Pza",
+          "ValorUnitario": "596.360000",
+          "cfdi:Impuestos": {
+            "cfdi:Traslados": {
+              "cfdi:Traslado": {
+                "Base": "2385.44",
+                "Importe": "0.00",
+                "Impuesto": "002",
+                "TasaOCuota": "0.000000",
+                "TipoFactor": "Tasa"
+              }
+            }
+          }
+        }
+      },
+      "cfdi:Impuestos": {
+        "TotalImpuestosTrasladados": "0.00",
+        "cfdi:Traslados": {
+          "cfdi:Traslado": {
+            "Base": "2385.44",
+            "Importe": "0.00",
+            "Impuesto": "002",
+            "TasaOCuota": "0.000000",
+            "TipoFactor": "Tasa"
+          }
+        }
+      },
+      "cfdi:Complemento": {
+        "tfd:TimbreFiscalDigital": {
+          "FechaTimbrado": "2025-09-04T15:05:55",
+          "NoCertificadoSAT": "00001000000705928441",
+          "RfcProvCertif": "PPD101129EA3",
+          "SelloCFD": "A4gHuIvYMXXbGxVBJpyoeEk9ZWuKko1c7edL0oI124i9Vwqv/TzPcvnimXVKfh9F/rQY4qCliZLLwY5OTtEbXWa5KhDp+/1NMCaRtvwpqVa4S5f5E1XDYOE52JT6Y/MNcaEmEwvOzABKaRWbc1LpxSiGDA1SvLST+QEW9kwL8gFi+mTAmRtR5mbdTk/9D/vDmGTEyNEBh+Ao5QhqWoaPhHR9iiD2YVwCISS9WDjkQfuUkIXNE0KRkvXUMQpK03OikdIl44BHKrhhaxn/m/EOn7SedVZMqP9Fodj6MvYYULSZJbs79mI8TgH0ZelPX2Bo29v2I+yuMVb5931Vmt3Ueg==",
+          "SelloSAT": "N6zY5BlazPymHnossJIIaRiF80PVs1tqWSorKRTn6Ygll8ulL0ykGxlDns0avlb2BpJnJ78Ko54AimG+4nWqWfYln1lvx+Bdlcfuiq9jE2/nfhzRVPDls3kUpfN2OS+21Qysn7duId3n2eMwRa7+O6bHJfzxWfKX/s7tQ4R/mzTlGLSLehMCHuuGMmiHl+AXxqyN7siD8xqpmVkHIBWao3whpqMvhDeI1Ia0Jd76a+aLm2VN/iKm0I3D127xWmWefStA+S7df+2/JFjMGoxcRhmb8fF7Z+wWImLICPr8t0pZ+7Z3E/RE0qALJrptvywVGvtJ6NZb7mEFZoQ76euAMw==",
+          "UUID": "90CE1911-C0A9-4835-B9D2-2FC92F1BEDE1",
+          "Version": "1.1",
+          "xsi:schemaLocation": "http://www.sat.gob.mx/TimbreFiscalDigital http://www.sat.gob.mx/sitio_internet/cfd/TimbreFiscalDigital/TimbreFiscalDigitalv11.xsd",
+          "xmlns:tfd": "http://www.sat.gob.mx/TimbreFiscalDigital"
+        }
+      }
+    }
+  }

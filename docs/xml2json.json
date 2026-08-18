@@ -1,0 +1,85 @@
+{
+    "cfdi:Comprobante": {
+      "xmlns:cfdi": "http://www.sat.gob.mx/cfd/4",
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "Certificado": "MIIGDTCCA/WgAwIBAgIUMDAwMDEwMDAwMDA3MTA5NjU2MzMwDQYJKoZI...",
+      "CondicionesDePago": "Contado",
+      "Exportacion": "01",
+      "Fecha": "2025-09-04T14:05:55",
+      "Folio": "00076270",
+      "FormaPago": "28",
+      "LugarExpedicion": "22010",
+      "MetodoPago": "PUE",
+      "Moneda": "MXN",
+      "NoCertificado": "00001000000710965633",
+      "Sello": "A4gHuIvYMXXbGxVBJpyoeEk9ZWuKko1c7edL0oI124i9Vwqv...",
+      "Serie": "B",
+      "SubTotal": "2385.44",
+      "TipoCambio": "1",
+      "TipoDeComprobante": "I",
+      "Total": "2385.44",
+      "Version": "4.0",
+      "xsi:schemaLocation": "http://www.sat.gob.mx/cfd/4 http://www.sat.gob.mx/sitio_internet/cfd/4/cfdv40.xsd",
+      "cfdi:Emisor": {
+        "Nombre": "FARMACIA GUSHER",
+        "RegimenFiscal": "601",
+        "Rfc": "FGU811107SV0"
+      },
+      "cfdi:Receptor": {
+        "DomicilioFiscalReceptor": "21270",
+        "Nombre": "MARIO ALBERTO ALDRETE FEMAT",
+        "RegimenFiscalReceptor": "612",
+        "Rfc": "AEFM801123TW0",
+        "UsoCFDI": "G03"
+      },
+      "cfdi:Conceptos": {
+        "cfdi:Concepto": {
+          "Cantidad": "4",
+          "ClaveProdServ": "51141634",
+          "ClaveUnidad": "H87",
+          "Descripcion": "LAPRINZ 15MG C/20 TAB ARIPIPR / Lote L25F0320 Cad 30-Jun-27",
+          "Importe": "2385.44",
+          "NoIdentificacion": "18957",
+          "ObjetoImp": "02",
+          "Unidad": "Pza",
+          "ValorUnitario": "596.360000",
+          "cfdi:Impuestos": {
+            "cfdi:Traslados": {
+              "cfdi:Traslado": {
+                "Base": "2385.44",
+                "Importe": "0.00",
+                "Impuesto": "002",
+                "TasaOCuota": "0.000000",
+                "TipoFactor": "Tasa"
+              }
+            }
+          }
+        }
+      },
+      "cfdi:Impuestos": {
+        "TotalImpuestosTrasladados": "0.00",
+        "cfdi:Traslados": {
+          "cfdi:Traslado": {
+            "Base": "2385.44",
+            "Importe": "0.00",
+            "Impuesto": "002",
+            "TasaOCuota": "0.000000",
+            "TipoFactor": "Tasa"
+          }
+        }
+      },
+      "cfdi:Complemento": {
+        "tfd:TimbreFiscalDigital": {
+          "FechaTimbrado": "2025-09-04T15:05:55",
+          "NoCertificadoSAT": "00001000000705928441",
+          "RfcProvCertif": "PPD101129EA3",
+          "SelloCFD": "A4gHuIvYMXXbGxVBJpyoeEk9ZWuKko1c7edL0oI124i9Vwqv...",
+          "SelloSAT": "N6zY5BlazPymHnossJIIaRiF80PVs1tqWSorKRTn6Ygll8ul...",
+          "UUID": "90CE1911-C0A9-4835-B9D2-2FC92F1BEDE1",
+          "Version": "1.1",
+          "xsi:schemaLocation": "http://www.sat.gob.mx/TimbreFiscalDigital http://www.sat.gob.mx/sitio_internet/cfd/TimbreFiscalDigital/TimbreFiscalDigitalv11.xsd",
+          "xmlns:tfd": "http://www.sat.gob.mx/TimbreFiscalDigital"
+        }
+      }
+    }
+  }

@@ -1,0 +1,17 @@
+{
+    "dataPac": {
+        "uuid": "391D1095-3059-488A-95EE-AE56FA32B440",
+        "Motivo": "02"
+    },
+    "dataFact": {
+        "factura": "00174537",
+        "facRel": "",
+        "motivoCanc": "02",
+        "motivo": "02 - Comprobante emitido con errores sin relación",
+        "uuidRel": "",
+        "usuario": "BLANCA",
+        "folio": ""
+    },
+    "serie": "C",
+    "folio": "00174537"
+}

@@ -2259,12 +2259,14 @@ app.post("/timbra-global", async (req, res) => {
     fs.writeFileSync('global.err', errorDescrip)
     console.error('response', response)
   } finally {
-    res.json( response )
     if (response.result && (response.result.retcode == 1 || response.result.retcode == 0)) { // Todo bien, se timbró la factura
       const xmlTimbrado = response.result.data || ''
+      const observaciones = (req.body.estructura && req.body.estructura.datos_factura && req.body.estructura.datos_factura.comentarios) ||
+                            (req.body.datos_factura && req.body.datos_factura.comentarios) ||
+                            'Factura Global'
       if (xmlTimbrado) {
         try {
-          const pdfBase64Propio = await generatePdfFromXml({ xml: xmlTimbrado, observaciones: 'Factura Global' })
+          const pdfBase64Propio = await generatePdfFromXml({ xml: xmlTimbrado, observaciones })
           response.result.pdfBase64 = pdfBase64Propio
           if (response.result.result) {
             response.result.result.pdfBase64 = pdfBase64Propio
@@ -2276,7 +2278,7 @@ app.post("/timbra-global", async (req, res) => {
         try {
           await guardarFacturaEnDb({
             xml: xmlTimbrado,
-            observaciones: 'Factura Global',
+            observaciones,
             noCliente: '000000',
             tipoFacturaCustom: 'Global'
           })
@@ -2317,6 +2319,7 @@ app.post("/timbra-global", async (req, res) => {
         data
       });
     }
+    res.json( response )
   } // finally
 
 }) // /timbra-global

@@ -1,0 +1,261 @@
+# Plan de Migración: PDF Propio + BD Facturación
+
+## Contexto
+
+Actualmente el sistema de facturación utiliza el servicio **iTimbre** para timbrar CFDIs. El PDF que se muestra proviene de `pdfBase64` en la respuesta de iTimbre. El objetivo es:
+
+1. **Dejar de usar el PDF de iTimbre** → Generar el PDF propio con [xml2pdf.js](file:///d:/dev/nuxt/gusher_node18/api/utils/xml2pdf.js)
+2. **Crear la BD `facturacion`** en MySQL (mismo servidor que `traspasos`) para almacenar datos de cada CFDI timbrado
+3. **Cambiar Recuperar.vue** para que lea el XML de la BD local (sin llamar a iTimbre) y genere el PDF con `xml2pdf.js`
+4. **Mostrar el PDF en un dialog fullscreen** (patrón ya usado en [Recuperar.vue](file:///d:/dev/nuxt/gusher_node18/pages/Recuperar.vue) con el componente [VerFactura](file:///d:/dev/nuxt/gusher_node18/components/VerFactura.vue))
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> Las credenciales del PAC y correo están en [config.json](file:///d:/dev/nuxt/gusher_node18/config.json). Este plan NO modifica la lógica de timbrado con iTimbre — sólo sustituye el PDF y agrega persistencia en MySQL.
+
+> [!WARNING]
+> Se va a modificar la respuesta del endpoint `/api/facturar` para incluir el `pdfBase64` generado con `xml2pdf.js` en lugar del que devuelve iTimbre. Esto impacta a [facturas.vue](file:///d:/dev/nuxt/gusher_node18/pages/facturas.vue) y [refacturacion.vue](file:///d:/dev/nuxt/gusher_node18/pages/refacturacion.vue).
+
+---
+
+## Open Questions
+
+> [!IMPORTANT]
+> 1. **Cadena XML en la BD**: El XML completo del CFDI timbrado puede ser largo (~3-5KB). ¿Lo almacenamos como `MEDIUMTEXT` o prefieres que se lea del archivo físico que ya guarda `saveCfdiFiles()` en `xml2pdf.js`? (Recomiendo `MEDIUMTEXT` para autonomía total de la BD.)
+>
+> 2. **Campo `no_cliente`**: En [facturas.vue](file:///d:/dev/nuxt/gusher_node18/pages/facturas.vue) el número de cliente viene de `this.cliente.numero`. ¿Este campo siempre existe? ¿Es numérico o alfanumérico?
+>
+> 3. **Campo `cuenta_pago`**: Dices "cuando aplica (tarjeta de débito, tarjeta de crédito, transferencia electrónica)". ¿Este dato viene de `factura.numCtaPago` en facturas.vue y refacturacion.vue? ¿O se extrae del XML?
+>
+> 4. **Tipo de factura**: Mencionas "Normal, Global, Nota de Crédito". ¿"Normal" es cuando el receptor NO es `XAXX010101000`? ¿"Global" es cuando el receptor ES `XAXX010101000`? 
+>
+> 5. **BD separada o misma BD**: Actualmente `traspasos` usa la BD `traspasos` definida en `config.json -> database.local`. ¿La nueva BD `facturacion` usará las mismas credenciales (host, username, password) pero con `dbname: "facturacion"`?
+>
+> 6. **Refacturación – UUID_RELACIONADO**: En refacturacion.vue, ¿el UUID relacionado ya está disponible en alguna variable? Necesito saber de dónde se extrae para guardarlo en la BD.
+>
+> 7. **`observaciones` format**: Confirmo que el formato es `"Caja-Folio: 01-24419 | 26/Mar/2023 | Cajero 003 | Vendedor 020 | Cuenta 8930"`. ¿Este dato se construye en el frontend o ya llega así desde el backend?
+>
+> 8. **Recuperar.vue – Notas de Crédito**: Actualmente Recuperar.vue maneja tipo `f` (factura) y `nc` (nota de crédito). Cuando cambies a BD, ¿ambos tipos deben buscarse en la misma tabla `factura`?
+
+---
+
+## Proposed Changes
+
+Las tareas se ejecutarán **secuencialmente**. Cada tarea se prueba antes de avanzar a la siguiente.
+
+---
+
+### Tarea 1: Schema de la BD `facturacion`
+
+Crear el archivo SQL del schema y el módulo de conexión para la nueva BD.
+
+#### [NEW] [schema_facturacion_mysql.sql](file:///d:/dev/nuxt/gusher_node18/docs/schema_facturacion_mysql.sql)
+
+Schema MySQL con la tabla `factura` que contiene:
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `id` | INT AUTO_INCREMENT PK | Identificador único |
+| `serie` | VARCHAR(5) | Serie del CFDI (C, NC, etc.) |
+| `folio` | VARCHAR(20) | Folio del CFDI |
+| `observaciones` | TEXT | "Caja-Folio: 01-24419 \| 26/Mar/2023 \| ..." |
+| `rfc_receptor` | VARCHAR(13) | RFC del receptor |
+| `no_cliente` | VARCHAR(20) | Número de cliente |
+| `razon_social` | VARCHAR(255) | Razón social del receptor |
+| `fecha_facturacion` | DATETIME | Fecha y hora del timbrado (PST) |
+| `importe_tasa_cero` | DECIMAL(14,2) | Importe tasa 0% |
+| `importe_exento` | DECIMAL(14,2) | Importe exento |
+| `importe_gravable` | DECIMAL(14,2) | Importe gravable |
+| `importe_iva` | DECIMAL(14,2) | Importe del IVA |
+| `total` | DECIMAL(14,2) | Total de la factura |
+| `forma_pago` | VARCHAR(5) | Forma de pago del XML (01, 02, 03, 04, 28…) |
+| `metodo_pago` | VARCHAR(5) | Método de pago del XML (PUE, PPD) |
+| `uso_cfdi` | VARCHAR(5) | Uso del CFDI (G03, S01, etc.) |
+| `cuenta_pago` | VARCHAR(20) | Cuenta de pago (últimos 4 dígitos tarjeta, etc.) |
+| `tipo_factura` | VARCHAR(20) | 'Normal', 'Global', 'Nota de Crédito' |
+| `estatus` | VARCHAR(15) | 'Activa' o 'Cancelada' (default 'Activa') |
+| `usuario_cancela` | VARCHAR(50) | Usuario que cancela |
+| `motivo_cancelacion` | VARCHAR(255) | Motivo de la cancelación |
+| `fecha_cancelacion` | DATETIME | Fecha/hora de cancelación (PST) |
+| `uuid` | VARCHAR(40) | UUID del timbre fiscal |
+| `uuid_relacionado` | VARCHAR(40) | UUID relacionado (refacturación) |
+| `xml` | MEDIUMTEXT | Cadena XML completa del CFDI timbrado |
+| `fecha_registro` | DATETIME DEFAULT CURRENT_TIMESTAMP | Fecha/hora del registro |
+
+Todos los campos DATETIME se gestionarán con timezone **America/Tijuana (PST/PDT)**.
+
+#### [MODIFY] [config.json](file:///d:/dev/nuxt/gusher_node18/config.json)
+
+Agregar la entrada `database.facturacion` dentro de la sección `database`:
+
+```json
+"facturacion": {
+  "dialect": "mysql",
+  "host": "127.0.0.1",
+  "dbname": "facturacion",
+  "username": "root",
+  "password": ""
+}
+```
+
+#### [NEW] [api/db_facturacion.js](file:///d:/dev/nuxt/gusher_node18/api/db_facturacion.js)
+
+Módulo de conexión Sequelize a la BD `facturacion`, siguiendo el mismo patrón de [api/db.js](file:///d:/dev/nuxt/gusher_node18/api/db.js) (inicialización del schema en primer uso, funciones `query`, `queryOne`, `execute`, `transaction`).
+
+**Pruebas Tarea 1:**  
+- Ejecutar el schema en MySQL directamente para verificar que crea la tabla correctamente.
+- Iniciar la aplicación y confirmar que `db_facturacion.js` crea la tabla automáticamente al primer uso.
+
+---
+
+### Tarea 2: Endpoint API para guardar facturas en la BD
+
+Crear las rutas CRUD para la tabla `factura`.
+
+#### [NEW] [api/routes/facturacion.js](file:///d:/dev/nuxt/gusher_node18/api/routes/facturacion.js)
+
+Router Express con los endpoints:
+
+- `POST /` — Insertar registro de factura
+- `GET /:uuid` — Buscar factura por UUID
+- `GET /buscar/:serie/:folio` — Buscar factura por serie + folio
+- `PUT /cancelar/:uuid` — Marcar factura como cancelada
+- `GET /xml/:serie/:folio` — Obtener sólo el XML y observaciones (para Recuperar.vue)
+
+#### [MODIFY] [api/index.js](file:///d:/dev/nuxt/gusher_node18/api/index.js)
+
+- Importar y montar el router: `app.use('/facturacion', facturacionRouter)`
+- Línea ~2197: Agregar junto a las demás rutas.
+
+**Pruebas Tarea 2:**  
+- Usar Postman/curl para insertar un registro de prueba y verificar que se guarda correctamente.
+- Buscar por UUID y por serie/folio.
+
+---
+
+### Tarea 3: Modificar `/api/facturar` para generar PDF propio y guardar en BD
+
+#### [MODIFY] [api/index.js](file:///d:/dev/nuxt/gusher_node18/api/index.js) — Endpoint `/facturar` (líneas ~1323-1424)
+
+Después de que iTimbre responde exitosamente (`retcode == 1`):
+
+1. Extraer el XML de `response.result.data`
+2. Llamar a `generatePdfFromXml({ xml, observaciones })` de `xml2pdf.js` para generar el `pdfBase64` propio
+3. **Reemplazar** `response.result.pdfBase64` con el PDF generado propio
+4. Insertar un registro en la BD `facturacion` con todos los campos requeridos, extrayendo la información del XML con `parseCfdiXml()` y del `req.body.factura`
+5. Devolver la respuesta modificada al frontend
+
+La construcción de las `observaciones` se hará con los datos que ya llegan en `req.body.factura`: caja, folio de venta, fecha, etc.
+
+**Pruebas Tarea 3:**
+- Timbrar una factura de prueba desde facturas.vue
+- Verificar que el PDF mostrado es el generado por `xml2pdf.js` (se verá diferente al de iTimbre)
+- Verificar que el registro se insertó correctamente en la BD `facturacion`
+
+---
+
+### Tarea 4: Modificar `facturas.vue` para usar dialog fullscreen
+
+#### [MODIFY] [pages/facturas.vue](file:///d:/dev/nuxt/gusher_node18/pages/facturas.vue)
+
+Actualmente ya tiene el patrón del dialog fullscreen (líneas ~250-260) usando `VerFactura`. La lógica ya funciona con `modalFactura` y el componente `VerFactura`.
+
+El cambio principal es que el `pdfBase64` ahora vendrá generado por `xml2pdf.js` (desde la Tarea 3), así que **el frontend no requiere cambios grandes**. Sólo necesitamos:
+
+- Verificar que `this.factura.pdfBase64` se asigna correctamente desde la respuesta
+- Asegurarnos de que el botón PDF y el dialog funcionen con el nuevo PDF
+
+**Pruebas Tarea 4:**
+- Timbrar una factura desde facturas.vue y verificar que se abre el dialog fullscreen con el PDF generado por xml2pdf.
+
+---
+
+### Tarea 5: Modificar la refacturación para usar PDF propio y guardar en BD
+
+#### [MODIFY] [pages/refacturacion.vue](file:///d:/dev/nuxt/gusher_node18/pages/refacturacion.vue)
+
+Cambios similares a facturas.vue:
+- El PDF que se muestra proviene de la respuesta del API. Como el API ahora devuelve el PDF generado por `xml2pdf.js`, el frontend ya recibirá el PDF correcto.
+- Agregar en la data el campo para guardar `uuid_relacionado`.
+- Mostrar en dialog fullscreen (ya existe el patrón en este archivo).
+
+#### [MODIFY] [api/index.js](file:///d:/dev/nuxt/gusher_node18/api/index.js)
+
+Localizar el endpoint que usa refacturacion.vue (que también pasa por `/facturar` o por una ruta específica de nota de crédito) y aplicar la misma lógica:
+1. Generar PDF propio
+2. Guardar en BD con `tipo_factura = 'Nota de Crédito'` y `uuid_relacionado` poblado
+
+**Pruebas Tarea 5:**
+- Hacer una refacturación de prueba y verificar el PDF y el registro en BD.
+
+---
+
+### Tarea 6: Modificar Recuperar.vue para usar BD local
+
+Este es el cambio más significativo en el frontend.
+
+#### [MODIFY] [pages/Recuperar.vue](file:///d:/dev/nuxt/gusher_node18/pages/Recuperar.vue)
+
+- **Eliminar** la llamada a `/api/recuperarCFDI/:folio` (que llama a iTimbre)
+- **Reemplazar** con llamada a `/api/facturacion/xml/:serie/:folio` (nuevo endpoint que lee de la BD)
+- Con el XML y las observaciones recibidas, llamar a `/api/xml2pdf` para generar el PDF
+- Mostrar el PDF en el dialog fullscreen con `VerFactura` (ya existe en el template)
+- Mantener la funcionalidad de envío de email
+
+#### [MODIFY] [api/routes/facturacion.js](file:///d:/dev/nuxt/gusher_node18/api/routes/facturacion.js)
+
+Asegurarse de que el endpoint `GET /xml/:serie/:folio` devuelva:
+```json
+{
+  "response": 200,
+  "xml": "<?xml ...>",
+  "observaciones": "Caja-Folio: ...",
+  "uuid": "F325CEF4-..."
+}
+```
+
+**Pruebas Tarea 6:**
+- Buscar una factura que ya esté en la BD y verificar que se muestra el PDF correctamente sin llamar a iTimbre.
+- Buscar una factura que NO esté en la BD y verificar que muestra error apropiado.
+- Probar envío de email.
+
+---
+
+### Tarea 7: Migración de facturas existentes (Opcional)
+
+> [!NOTE]
+> Esto es opcional. Si necesitas que las facturas previamente timbradas (antes de este cambio) también estén disponibles en la BD, se puede crear un script que lea los XMLs guardados por `saveCfdiFiles()` en la carpeta `cfdiFiles/` y los inserte en la tabla `factura`.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- No hay framework de tests existente en el proyecto, pero cada tarea incluye sus propias pruebas manuales que se ejecutan antes de pasar a la siguiente.
+
+### Manual Verification
+1. **Tarea 1**: Verificar tabla creada en MySQL: `DESCRIBE factura;`
+2. **Tarea 2**: Pruebas CRUD con Postman
+3. **Tarea 3**: Timbrar factura real y verificar PDF + BD
+4. **Tarea 4**: Verificar visual del dialog fullscreen en facturas.vue
+5. **Tarea 5**: Timbrar nota de crédito y verificar PDF + BD
+6. **Tarea 6**: Recuperar factura sin llamar a iTimbre, verificar PDF
+7. **Regresión**: Verificar que las facturas existentes siguen funcionando normalmente
+
+---
+
+## Resumen de archivos
+
+| Acción | Archivo |
+|---|---|
+| **NEW** | `docs/schema_facturacion_mysql.sql` |
+| **NEW** | `api/db_facturacion.js` |
+| **NEW** | `api/routes/facturacion.js` |
+| **MODIFY** | `config.json` |
+| **MODIFY** | `api/index.js` |
+| **MODIFY** | `pages/facturas.vue` |
+| **MODIFY** | `pages/refacturacion.vue` |
+| **MODIFY** | `pages/Recuperar.vue` |
