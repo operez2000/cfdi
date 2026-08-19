@@ -856,14 +856,14 @@ export default {
       // UUID Relacionado...
       if (this.uuid_relacionado) {
         console.log('con datos', this.uuid_relacionado)
-        jsonCfdi.datos_factura.CfdiRelacionados = [{
+        jsonCfdi.datos_factura.CfdiRelacionados = {
           TipoRelacion: '01',
           CfdiRelacionado: {
             UUID: this.uuid_relacionado
           }
-        }];
+        };
       } else {
-        console.log('sin datos', this.uuid_relacionado)
+        console.log('sin datos', this.uuid_relacionado)  
       }
 
 /*

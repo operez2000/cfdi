@@ -29,7 +29,7 @@ function toMysqlDateTime(fechaStr) {
 /**
  * Función reutilizable para insertar o actualizar una factura en la BD facturacion
  */
-export async function guardarFacturaEnDb({
+async function guardarFacturaEnDb({
   xml,
   observaciones = '',
   noCliente = '',
@@ -145,6 +145,25 @@ router.post('/', async (req, res) => {
     if (!xml) return sendBadRequest(res, 'Debe enviar xml en el cuerpo de la petición')
     const data = await guardarFacturaEnDb({ xml, observaciones, noCliente, cuentaPago, tipoFactura, uuidRelacionado })
     return sendOk(res, data, 'Factura guardada correctamente')
+  } catch (error) {
+    return sendError(res, error)
+  }
+})
+
+/**
+ * GET /api/facturacion/listado
+ * Devuelve el listado de facturas para consultas
+ */
+router.get('/listado', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 500, 2000)
+    const rows = await query(`
+      SELECT id, serie, folio, rfc_receptor, razon_social, fecha_facturacion, total, tipo_factura, observaciones, estatus, uuid
+      FROM factura
+      ORDER BY fecha_facturacion DESC, id DESC
+      LIMIT ?
+    `, [limit])
+    return sendOk(res, rows)
   } catch (error) {
     return sendError(res, error)
   }
@@ -336,5 +355,6 @@ router.get('/buscar-uuid-relacionado', async (req, res) => {
   }
 })
 
+export { guardarFacturaEnDb }
 export default router
 

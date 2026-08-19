@@ -3,154 +3,132 @@
     "name": "Cancelar",
     "path": "/Cancelar",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\Cancelar.vue",
-    "chunkName": "pages/Cancelar",
-    "_name": "_5231770a"
+    "chunkName": "pages/Cancelar"
   },
   {
     "name": "Catalogo",
     "path": "/Catalogo",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\Catalogo.vue",
-    "chunkName": "pages/Catalogo",
-    "_name": "_2ff67374"
+    "chunkName": "pages/Catalogo"
   },
   {
     "name": "Clientes",
     "path": "/Clientes",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\Clientes.vue",
-    "chunkName": "pages/Clientes",
-    "_name": "_165af9ee"
+    "chunkName": "pages/Clientes"
   },
   {
     "name": "consulta-compras",
     "path": "/consulta-compras",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\consulta-compras.vue",
-    "chunkName": "pages/consulta-compras",
-    "_name": "_2f0a460d"
+    "chunkName": "pages/consulta-compras"
   },
   {
     "name": "envios",
     "path": "/envios",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\envios.vue",
-    "chunkName": "pages/envios",
-    "_name": "_77872bb0"
+    "chunkName": "pages/envios"
   },
   {
     "name": "facturas",
     "path": "/facturas",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\facturas.vue",
-    "chunkName": "pages/facturas",
-    "_name": "_0dcaa7aa"
+    "chunkName": "pages/facturas"
   },
   {
     "name": "facturas - Copy",
     "path": "/facturas%20-%20Copy",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\facturas - Copy.vue",
-    "chunkName": "pages/facturas - Copy",
-    "_name": "_143cc96d"
+    "chunkName": "pages/facturas - Copy"
   },
   {
     "name": "formulas",
     "path": "/formulas",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\formulas.vue",
-    "chunkName": "pages/formulas",
-    "_name": "_22a5a6fd"
+    "chunkName": "pages/formulas"
   },
   {
     "name": "global",
     "path": "/global",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\global.vue",
-    "chunkName": "pages/global",
-    "_name": "_54524c5a"
+    "chunkName": "pages/global"
   },
   {
     "name": "inspire",
     "path": "/inspire",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\inspire.vue",
-    "chunkName": "pages/inspire",
-    "_name": "_a9cfc34c"
+    "chunkName": "pages/inspire"
   },
   {
     "name": "inventario",
     "path": "/inventario",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\inventario.vue",
-    "chunkName": "pages/inventario",
-    "_name": "_61f5a6a1"
+    "chunkName": "pages/inventario"
   },
   {
     "name": "inventario-lotes",
     "path": "/inventario-lotes",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\inventario-lotes.vue",
-    "chunkName": "pages/inventario-lotes",
-    "_name": "_f91c72da"
+    "chunkName": "pages/inventario-lotes"
   },
   {
     "name": "invoice",
     "path": "/invoice",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\invoice.vue",
-    "chunkName": "pages/invoice",
-    "_name": "_3328e5a6"
+    "chunkName": "pages/invoice"
   },
   {
     "name": "lectura",
     "path": "/lectura",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\lectura.vue",
-    "chunkName": "pages/lectura",
-    "_name": "_adfd2e0c"
+    "chunkName": "pages/lectura"
   },
   {
     "name": "lotes",
     "path": "/lotes",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\lotes.vue",
-    "chunkName": "pages/lotes",
-    "_name": "_4069aa82"
+    "chunkName": "pages/lotes"
   },
   {
     "name": "nota-credito",
     "path": "/nota-credito",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\nota-credito.vue",
-    "chunkName": "pages/nota-credito",
-    "_name": "_0b54f3e7"
+    "chunkName": "pages/nota-credito"
   },
   {
     "name": "Recuperar",
     "path": "/Recuperar",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\Recuperar.vue",
-    "chunkName": "pages/Recuperar",
-    "_name": "_510dadae"
+    "chunkName": "pages/Recuperar"
   },
   {
     "name": "Recuperar - Copy",
     "path": "/Recuperar%20-%20Copy",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\Recuperar - Copy.vue",
-    "chunkName": "pages/Recuperar - Copy",
-    "_name": "_134552af"
+    "chunkName": "pages/Recuperar - Copy"
   },
   {
     "name": "refacturacion",
     "path": "/refacturacion",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\refacturacion.vue",
-    "chunkName": "pages/refacturacion",
-    "_name": "_7282fdaa"
+    "chunkName": "pages/refacturacion"
   },
   {
     "name": "refacturacion4",
     "path": "/refacturacion4",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\refacturacion4.vue",
-    "chunkName": "pages/refacturacion4",
-    "_name": "_43dee00c"
+    "chunkName": "pages/refacturacion4"
   },
   {
     "name": "traspasos",
     "path": "/traspasos",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\traspasos.vue",
-    "chunkName": "pages/traspasos",
-    "_name": "_f846c754"
+    "chunkName": "pages/traspasos"
   },
   {
     "name": "index",
     "path": "/",
     "component": "D:\\\\dev\\\\nuxt\\\\gusher_node18\\\\pages\\\\index.vue",
-    "chunkName": "pages/index",
-    "_name": "_6cff7252"
+    "chunkName": "pages/index"
   }
 ]

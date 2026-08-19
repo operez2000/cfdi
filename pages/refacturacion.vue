@@ -1547,12 +1547,12 @@ export default {
           Exportacion: "01",
           Total: this.facturaOriginal.data.Total,
           Impuestos: this.facturaOriginal.data.Impuestos,
-          CfdiRelacionados: [{
+          CfdiRelacionados: {
             TipoRelacion: "04",   // Sustitución de los CFDI previos
             CfdiRelacionado: {
               UUID: this.facturaOriginal.uuid
             }
-          }],
+          },
           comentarios: this.factura.comentarios
         },
         conceptos: this.facturaOriginal.data.detalle,

@@ -983,12 +983,12 @@ export default {
 
       // Nodo CFDI Relacionados (Tipo 01 - Nota de crédito)
       if (this.factura.uuidRel && this.factura.uuidRel.trim() !== '') {
-        jsonCfdi.datos_factura.CfdiRelacionados = [{
+        jsonCfdi.datos_factura.CfdiRelacionados = {
           TipoRelacion: "01",
           CfdiRelacionado: {
             UUID: this.factura.uuidRel.trim()
           }
-        }]
+        }
       }
 
       return jsonCfdi

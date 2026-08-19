@@ -1,0 +1,99 @@
+{
+	"id_transaccion": 0,
+	"cliente": {
+		"id": "027291",
+		"UsoCFDI": "G03",
+		"nombre": "ADRIAN TRUJILLO PEREZ",
+		"rfc": "TUPA8908092Q5",
+		"DomicilioFiscalReceptor": "22706",
+		"RegimenFiscalReceptor": "612",
+		"correo": "dcefacturacion@gmail.com"
+	},
+	"datos_factura": {
+		"FormaPago": "04",
+		"Serie": "D",
+		"Folio": "00047918",
+		"TipoCambio": "1",
+		"MetodoPago": "PUE",
+		"RegimenFiscal": "601",
+		"LugarExpedicion": "22010",
+		"Moneda": "MXN",
+		"TipoDeComprobante": "I",
+		"tipoDeComprobante": "0",
+		"CondicionesDePago": "Contado",
+		"no_sucursal": "0",
+		"SubTotal": "564.29",
+		"Version": "4.0",
+		"cfdiVersion": "4.0",
+		"Exportacion": "01",
+		"Total": "564.29",
+		"Impuestos": {
+			"TotalImpuestosTrasladados": "0.00",
+			"Traslados": [{
+				"Base": "564.29",
+				"Impuesto": "002",
+				"TipoFactor": "Tasa",
+				"TasaOCuota": "0.000000",
+				"Importe": "0.00"
+			}]
+		},
+		"CfdiRelacionados": [{
+			"TipoRelacion": "04",
+			"CfdiRelacionado": {
+				"UUID": "8F92C72C-1BE5-434C-8D78-303EAE61AECA"
+			}
+		}],
+		"comentarios": "Caja-Folio: 05-32868 | 2026-08-19 | Cajero 012 | Vendedor 005 | Cuenta 2523"
+	},
+	"conceptos": [{
+		"ClaveProdServ": "51101599",
+		"ClaveUnidad": "H87",
+		"Importe": "387.02",
+		"Unidad": "Pza",
+		"NoIdentificacion": "16759",
+		"Cantidad": "1",
+		"Descripcion": "BENEVENTOL 100MG/5ML SUSP 50M / Lote 254350 Cad 30-Ago-27",
+		"ValorUnitario": "387.022",
+		"subTotal": "387.02",
+		"total": "387.02",
+		"ObjetoImp": "02",
+		"Impuestos": {
+			"Traslados": [{
+				"Base": "387.02",
+				"Impuesto": "002",
+				"TipoFactor": "Tasa",
+				"TasaOCuota": "0.000000",
+				"Importe": "0.00"
+			}]
+		},
+		"totalNeto": "387.02"
+	}, {
+		"ClaveProdServ": "51142405",
+		"ClaveUnidad": "H87",
+		"Importe": "177.27",
+		"Unidad": "Pza",
+		"NoIdentificacion": "9997",
+		"Cantidad": "1",
+		"Descripcion": "TEMPRA PED 100MG C/30 ML GTS / Lote ABJ8272 Cad 30-Mar-29",
+		"ValorUnitario": "177.2692",
+		"subTotal": "177.27",
+		"total": "177.27",
+		"ObjetoImp": "02",
+		"Impuestos": {
+			"Traslados": [{
+				"Base": "177.27",
+				"Impuesto": "002",
+				"TipoFactor": "Tasa",
+				"TasaOCuota": "0.000000",
+				"Importe": "0.00"
+			}]
+		},
+		"totalNeto": "177.27"
+	}],
+	"cuenta": "FGU811107SV0",
+	"user": "administrador",
+	"password": "$9KVnl81",
+	"getPdf": true,
+	"enviarFactura": true,
+	"method": "nueva_factura"
+}
