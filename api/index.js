@@ -1542,6 +1542,29 @@ app.post("/facturar", mdi, async (req, res) => {
                               (json.datos_factura && String(json.datos_factura.Serie).toUpperCase().startsWith('NC')) ||
                               (req.body.factura && String(req.body.factura.tipo).toUpperCase() === 'NC')
 
+        const uuidRelacionadoEnviado = (() => {
+          if (req.body.factura?.uuidRel && String(req.body.factura.uuidRel).trim() !== '') {
+            return String(req.body.factura.uuidRel).trim()
+          }
+          const rel = req.body.data?.datos_factura?.CfdiRelacionados
+          if (!rel) return ''
+          const relList = Array.isArray(rel) ? rel : [rel]
+          for (const item of relList) {
+            const cfdiRel = item?.CfdiRelacionado
+            if (!cfdiRel) continue
+            if (Array.isArray(cfdiRel)) {
+              for (const sub of cfdiRel) {
+                const u = sub?.UUID || (typeof sub === 'string' ? sub : '')
+                if (u) return String(u).trim()
+              }
+            } else {
+              const u = cfdiRel.UUID || (typeof cfdiRel === 'string' ? cfdiRel : '')
+              if (u) return String(u).trim()
+            }
+          }
+          return ''
+        })()
+
         try {
           await guardarFacturaEnDb({
             xml: xmlTimbrado,
@@ -1549,7 +1572,7 @@ app.post("/facturar", mdi, async (req, res) => {
             noCliente,
             cuentaPago: req.body.factura?.numCtaPago || req.body.data?.numCtaPago || '',
             tipoFacturaCustom: esNotaCredito ? 'Nota de Crédito' : '',
-            uuidRelacionado: req.body.factura?.uuidRel || req.body.data?.datos_factura?.CfdiRelacionados?.CfdiRelacionado?.UUID || ''
+            uuidRelacionado: uuidRelacionadoEnviado
           })
         } catch (dbErr) {
           console.error("Error al guardar factura en BD facturacion:", dbErr)
@@ -1575,7 +1598,7 @@ app.post("/facturar", mdi, async (req, res) => {
               vendedorId: req.body.factura?.vendedorId || '',
               fechaVenta: req.body.factura?.fechaVenta || new Date(),
               uuid: response.result.UUID || '',
-              uuidOrigen: req.body.factura?.uuidRel || req.body.data?.datos_factura?.CfdiRelacionados?.CfdiRelacionado?.UUID || '',
+              uuidOrigen: uuidRelacionadoEnviado,
               observaciones,
               formaDePago: json.datos_factura?.FormaPago || req.body.factura?.formaPago || '01',
               usoCfdi: json.cliente?.UsoCFDI || req.body.factura?.usoCfdi || 'G02',
@@ -2263,7 +2286,7 @@ app.post("/timbra-global", async (req, res) => {
       const xmlTimbrado = response.result.data || ''
       const observaciones = (req.body.estructura && req.body.estructura.datos_factura && req.body.estructura.datos_factura.comentarios) ||
                             (req.body.datos_factura && req.body.datos_factura.comentarios) ||
-                            'Factura Global'
+                            `Factura Global del ${req.body.fecha || ''}`
       if (xmlTimbrado) {
         try {
           const pdfBase64Propio = await generatePdfFromXml({ xml: xmlTimbrado, observaciones })

@@ -295,20 +295,27 @@ export async function parseCfdiXml(xmlString) {
   const tfd = complemento['tfd:TimbreFiscalDigital'] || complemento.TimbreFiscalDigital || {}
 
   // CFDI Relacionados
-  const cfdiRelacionadosWrapper = comp['cfdi:CfdiRelacionados'] || comp.CfdiRelacionados || {}
+  const cfdiRelacionadosRaw = comp['cfdi:CfdiRelacionados'] || comp.CfdiRelacionados || []
+  const cfdiRelacionadosArray = Array.isArray(cfdiRelacionadosRaw)
+    ? cfdiRelacionadosRaw
+    : (cfdiRelacionadosRaw && typeof cfdiRelacionadosRaw === 'object' && Object.keys(cfdiRelacionadosRaw).length > 0 ? [cfdiRelacionadosRaw] : [])
+
   let cfdiRelacionadosList = []
-  let tipoRelacionRaw = cfdiRelacionadosWrapper.TipoRelacion || ''
-  if (cfdiRelacionadosWrapper['cfdi:CfdiRelacionado']) {
-    const list = Array.isArray(cfdiRelacionadosWrapper['cfdi:CfdiRelacionado'])
-      ? cfdiRelacionadosWrapper['cfdi:CfdiRelacionado']
-      : [cfdiRelacionadosWrapper['cfdi:CfdiRelacionado']]
-    cfdiRelacionadosList = list.map(item => item.UUID || item)
-  } else if (cfdiRelacionadosWrapper.CfdiRelacionado) {
-    const list = Array.isArray(cfdiRelacionadosWrapper.CfdiRelacionado)
-      ? cfdiRelacionadosWrapper.CfdiRelacionado
-      : [cfdiRelacionadosWrapper.CfdiRelacionado]
-    cfdiRelacionadosList = list.map(item => item.UUID || item)
-  }
+  let tipoRelacionRaw = ''
+
+  cfdiRelacionadosArray.forEach(relGroup => {
+    if (!tipoRelacionRaw && relGroup.TipoRelacion) {
+      tipoRelacionRaw = relGroup.TipoRelacion
+    }
+    const relNode = relGroup['cfdi:CfdiRelacionado'] || relGroup.CfdiRelacionado
+    if (relNode) {
+      const list = Array.isArray(relNode) ? relNode : [relNode]
+      list.forEach(item => {
+        const uuid = item?.UUID || (typeof item === 'string' ? item : '')
+        if (uuid) cfdiRelacionadosList.push(String(uuid).trim())
+      })
+    }
+  })
 
   // Impuestos globales
   const impuestosWrapper = comp['cfdi:Impuestos'] || comp.Impuestos || {}

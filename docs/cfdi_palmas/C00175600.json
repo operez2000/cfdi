@@ -1,0 +1,208 @@
+{
+	"id_transaccion": 0,
+	"cliente": {
+		"id": "330273",
+		"UsoCFDI": "D01",
+		"nombre": "GISELA NADER CROCHE",
+		"rfc": "NACG900208S87",
+		"DomicilioFiscalReceptor": "22117",
+		"RegimenFiscalReceptor": "605",
+		"correo": "krokinsky8@hotmail.com"
+	},
+	"datos_factura": {
+		"Serie": "C",
+		"Folio": "00175600",
+		"Version": "4.0",
+		"cfdiVersion": "4.0",
+		"FormaPago": "28",
+		"TipoCambio": "1",
+		"MetodoPago": "PUE",
+		"RegimenFiscal": "601",
+		"LugarExpedicion": "22010 ",
+		"Moneda": "MXN",
+		"TipoDeComprobante": "I",
+		"tipoDeComprobante": "0",
+		"Exportacion": "01",
+		"CondicionesDePago": "Contado",
+		"no_sucursal": "0",
+		"SubTotal": "2402.83",
+		"Total": "2402.83",
+		"Impuestos": {
+			"TotalImpuestosTrasladados": "0.00",
+			"Traslados": [
+				{
+					"Base": "2402.83",
+					"Impuesto": "002",
+					"TipoFactor": "Tasa",
+					"TasaOCuota": "0.000000",
+					"Importe": "0.00"
+				}
+			]
+		},
+		"comentarios": "Caja-Folio: 02-27702 | Fecha Venta: 11-Ago-2026 | Cajero: 003 | Vendedor: 029 | Cuenta 4541"
+	},
+	"conceptos": [
+		{
+			"Cantidad": "1",
+			"ClaveProdServ": "51142000",
+			"ClaveUnidad": "H87",
+			"Descripcion": "ASPIRINA PROTEC 100MG 28 TAB / Lote BT1C411 Cad 30-Abr-28",
+			"Importe": "138.04",
+			"NoIdentificacion": "10630",
+			"noIdentificacion": "10630",
+			"Unidad": "Pza",
+			"ValorUnitario": "138.040000",
+			"subTotal": "138.04",
+			"total": "138.04",
+			"ObjetoImp": "02",
+			"Numero_CuentaPredial": "",
+			"Impuestos": {
+				"Traslados": [
+					{
+						"Base": "138.04",
+						"Impuesto": "002",
+						"TipoFactor": "Tasa",
+						"TasaOCuota": "0.000000",
+						"Importe": "0.00"
+					}
+				]
+			}
+		},
+		{
+			"Cantidad": "1",
+			"ClaveProdServ": "51101504",
+			"ClaveUnidad": "H87",
+			"Descripcion": "TREXEN DUO 100-400MG C/7 OVUL / Lote 09502 Cad 30-Abr-28",
+			"Importe": "523.64",
+			"NoIdentificacion": "11012",
+			"noIdentificacion": "11012",
+			"Unidad": "Pza",
+			"ValorUnitario": "523.640800",
+			"subTotal": "523.64",
+			"total": "523.64",
+			"ObjetoImp": "02",
+			"Numero_CuentaPredial": "",
+			"Impuestos": {
+				"Traslados": [
+					{
+						"Base": "523.64",
+						"Impuesto": "002",
+						"TipoFactor": "Tasa",
+						"TasaOCuota": "0.000000",
+						"Importe": "0.00"
+					}
+				]
+			}
+		},
+		{
+			"Cantidad": "1",
+			"ClaveProdServ": "51181813",
+			"ClaveUnidad": "H87",
+			"Descripcion": "UTROGESTAN 200MG C/14 PERLAS / Lote 252637 Cad 30-Abr-28",
+			"Importe": "878.57",
+			"NoIdentificacion": "12630",
+			"noIdentificacion": "12630",
+			"Unidad": "Pza",
+			"ValorUnitario": "878.573600",
+			"subTotal": "878.57",
+			"total": "878.57",
+			"ObjetoImp": "02",
+			"Numero_CuentaPredial": "",
+			"Impuestos": {
+				"Traslados": [
+					{
+						"Base": "878.57",
+						"Impuesto": "002",
+						"TipoFactor": "Tasa",
+						"TasaOCuota": "0.000000",
+						"Importe": "0.00"
+					}
+				]
+			}
+		},
+		{
+			"Cantidad": "1",
+			"ClaveProdServ": "51191905",
+			"ClaveUnidad": "H87",
+			"Descripcion": "MOREBON D3 5000UI C/60 TAB / Lote 2603302 Cad 28-Feb-28",
+			"Importe": "279.48",
+			"NoIdentificacion": "16820",
+			"noIdentificacion": "16820",
+			"Unidad": "Pza",
+			"ValorUnitario": "279.480000",
+			"subTotal": "279.48",
+			"total": "279.48",
+			"ObjetoImp": "02",
+			"Numero_CuentaPredial": "",
+			"Impuestos": {
+				"Traslados": [
+					{
+						"Base": "279.48",
+						"Impuesto": "002",
+						"TipoFactor": "Tasa",
+						"TasaOCuota": "0.000000",
+						"Importe": "0.00"
+					}
+				]
+			}
+		},
+		{
+			"Cantidad": "2",
+			"ClaveProdServ": "51101805",
+			"ClaveUnidad": "H87",
+			"Descripcion": "LOZAMIR-V CRA 3 APLI / Lote CB2607 Cad 28-Feb-28",
+			"Importe": "190.40",
+			"NoIdentificacion": "5010",
+			"noIdentificacion": "5010",
+			"Unidad": "Pza",
+			"ValorUnitario": "95.200000",
+			"subTotal": "190.40",
+			"total": "190.40",
+			"ObjetoImp": "02",
+			"Numero_CuentaPredial": "",
+			"Impuestos": {
+				"Traslados": [
+					{
+						"Base": "190.40",
+						"Impuesto": "002",
+						"TipoFactor": "Tasa",
+						"TasaOCuota": "0.000000",
+						"Importe": "0.00"
+					}
+				]
+			}
+		},
+		{
+			"Cantidad": "1",
+			"ClaveProdServ": "51171600",
+			"ClaveUnidad": "H87",
+			"Descripcion": "METAMUCIL NATURAL POLVO 210 GR / Lote L51151725A2 Cad 30-Mar-27",
+			"Importe": "392.70",
+			"NoIdentificacion": "6403",
+			"noIdentificacion": "6403",
+			"Unidad": "Pza",
+			"ValorUnitario": "392.700000",
+			"subTotal": "392.70",
+			"total": "392.70",
+			"ObjetoImp": "02",
+			"Numero_CuentaPredial": "",
+			"Impuestos": {
+				"Traslados": [
+					{
+						"Base": "392.70",
+						"Impuesto": "002",
+						"TipoFactor": "Tasa",
+						"TasaOCuota": "0.000000",
+						"Importe": "0.00"
+					}
+				]
+			}
+		}
+	],
+	"cuenta": "FGU811107SV0",
+	"user": "administrador",
+	"password": "$9KVnl81",
+	"getPdf": true,
+	"enviarFactura": true,
+	"method": "nueva_factura"
+}

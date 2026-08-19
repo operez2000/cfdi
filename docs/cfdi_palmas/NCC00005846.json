@@ -1,0 +1,80 @@
+{
+	"id_transaccion": 0,
+	"cliente": {
+		"id": "028980",
+		"UsoCFDI": "S01",
+		"nombre": "PUBLICO EN GENERAL",
+		"rfc": "XAXX010101000",
+		"DomicilioFiscalReceptor": "22010",
+		"RegimenFiscalReceptor": "616",
+		"correo": "suc.palmas@gusher.com.mx"
+	},
+	"datos_factura": {
+		"Serie": "NCC",
+		"Folio": "00005846",
+		"Version": "4.0",
+		"cfdiVersion": "4.0",
+		"FormaPago": "04",
+		"TipoCambio": "1",
+		"MetodoPago": "PUE",
+		"RegimenFiscal": "601",
+		"LugarExpedicion": "22010 ",
+		"Moneda": "MXN",
+		"TipoDeComprobante": "E",
+		"tipoDeComprobante": "6",
+		"Exportacion": "01",
+		"CondicionesDePago": "Contado",
+		"no_sucursal": "0",
+		"SubTotal": "808.80",
+		"Total": "808.80",
+		"Impuestos": {
+			"TotalImpuestosTrasladados": "0.00",
+			"Traslados": [
+				{
+					"Base": "808.80",
+					"Impuesto": "002",
+					"TipoFactor": "Tasa",
+					"TasaOCuota": "0.000000",
+					"Importe": "0.00"
+				}
+			]
+		},
+		"comentarios": "Caja: 02 | Recibo: 26594 | Fecha Venta: 02-Ago-2026",
+		"CfdiRelacionados": {
+			"TipoRelacion": "01",
+			"CfdiRelacionado": {
+				"UUID": "44CE83AC-DF45-45D6-AFE5-425911BC3A09"
+			}
+		}
+	},
+	"conceptos": [
+		{
+			"Cantidad": "1",
+			"ClaveProdServ": "51131700",
+			"ClaveUnidad": "ACT",
+			"Descripcion": "CO-DEGREGAN 75/100MG C/28TAB / Lote 005024 Cad 30-Dic-27",
+			"Importe": "808.80",
+			"NoIdentificacion": "15931",
+			"noIdentificacion": "15931",
+			"ValorUnitario": "808.80",
+			"ObjetoImp": "02",
+			"Impuestos": {
+				"Traslados": [
+					{
+						"Base": "808.80",
+						"Impuesto": "002",
+						"TipoFactor": "Tasa",
+						"TasaOCuota": "0.000000",
+						"Importe": "0.00"
+					}
+				]
+			}
+		}
+	],
+	"cuenta": "FGU811107SV0",
+	"user": "administrador",
+	"password": "$9KVnl81",
+	"getPdf": true,
+	"enviarFactura": true,
+	"method": "nueva_factura"
+}

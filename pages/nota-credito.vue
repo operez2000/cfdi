@@ -945,9 +945,10 @@ export default {
           LugarExpedicion: this.emisor.domicilioFiscal || "22010",
           Moneda: "MXN",
           TipoDeComprobante: "E",
-          tipoDeComprobante: "E",
+          tipoDeComprobante: "6",
           Exportacion: "01",
           CondicionesDePago: this.factura.condiciones,
+          no_sucursal: "0",
           SubTotal: tot.subtotalSat,
           Descuento: tot.descuento > 0 ? tot.descuentoSat : undefined,
           Total: tot.totalSat,
@@ -982,12 +983,12 @@ export default {
 
       // Nodo CFDI Relacionados (Tipo 01 - Nota de crédito)
       if (this.factura.uuidRel && this.factura.uuidRel.trim() !== '') {
-        jsonCfdi.datos_factura.CfdiRelacionados = {
+        jsonCfdi.datos_factura.CfdiRelacionados = [{
           TipoRelacion: "01",
           CfdiRelacionado: {
             UUID: this.factura.uuidRel.trim()
           }
-        }
+        }]
       }
 
       return jsonCfdi
@@ -1004,16 +1005,20 @@ export default {
         const valorUnitarioSat = Number(it.ValorUnitario).toFixed(2)
 
         const concepto = {
+          Cantidad: cant.toString(),
           ClaveProdServ: it.ClaveProdServ || "01010101",
           ClaveUnidad: "ACT",
+          Descripcion: it.Descripcion || "PRODUCTO",
+          Importe: (cant * Number(it.ValorUnitario)).toFixed(2),
           NoIdentificacion: it.NoIdentificacion || it.parte || "",
           noIdentificacion: it.NoIdentificacion || it.parte || "",
-          Cantidad: cant.toString(),
-          Descripcion: it.Descripcion || "PRODUCTO",
+          Unidad: 'Pza',
           ValorUnitario: valorUnitarioSat,
-          Importe: (cant * Number(it.ValorUnitario)).toFixed(2),
-          Descuento: desc > 0 ? desc.toFixed(2) : undefined,
+          subTotal: subTot.toFixed(2),
+          total: subTot.toFixed(2),
           ObjetoImp: "02",
+          Descuento: desc > 0 ? desc.toFixed(2) : undefined,
+          Numero_CuentaPredial: '',
           Impuestos: {
             Traslados: [
               {

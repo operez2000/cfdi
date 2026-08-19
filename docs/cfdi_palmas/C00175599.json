@@ -1,0 +1,147 @@
+{
+	"id_transaccion": 0,
+	"cliente": {
+		"id": "029703",
+		"UsoCFDI": "G03",
+		"nombre": "ANA LAURA BECERRA VARGAS",
+		"rfc": "BEVA8003264E8",
+		"DomicilioFiscalReceptor": "22050",
+		"RegimenFiscalReceptor": "626",
+		"correo": "albv_1980@hotmail.com"
+	},
+	"datos_factura": {
+		"Serie": "C",
+		"Folio": "00175599",
+		"Version": "4.0",
+		"cfdiVersion": "4.0",
+		"FormaPago": "01",
+		"TipoCambio": "1",
+		"MetodoPago": "PUE",
+		"RegimenFiscal": "601",
+		"LugarExpedicion": "22010 ",
+		"Moneda": "MXN",
+		"TipoDeComprobante": "I",
+		"tipoDeComprobante": "0",
+		"Exportacion": "01",
+		"CondicionesDePago": "Contado",
+		"no_sucursal": "0",
+		"SubTotal": "1464.13",
+		"Total": "1469.67",
+		"Impuestos": {
+			"TotalImpuestosTrasladados": "5.54",
+			"Traslados": [{
+				"Base": "69.26",
+				"Impuesto": "002",
+				"TipoFactor": "Tasa",
+				"TasaOCuota": "0.080000",
+				"Importe": "5.54"
+			}, {
+				"Base": "1394.87",
+				"Impuesto": "002",
+				"TipoFactor": "Tasa",
+				"TasaOCuota": "0.000000",
+				"Importe": "0.00"
+			}]
+		},
+		"comentarios": "Caja-Folio: 02-27713 | Fecha Venta: 11-Ago-2026 | Cajero: 003 | Vendedor: 068 | Cuenta 7102"
+	},
+	"conceptos": [{
+		"Cantidad": "1",
+		"ClaveProdServ": "53131507",
+		"ClaveUnidad": "H87",
+		"Descripcion": "GUM PALILLOS SOFT-PICKS C/60",
+		"Importe": "69.26",
+		"NoIdentificacion": "18976",
+		"noIdentificacion": "18976",
+		"Unidad": "Pza",
+		"ValorUnitario": "69.259259",
+		"subTotal": "69.26",
+		"total": "69.26",
+		"ObjetoImp": "02",
+		"Numero_CuentaPredial": "",
+		"Impuestos": {
+			"Traslados": [{
+				"Base": "69.26",
+				"Impuesto": "002",
+				"TipoFactor": "Tasa",
+				"TasaOCuota": "0.080000",
+				"Importe": "5.54"
+			}]
+		}
+	}, {
+		"Cantidad": "1",
+		"ClaveProdServ": "51121700",
+		"ClaveUnidad": "H87",
+		"Descripcion": "TEMERIT 5MG COMPR C/28 / Lote 54343A Cad 30-Oct-27",
+		"Importe": "1037.68",
+		"NoIdentificacion": "3901",
+		"noIdentificacion": "3901",
+		"Unidad": "Pza",
+		"ValorUnitario": "1037.680000",
+		"subTotal": "1037.68",
+		"total": "1037.68",
+		"ObjetoImp": "02",
+		"Numero_CuentaPredial": "",
+		"Impuestos": {
+			"Traslados": [{
+				"Base": "1037.68",
+				"Impuesto": "002",
+				"TipoFactor": "Tasa",
+				"TasaOCuota": "0.000000",
+				"Importe": "0.00"
+			}]
+		}
+	}, {
+		"Cantidad": "1",
+		"ClaveProdServ": "51142100",
+		"ClaveUnidad": "H87",
+		"Descripcion": "VOLTAREN EMULGEL 1.16% 100GR / Lote TD8N Cad 30-Dic-27",
+		"Importe": "255.01",
+		"NoIdentificacion": "5365",
+		"noIdentificacion": "5365",
+		"Unidad": "Pza",
+		"ValorUnitario": "255.006800",
+		"subTotal": "255.01",
+		"total": "255.01",
+		"ObjetoImp": "02",
+		"Numero_CuentaPredial": "",
+		"Impuestos": {
+			"Traslados": [{
+				"Base": "255.01",
+				"Impuesto": "002",
+				"TipoFactor": "Tasa",
+				"TasaOCuota": "0.000000",
+				"Importe": "0.00"
+			}]
+		}
+	}, {
+		"Cantidad": "1",
+		"ClaveProdServ": "51171501",
+		"ClaveUnidad": "H87",
+		"Descripcion": "TUMS EXTRA C/48 SURT / Lote V94P Cad 30-Ene-29",
+		"Importe": "102.18",
+		"NoIdentificacion": "7156",
+		"noIdentificacion": "7156",
+		"Unidad": "Pza",
+		"ValorUnitario": "102.183600",
+		"subTotal": "102.18",
+		"total": "102.18",
+		"ObjetoImp": "02",
+		"Numero_CuentaPredial": "",
+		"Impuestos": {
+			"Traslados": [{
+				"Base": "102.18",
+				"Impuesto": "002",
+				"TipoFactor": "Tasa",
+				"TasaOCuota": "0.000000",
+				"Importe": "0.00"
+			}]
+		}
+	}],
+	"cuenta": "FGU811107SV0",
+	"user": "administrador",
+	"password": "$9KVnl81",
+	"getPdf": true,
+	"enviarFactura": true,
+	"method": "nueva_factura"
+}

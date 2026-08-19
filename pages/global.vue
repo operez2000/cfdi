@@ -269,6 +269,15 @@ let fechaFactura = ""
 
 const window_location = window.location
 
+const fechaHoy = new Date().toLocaleDateString('fr-CA')
+
+const fechaLetras = (fecha) => {
+  if (!fecha || fecha.length < 10) return fecha || ''
+  const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+  const mes = meses[parseInt(fecha.substring(5, 7), 10) - 1] || fecha.substring(5, 7)
+  return fecha.substring(8, 10) + '/' + mes + '/' + fecha.substring(0, 4)
+}
+
 export default {
   components: {
     VerFactura,
@@ -276,7 +285,7 @@ export default {
   data() {
     return {
       menuFecha: false,
-      fecha: new Date().toLocaleDateString('fr-CA'),
+      fecha: fechaHoy,
       emisor: {
         domicilioFiscal: "",
         razonSocial: "FARMACIA GUSHER"
@@ -375,7 +384,7 @@ export default {
         usoCfdi: "",
         condiciones: "Contado",
         numCtaPago: "",
-        comentarios: `Factura Global del `,
+        comentarios: `Factura Global del ${fechaLetras(fechaHoy)}`,
         importe: 0,
         totalFactura: 0,
         data: {
@@ -846,15 +855,15 @@ export default {
 
       // UUID Relacionado...
       if (this.uuid_relacionado) {
-        console.log('con datos', this.uuid_relacionado)        
-        jsonCfdi.datos_factura.CfdiRelacionados = {
+        console.log('con datos', this.uuid_relacionado)
+        jsonCfdi.datos_factura.CfdiRelacionados = [{
           TipoRelacion: '01',
           CfdiRelacionado: {
             UUID: this.uuid_relacionado
           }
-        };
+        }];
       } else {
-        console.log('sin datos', this.uuid_relacionado)  
+        console.log('sin datos', this.uuid_relacionado)
       }
 
 /*
