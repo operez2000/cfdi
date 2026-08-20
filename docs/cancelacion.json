@@ -1,0 +1,14 @@
+{
+    "id_transaccion": 0,
+    "cuenta": "3079",
+    "user": "administrador",
+    "password": "$9KVnl81",
+    "RFC": "XAXA010101000",
+    "method": "cancelarCFDI",
+    "cancelaciones": [
+        {
+            "Motivo": "01",
+            "uuid": "F325CEF4-D97C-42D5-BB64-F6DBC54B3234"
+        }
+    ]
+}
