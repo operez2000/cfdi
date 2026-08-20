@@ -118,7 +118,7 @@
 
             <!-- Cabecera de la Nota de Crédito -->
             <v-row class="mt-1" dense>
-              <v-col cols="12" md="1">
+              <v-col cols="12" md="2">
                 <v-text-field
                   v-model="folio"
                   label="# Nota"
@@ -127,12 +127,12 @@
                   outlined
                   :rules="[v => !!v || 'Obligatorio']"
                   ref="refFolio"
-                  append-outer-icon="mdi-magnify"
+                  append-icon="mdi-magnify"
                   :loading="loaders.getNota"
                   :disabled="loaders.getNota"
-                  @click:append-outer="onClick('BUSCAR_NOTA')"
+                  @click:append="onClick('BUSCAR_NOTA')"
                   @keyup.enter.prevent="onClick('BUSCAR_NOTA')"
-                  hint="Enter o lupa para buscar nota existente"
+                  hint="Enter p/buscar nota"
                   persistent-hint
                 />
               </v-col>
@@ -163,18 +163,35 @@
                   label="# Recibo"
                   dense
                   outlined
-                  append-outer-icon="mdi-magnify"
-                  @click:append-outer="onClick('BUSCAR_VENTA')"
+                  append-icon="mdi-magnify"
+                  @click:append="onClick('BUSCAR_VENTA')"
                   @keyup.enter.prevent="onClick('BUSCAR_VENTA')"
                   :loading="loaders.getVenta"
                   :disabled="loaders.getVenta"
                   :rules="[v => !!v || 'Obligatorio']"
-                  hint="Enter o lupa para buscar venta"
+                  hint="Enter p/buscar Venta"
                   persistent-hint
                 />
               </v-col>
 
-              <v-col cols="6" md="1">
+              <v-col cols="12" md="2" class="text-right ml-auto">
+                <v-btn
+                  color="primary"
+                  block
+                  :loading="loaders.generaFactura"
+                  :disabled="selectedItems.length == 0 || cliente.nuevo || !venta.caja || !venta.folio || !serie || !folio || !factura.formaPago || !factura.usoCfdi"
+                  @click="onClick('GENERAR_FACTURA')"
+                >
+                  <v-icon left>mdi-check-decagram</v-icon>
+                  Facturar
+                </v-btn>
+              </v-col>
+
+
+            </v-row>
+
+            <v-row class="mt-1" dense>
+              <v-col cols="6" md="2">
                 <v-text-field
                   v-model="venta.fecha"
                   label="Fecha Venta"
@@ -184,22 +201,21 @@
                 />
               </v-col>
 
-              <v-col cols="12" md="3">
+              <v-col cols="12" md="4">
                 <v-text-field
                   v-model="factura.uuidRel"
                   label="UUID Relacionado (CFDI 4.0)"
                   dense
                   outlined
                   :loading="loaders.getUuid"
-                  clearable
-                  append-outer-icon="mdi-refresh"
-                  @click:append-outer="buscarUuidRelacionado"
+                  append-icon="mdi-refresh"
+                  @click:append="buscarUuidRelacionado"
                   hint="Factura origen o Global del día"
                   persistent-hint
                 />
               </v-col>
 
-              <v-col cols="12" md="2">
+              <v-col cols="12" md="3">
                 <v-select
                   v-model="factura.formaPago"
                   :items="utils.formasDePago"
@@ -211,7 +227,7 @@
                 />
               </v-col>
 
-              <v-col cols="12" md="2">
+              <v-col cols="12" md="3">
                 <v-select
                   v-model="factura.usoCfdi"
                   :items="usosCfdiFiltrados"
@@ -225,7 +241,7 @@
             </v-row>
 
             <v-row class="mt-0" dense>
-              <v-col cols="12" md="2">
+              <v-col cols="12" md="3">
                 <v-radio-group
                   v-model="factura.condiciones"
                   class="my-0 py-0"
@@ -238,16 +254,16 @@
                 </v-radio-group>
               </v-col>
 
-              <v-col cols="12" md="2">
+              <v-col cols="12" md="1">
                 <v-text-field
                   v-model="factura.numCtaPago"
-                  label="# Cta pago (opcional)"
+                  label="# Cta."
                   dense
                   outlined
                 />
               </v-col>
 
-              <v-col cols="12" md="6">
+              <v-col cols="12" md="8">
                 <v-text-field
                   v-model="factura.comentarios"
                   label="Observaciones / Comentarios"
@@ -256,18 +272,6 @@
                 />
               </v-col>
 
-              <v-col cols="12" md="2" class="text-right">
-                <v-btn
-                  color="primary"
-                  block
-                  :loading="loaders.generaFactura"
-                  :disabled="selectedItems.length == 0 || cliente.nuevo || !venta.caja || !venta.folio || !serie || !folio || !factura.formaPago || !factura.usoCfdi"
-                  @click="onClick('GENERAR_FACTURA')"
-                >
-                  <v-icon left>mdi-check-decagram</v-icon>
-                  Facturar Nota
-                </v-btn>
-              </v-col>
             </v-row>
 
             <v-divider class="my-2" />
