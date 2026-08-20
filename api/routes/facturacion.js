@@ -306,7 +306,7 @@ router.get('/buscar-uuid-relacionado', async (req, res) => {
       const searchPat2 = `%${caja.trim()}-${folioPad}%`
 
       let sqlIndividual = `
-        SELECT uuid, serie, folio, fecha_facturacion, tipo_factura
+        SELECT uuid, serie, folio, fecha_facturacion, tipo_factura, rfc_receptor
         FROM factura
         WHERE estatus != 'Cancelada'
           AND tipo_factura NOT IN ('Nota de Crédito', 'Cancelada')
@@ -334,7 +334,7 @@ router.get('/buscar-uuid-relacionado', async (req, res) => {
     // 2. Si no se encontró factura individual, buscar la primer Factura Global del día de la venta
     if (!uuidEncontrado && fechaYmd) {
       const sqlGlobal = `
-        SELECT uuid, serie, folio, fecha_facturacion, tipo_factura
+        SELECT uuid, serie, folio, fecha_facturacion, tipo_factura, rfc_receptor
         FROM factura
         WHERE DATE(fecha_facturacion) = ?
           AND (tipo_factura = 'Global' OR rfc_receptor = 'XAXX010101000' OR razon_social LIKE '%PUBLICO EN GENERAL%' OR razon_social LIKE '%PÚBLICO EN GENERAL%')

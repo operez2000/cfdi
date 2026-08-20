@@ -118,7 +118,7 @@
 
             <!-- Cabecera de la Nota de Crédito -->
             <v-row class="mt-1" dense>
-              <v-col cols="12" md="2">
+              <v-col cols="12" md="1">
                 <v-text-field
                   v-model="folio"
                   label="# Nota"
@@ -156,7 +156,7 @@
                 />
               </v-col>
 
-              <v-col cols="6" md="1">
+              <v-col cols="6" md="2">
                 <v-text-field
                   v-model="venta.folio"
                   type="number"
@@ -961,6 +961,40 @@ export default {
           this.loaders.generaFactura = false
           this.alert.active = (this.alert.msg !== "")
         }
+      }
+    },
+    async buscarUuidRelacionado() {
+      try {
+        if (!this.venta.caja || !this.venta.folio) return
+
+        const resp = await this.$axios({
+          url: '/api/facturacion/buscar-uuid-relacionado',
+          method: 'get',
+          params: {
+            caja: this.venta.caja,
+            folio: this.venta.folio,
+            fecha: this.venta.fecha
+          }
+        })
+
+        if (resp.data.response === 200) {
+          const uuid = resp.data.data.uuid
+          const factura = resp.data.data.factura
+          if (uuid && factura) {
+            this.factura.uuidRel = uuid
+            if (factura.rfc_receptor) {
+              this.cliente.rfc = factura.rfc_receptor
+              if (factura.rfc_receptor === 'XAXX010101000') {
+                this.cliente.razonSocial1 = 'PUBLICO EN GENERAL'
+              }
+            }
+          } else {
+            this.factura.uuidRel = ""
+            // this.cliente.rfc = "" // Dejamos en blanco si se prefiere
+          }
+        }
+      } catch (error) {
+        console.error("Error al buscar UUID relacionado:", error)
       }
     },
 
