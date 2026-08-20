@@ -146,7 +146,11 @@
                   outlined
                   :loading="loaders.getVenta"
                   :disabled="loaders.getVenta"
-                  :rules="[v => !!v || 'Obligatorio']"
+                  :rules="[
+                    v => !!v || 'Obligatorio',
+                    v => (Number(v) >= 1 && Number(v) <= 5) || '1-5'
+                  ]"
+                  @blur="formatCaja"
                   ref="refCaja"
                   id="caja"
                 />
@@ -520,6 +524,14 @@ export default {
     this.getParametros()
   },
   methods: {
+    formatCaja() {
+      if (this.venta.caja) {
+        let val = Number(this.venta.caja)
+        if (val >= 1 && val <= 5) {
+          this.venta.caja = String(val).padStart(2, '0')
+        }
+      }
+    },
     formatCurrency(value) {
       const num = Number(value) || 0
       return new Intl.NumberFormat('es-MX', {
@@ -770,8 +782,12 @@ export default {
             }
 
             // Comentarios por defecto
-            const fechaVentaFormat = vData.fecha ? vData.fecha : new Date().toLocaleDateString('es-MX')
-            this.factura.comentarios = `Caja: ${this.venta.caja} | Recibo: ${this.venta.folio} | Fecha Venta: ${fechaVentaFormat}`
+            if (vData.comentarios) {
+              this.factura.comentarios = vData.comentarios
+            } else {
+              const fechaVentaFormat = vData.fecha ? vData.fecha : new Date().toLocaleDateString('es-MX')
+              this.factura.comentarios = `Caja: ${this.venta.caja} | Recibo: ${this.venta.folio} | Fecha Venta: ${fechaVentaFormat}`
+            }
 
             // Búsqueda automática de Factura Global / UUID relacionado
             await this.buscarUuidRelacionado()
@@ -871,6 +887,12 @@ export default {
           this.alert.msg = "Indica el número de Folio de la Nota"
           this.alert.active = true
           return
+        }
+
+        if (!this.factura.uuidRel || this.factura.uuidRel.trim() === '') {
+          if (!confirm("El UUID relacionado está vacío, ¿aún así deseas continuar?")) {
+            return
+          }
         }
 
         this.loaders.generaFactura = true
