@@ -462,11 +462,10 @@ export async function parseCfdiXml(xmlString) {
   }
   if (!autoObservaciones && (comp['cfdi:InformacionGlobal'] || comp.InformacionGlobal || receptor.Rfc === 'XAXX010101000')) {
     if (comp.Fecha) {
-      const mesesNom = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
       const fParts = String(comp.Fecha).split('T')[0].split('-')
       if (fParts.length === 3) {
         const d = fParts[2]
-        const m = mesesNom[parseInt(fParts[1], 10) - 1] || fParts[1]
+        const m = fParts[1]
         const y = fParts[0]
         autoObservaciones = `Factura Global del ${d}/${m}/${y}`
       }

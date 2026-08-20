@@ -57,3 +57,12 @@ Factura global:
     como se hace en /facturas.vue
     ¿Tienes dudas?
 
+
+Notas de Crédito
+    UUID relaconado automático
+    RFC Cliente automático
+Recuperar
+    Loading cuando se abre el modal de consulta
+    Desplegar en orden de fecha descendente la informacion de la tabla
+    Desplegar la fecha de la factura no fecha_registro
+    Auto-Enter al seleccionar la factura de la tabla en el campo v-model="folio"

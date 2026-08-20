@@ -2445,7 +2445,7 @@ app.get('/siguiente-folio-nota/:serie', mdi, async (req, res) => {
   try {
     // Query
     qry = `
-      SELECT TOP 1 (FolioNota + 1) AS FolioNota FROM Notas ORDER BY FolioNota DESC
+      SELECT TOP 1 (FolioNota + 1) AS FolioNota FROM Notas WHERE Serie = '${req.params.serie}' ORDER BY FolioNota DESC
     `
     result = await connection.query(qry)
     json.response = 200

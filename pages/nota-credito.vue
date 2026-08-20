@@ -287,7 +287,7 @@
                 showFirstLastPage: true,
                 itemsPerPageOptions: [10, 20, 50, -1]
               }"
-              item-key="NoIdentificacion"
+              item-key="uniqueId"
               :loading="loaders.getVenta"
               loading-text="Leyendo partidas de la venta..."
               no-data-text="No hay partidas cargadas. Busca una venta con Caja y Recibo."
@@ -524,6 +524,17 @@ export default {
       }
     }
   },
+  watch: {
+    'cliente.rfc'(newVal) {
+      if (newVal === 'XAXX010101000') {
+        const usoS01 = this.usosCfdiFiltrados.find(u => u.startsWith('S01'))
+        if (usoS01) this.factura.usoCfdi = usoS01
+      } else {
+        const usoG02 = this.usosCfdiFiltrados.find(u => u.startsWith('G02'))
+        if (usoG02) this.factura.usoCfdi = usoG02
+      }
+    }
+  },
   mounted() {
     this.getParametros()
   },
@@ -738,37 +749,39 @@ export default {
 
           if (resp.data.response == 200) {
             const vData = resp.data.venta
+            const parseNum = val => Number(String(val || 0).replace(/,/g, '').trim())
             this.venta.fecha = vData.fecha || vData.Fecha || ""
-            this.venta.bruto = vData.bruto
-            this.venta.descuento = vData.descuento
-            this.venta.subtotal = vData.subtotal
-            this.venta.iva = vData.iva
-            this.venta.total = vData.total
-            this.venta.totalVenta = parseFloat(String(vData.total || '0').trim().replace(/,/g, ''))
+            this.venta.bruto = parseNum(vData.bruto)
+            this.venta.descuento = parseNum(vData.descuento)
+            this.venta.subtotal = parseNum(vData.subtotal)
+            this.venta.iva = parseNum(vData.iva)
+            this.venta.total = parseNum(vData.total)
+            this.venta.totalVenta = parseNum(vData.total)
             this.venta.totalVentaFormat = vData.totalVentaFormat
-            this.venta.exento = vData.exento
-            this.venta.tasa0 = vData.tasa0
-            this.venta.gravable = vData.gravable
-            this.venta.factorIva = vData.factorIva
+            this.venta.exento = parseNum(vData.exento)
+            this.venta.tasa0 = parseNum(vData.tasa0)
+            this.venta.gravable = parseNum(vData.gravable)
+            this.venta.factorIva = parseNum(vData.factorIva)
             this.venta.formaDePago = vData.formaDePago
             this.venta.cajeroId = vData.cajeroId || vData.cajero || ""
             this.venta.vendedorId = vData.vendedorId || vData.vendedor || ""
 
             // Formato partidas
-            const itemsProcesados = (vData.data || []).map(p => {
+            const itemsProcesados = (vData.data || []).map((p, idx) => {
               return {
                 ...p,
+                uniqueId: `item_${idx}`,
                 NoIdentificacion: p.NoIdentificacion || p.parte || p.codigo || '',
                 ClaveProdServ: p.ClaveProdServ || p.cveSat || '01010101',
                 Descripcion: p.Descripcion || p.descripcion || '',
-                Cantidad: Number(p.Cantidad || p.cantidad || 1),
-                ValorUnitario: Number(p.ValorUnitario || p.precio || p.Precio || 0),
-                subTotal: Number(p.subTotal || p.subtotal || p.SubTotal || 0),
-                Descuento: Number(p.Descuento || p.descuento || 0),
-                porIva: Number(p.porIva || p.porIVA || 0),
-                impIva: Number(p.impIva || p.impIVA || 0),
-                totalNeto: Number(p.totalNeto || p.total || p.Total || 0),
-                tipoIva: p.tipoIva || p.mTIva || (Number(p.porIva) > 0 ? 'C' : 'B')
+                Cantidad: parseNum(p.Cantidad || p.cantidad || 1),
+                ValorUnitario: parseNum(p.ValorUnitario || p.precio || p.Precio),
+                subTotal: parseNum(p.subTotal || p.subtotal || p.SubTotal),
+                Descuento: parseNum(p.Descuento || p.descuento),
+                porIva: parseNum(p.porIva || p.porIVA),
+                impIva: parseNum(p.impIva || p.impIVA),
+                totalNeto: parseNum(p.totalNeto || p.total || p.Total),
+                tipoIva: p.tipoIva || p.mTIva || (parseNum(p.porIva || p.porIVA) > 0 ? 'C' : 'B')
               }
             })
 
@@ -837,8 +850,9 @@ export default {
               if (usoMatch) this.factura.usoCfdi = usoMatch
             }
 
-            const itemsNota = (nData.items || []).map(p => ({
+            const itemsNota = (nData.items || []).map((p, idx) => ({
               ...p,
+              uniqueId: `item_${idx}`,
               NoIdentificacion: p.NoIdentificacion || p.Parte || '',
               ClaveProdServ: p.ClaveProdServ || p.cveSat || '',
               Descripcion: p.Descripcion || p.descripcion || '',
@@ -1049,11 +1063,14 @@ export default {
 
       // Impuestos Traslados Globales
       if (tot.gravable > 0) {
+        const factor = Number(this.venta.factorIva) || 0.08
+        const tasaGlobalStr = (factor >= 1 ? factor / 100 : factor).toFixed(6)
+        
         jsonCfdi.datos_factura.Impuestos.Traslados.push({
           Base: tot.gravable.toFixed(2),
           Impuesto: "002",
           TipoFactor: "Tasa",
-          TasaOCuota: "0.160000",
+          TasaOCuota: tasaGlobalStr,
           Importe: tot.ivaSat
         })
       }
@@ -1111,7 +1128,7 @@ export default {
                 Base: baseSat,
                 Impuesto: "002",
                 TipoFactor: "Tasa",
-                TasaOCuota: (porIva / 100).toFixed(6),
+                TasaOCuota: (porIva >= 1 ? porIva / 100 : porIva).toFixed(6),
                 Importe: impIva.toFixed(2)
               }
             ]
@@ -1136,4 +1153,3 @@ export default {
     font-size: 0.9rem;
   }
 </style>
-

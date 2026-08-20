@@ -1,0 +1,93 @@
+{
+    "response": 200,
+    "msg": "Ok",
+    "doc": "NOTA",
+    "data": {
+        "folioVenta": "01 35546",
+        "cancelada": false
+    },
+    "factura": {
+        "response": 200,
+        "msg": "Continuar",
+        "mFactura": "",
+        "ejercicio": 0
+    },
+    "venta": {
+        "response": 200,
+        "msg": "Ok",
+        "fecha": "03-Ago-2026",
+        "data": [
+            {
+                "ClaveProdServ": "51191905",
+                "ClaveUnidad": "H87",
+                "Importe": " 871.40",
+                "Unidad": "Pza",
+                "NoIdentificacion": "15263",
+                "Cantidad": " 1",
+                "Descripcion": "INOFOLIC HP C/60 CAP / Lote L250141 Cad 30-Mar-27",
+                "ValorUnitario": " 871.401111",
+                "subTotal": " 871.40",
+                "Numero_CuentaPredial": "",
+                "Descuento": " 0.00",
+                "total": " 871.40",
+                "porIva": "0.080000",
+                "impIva": " 69.71",
+                "totalNeto": " 941.11",
+                "lote": "L250144",
+                "fCaducidad": "30-Mar-2027"
+            },
+            {
+                "ClaveProdServ": "51191905",
+                "ClaveUnidad": "H87",
+                "Importe": " 1,742.80",
+                "Unidad": "Pza",
+                "NoIdentificacion": "15263",
+                "Cantidad": " 2",
+                "Descripcion": "INOFOLIC HP C/60 CAP / Lote L250144 Cad 30-Mar-27",
+                "ValorUnitario": " 871.401111",
+                "subTotal": " 1,742.80",
+                "Numero_CuentaPredial": "",
+                "Descuento": " 0.00",
+                "total": " 1,742.80",
+                "porIva": "0.080000",
+                "impIva": " 139.42",
+                "totalNeto": " 1,882.22",
+                "lote": "0019U",
+                "fCaducidad": "30-Abr-2028"
+            },
+            {
+                "ClaveProdServ": "51191900",
+                "ClaveUnidad": "H87",
+                "Importe": " 725.00",
+                "Unidad": "Pza",
+                "NoIdentificacion": "18237",
+                "Cantidad": " 3",
+                "Descripcion": "PLENAFEM VM C/30 CAPSULAS SP / Lote 0019U Cad 30-Abr-28",
+                "ValorUnitario": " 241.666667",
+                "subTotal": " 725.00",
+                "Numero_CuentaPredial": "",
+                "Descuento": " 0.00",
+                "total": " 725.00",
+                "porIva": "0.080000",
+                "impIva": " 58.00",
+                "totalNeto": " 783.00",
+                "lote": "",
+                "fCaducidad": ""
+            }
+        ],
+        "bruto": "3339.20",
+        "descuento": "0.00",
+        "subtotal": "3339.20",
+        "iva": "267.13",
+        "total": "3606.33",
+        "totalVenta": " 3606.33",
+        "totalVentaFormat": " 3,606.33",
+        "exento": "0.00",
+        "tasa0": "0.00",
+        "gravable": "3339.20",
+        "factorIva": "0.080000",
+        "formaDePago": "28",
+        "comentarios": "Caja-Folio: 01-35546 | Fecha Venta: 03-Ago-2026 | Cajero: 022 | Vendedor: 016 | Cuenta 8984",
+        "numCtaPago": "8984"
+    }
+}

@@ -384,7 +384,7 @@ export default {
         usoCfdi: "",
         condiciones: "Contado",
         numCtaPago: "",
-        comentarios: `Factura Global del ${fechaLetras(fechaHoy)}`,
+        comentarios: `Factura Global del ${fechaHoy.substring(8, 10)}/${fechaHoy.substring(5, 7)}/${fechaHoy.substring(0, 4)}`,
         importe: 0,
         totalFactura: 0,
         data: {
@@ -441,7 +441,7 @@ export default {
       if (!this.folio) {
         this.siguienteFactura()
       }
-      this.factura.comentarios = `Factura Global del ${this.utils.oFecha(this.fecha)}`
+      this.factura.comentarios = `Factura Global del ${fechaFactura}`
       mes = this.fecha.substring(5, 7)
       ejercicio = this.fecha.substring(0, 4)
       this.globalInfo()

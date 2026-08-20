@@ -185,7 +185,7 @@
           >
             <template #[`item.total`]="{ item }">
               <span class="font-weight-medium">
-                ${{ Number(item.total || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+                ${{ Number(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
               </span>
             </template>
 
@@ -312,9 +312,7 @@ export default {
     }, // getParametros()
     abrirDialogoConsulta() {
       this.dialogoConsulta = true
-      if (this.facturasList.length === 0) {
-        this.cargarFacturas()
-      }
+      this.cargarFacturas() // Carga siempre para mostrar el loading y obtener los datos más recientes
     },
     cargarFacturas() {
       this.cargandoFacturas = true
@@ -350,6 +348,11 @@ export default {
 
       // Cerrar el diálogo
       this.dialogoConsulta = false
+      
+      // Auto-Enter (disparar la búsqueda)
+      this.$nextTick(() => {
+        this.buscarCFDI()
+      })
     },
     buscarCFDI() {
       this.alert.msg = ""
