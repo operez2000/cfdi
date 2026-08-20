@@ -1244,6 +1244,8 @@ export default {
             data: this.creaEstructura(),
             factura: {
               folio: `${this.recibo.caja}${this.recibo.folio.padStart(8, ' ')}`,
+              caja: this.recibo.caja,
+              folioVenta: this.recibo.folio,
               numero: this.cliente.numero,
               nombre: this.cliente.razonSocial1,
               rfc: this.cliente.rfc,

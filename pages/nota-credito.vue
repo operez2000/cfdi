@@ -152,7 +152,7 @@
                 />
               </v-col>
 
-              <v-col cols="6" md="2">
+              <v-col cols="6" md="1">
                 <v-text-field
                   v-model="venta.folio"
                   type="number"
@@ -167,6 +167,16 @@
                   :rules="[v => !!v || 'Obligatorio']"
                   hint="Enter o lupa para buscar venta"
                   persistent-hint
+                />
+              </v-col>
+
+              <v-col cols="6" md="1">
+                <v-text-field
+                  v-model="venta.fecha"
+                  label="Fecha Venta"
+                  dense
+                  outlined
+                  disabled
                 />
               </v-col>
 
@@ -200,7 +210,7 @@
               <v-col cols="12" md="2">
                 <v-select
                   v-model="factura.usoCfdi"
-                  :items="utils.usosCfdi"
+                  :items="usosCfdiFiltrados"
                   outlined
                   label="Uso del CFDI"
                   :rules="[v => !!v || 'Dato obligatorio']"
@@ -453,6 +463,9 @@ export default {
     }
   },
   computed: {
+    usosCfdiFiltrados() {
+      return this.utils.usosCfdi.filter(u => u.startsWith('S01') || u.startsWith('G02'))
+    },
     totalesNota() {
       let subtotal = 0
       let descuento = 0
@@ -645,7 +658,20 @@ export default {
           url: `/api/facturacion/buscar-uuid-relacionado?caja=${this.venta.caja}&folio=${this.venta.folio}&fecha=${fechaParam}`
         })
         if (resp.data && resp.data.result && resp.data.result.uuid) {
+          const facturaInfo = resp.data.result.factura || {}
           this.factura.uuidRel = resp.data.result.uuid
+          
+          if (facturaInfo.tipo_factura === 'Global') {
+            this.cliente.rfc = 'XAXX010101000'
+            this.cliente.razonSocial1 = 'PUBLICO EN GENERAL'
+            this.cliente.numero = '000000'
+            
+            const usoS01 = this.usosCfdiFiltrados.find(u => u.startsWith('S01'))
+            if (usoS01) this.factura.usoCfdi = usoS01
+          } else {
+            const usoG02 = this.usosCfdiFiltrados.find(u => u.startsWith('G02'))
+            if (usoG02) this.factura.usoCfdi = usoG02
+          }
         }
       } catch (e) {
         console.warn('No se pudo recuperar UUID relacionado:', e)

@@ -1507,6 +1507,41 @@ app.post("/facturar", mdi, async (req, res) => {
     req.body.factura.tipo = " "
   }
 
+  // --- Validación de CFDI duplicado ---
+  const esNotaCreditoAntes = (json.datos_factura && (json.datos_factura.TipoDeComprobante === 'E' || json.datos_factura.tipoDeComprobante === 'E')) ||
+                             (json.datos_factura && String(json.datos_factura.Serie).toUpperCase().startsWith('NC')) ||
+                             (req.body.factura && String(req.body.factura.tipo).toUpperCase() === 'NC')
+  
+  if (esNotaCreditoAntes && req.body.factura) {
+    const ticketCaja = String(req.body.factura.caja || '').trim()
+    const ticketFolio = String(req.body.factura.folioVenta || '').trim()
+    if (ticketCaja && ticketFolio) {
+      try {
+        const duplicada = await queryOneFactura(
+          `SELECT uuid, serie, folio 
+           FROM factura 
+           WHERE ticket_caja = ? AND ticket_folio = ? 
+             AND tipo_factura = 'Nota de Crédito' 
+             AND estatus != 'Cancelada' 
+             AND YEAR(fecha_registro) = YEAR(NOW())
+           LIMIT 1`,
+          [ticketCaja, ticketFolio]
+        )
+        if (duplicada) {
+          return res.json({
+            result: {
+              error: 1,
+              message: `Ya existe una Nota de Crédito (${duplicada.serie}${duplicada.folio}) para la Caja ${ticketCaja} y Folio ${ticketFolio} en el año en curso.`
+            }
+          })
+        }
+      } catch (errDb) {
+        console.log("Error al validar duplicado de NC:", errDb)
+      }
+    }
+  }
+  // ------------------------------------
+
   try {
     const resp = await axios({
       url: "https://gusher.code-ware.com/cfdi.php",  // "http://74.208.101.117/cfdi/cfdi.php",
@@ -1569,6 +1604,8 @@ app.post("/facturar", mdi, async (req, res) => {
           await guardarFacturaEnDb({
             xml: xmlTimbrado,
             observaciones,
+            ticketCaja: req.body.factura?.caja || req.body.data?.Caja || req.body.data?.caja || '',
+            ticketFolio: req.body.factura?.folioVenta || req.body.data?.FolioVenta || req.body.data?.folioVenta || '',
             noCliente,
             cuentaPago: req.body.factura?.numCtaPago || req.body.data?.numCtaPago || '',
             tipoFacturaCustom: esNotaCredito ? 'Nota de Crédito' : '',

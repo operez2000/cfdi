@@ -32,6 +32,8 @@ function toMysqlDateTime(fechaStr) {
 async function guardarFacturaEnDb({
   xml,
   observaciones = '',
+  ticketCaja = null,
+  ticketFolio = null,
   noCliente = '',
   cuentaPago = '',
   tipoFacturaCustom = '',
@@ -99,14 +101,14 @@ async function guardarFacturaEnDb({
   if (existing) {
     await execute(
       `UPDATE factura SET
-        serie = ?, folio = ?, observaciones = ?, rfc_receptor = ?, no_cliente = ?,
+        serie = ?, folio = ?, observaciones = ?, ticket_caja = ?, ticket_folio = ?, rfc_receptor = ?, no_cliente = ?,
         razon_social = ?, fecha_facturacion = ?, importe_tasa_cero = ?, importe_exento = ?,
         importe_gravable = ?, importe_iva = ?, total = ?, forma_pago = ?, metodo_pago = ?,
         uso_cfdi = ?, cuenta_pago = ?, tipo_factura = ?, uuid = ?, uuid_relacionado = ?,
         xml = ?
       WHERE id = ?`,
       [
-        serie, folio, obs, rfcReceptor, noCli,
+        serie, folio, obs, ticketCaja, ticketFolio, rfcReceptor, noCli,
         razonSocial, fechaFacturacion, importeTasa0, importeExento,
         importeGravable, importeIva, total, formaPago, metodoPago,
         usoCfdi, cuentaPago, tipoFactura, uuid, uuidRel,
@@ -117,14 +119,14 @@ async function guardarFacturaEnDb({
   } else {
     const result = await execute(
       `INSERT INTO factura (
-        serie, folio, observaciones, rfc_receptor, no_cliente,
+        serie, folio, observaciones, ticket_caja, ticket_folio, rfc_receptor, no_cliente,
         razon_social, fecha_facturacion, importe_tasa_cero, importe_exento,
         importe_gravable, importe_iva, total, forma_pago, metodo_pago,
         uso_cfdi, cuenta_pago, tipo_factura, estatus, uuid, uuid_relacionado,
         xml
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Activa', ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Activa', ?, ?, ?)`,
       [
-        serie, folio, obs, rfcReceptor, noCli,
+        serie, folio, obs, ticketCaja, ticketFolio, rfcReceptor, noCli,
         razonSocial, fechaFacturacion, importeTasa0, importeExento,
         importeGravable, importeIva, total, formaPago, metodoPago,
         usoCfdi, cuentaPago, tipoFactura, uuid, uuidRel,
@@ -141,9 +143,9 @@ async function guardarFacturaEnDb({
  */
 router.post('/', async (req, res) => {
   try {
-    const { xml, observaciones, noCliente, cuentaPago, tipoFactura, uuidRelacionado } = req.body
+    const { xml, observaciones, ticketCaja, ticketFolio, noCliente, cuentaPago, tipoFactura, uuidRelacionado } = req.body
     if (!xml) return sendBadRequest(res, 'Debe enviar xml en el cuerpo de la petición')
-    const data = await guardarFacturaEnDb({ xml, observaciones, noCliente, cuentaPago, tipoFactura, uuidRelacionado })
+    const data = await guardarFacturaEnDb({ xml, observaciones, ticketCaja, ticketFolio, noCliente, cuentaPago, tipoFactura, uuidRelacionado })
     return sendOk(res, data, 'Factura guardada correctamente')
   } catch (error) {
     return sendError(res, error)
@@ -296,7 +298,7 @@ router.get('/buscar-uuid-relacionado', async (req, res) => {
     let uuidEncontrado = ''
     let facturaInfo = null
 
-    // 1. Intentar buscar por factura individual de la venta (Caja y Folio en observaciones) en el último año
+    // 1. Intentar buscar por factura individual de la venta (Caja y Folio en observaciones o ticket)
     if (caja && folio) {
       const cajaPad = String(caja).trim().padStart(2, '0')
       const folioPad = String(folio).trim()
@@ -309,10 +311,11 @@ router.get('/buscar-uuid-relacionado', async (req, res) => {
         WHERE estatus != 'Cancelada'
           AND tipo_factura NOT IN ('Nota de Crédito', 'Cancelada')
           AND (
-            observaciones LIKE ? OR observaciones LIKE ?
+            (ticket_caja = ? AND ticket_folio = ?)
+            OR (observaciones LIKE ? OR observaciones LIKE ?)
           )
       `
-      const paramsInd = [searchPat1, searchPat2]
+      const paramsInd = [cajaPad, folioPad, searchPat1, searchPat2]
       if (fechaYmd) {
         sqlIndividual += ` AND fecha_facturacion >= DATE_SUB(?, INTERVAL 1 YEAR)`
         paramsInd.push(fechaYmd)
