@@ -199,6 +199,16 @@
               </v-chip>
             </template>
 
+            <template #[`item.estatus`]="{ item }">
+              <v-chip
+                x-small
+                :color="(item.estatus || '').toUpperCase() === 'CANCELADA' ? 'error' : 'success'"
+                dark
+              >
+                {{ item.estatus || 'Activa' }}
+              </v-chip>
+            </template>
+
             <template #[`item.fecha_facturacion`]="{ item }">
               <span>{{ item.fecha_facturacion ? item.fecha_facturacion.substring(0, 19) : '' }}</span>
             </template>
@@ -284,6 +294,7 @@ export default {
       { text: 'Fecha', value: 'fecha_facturacion', width: '160px' },
       { text: 'Total', value: 'total', align: 'end', width: '110px' },
       { text: 'Tipo', value: 'tipo_factura', width: '130px' },
+      { text: 'Estatus', value: 'estatus', width: '100px' },
       { text: 'Observaciones', value: 'observaciones', width: '220px' },
     ],
   }),

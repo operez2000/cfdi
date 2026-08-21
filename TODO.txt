@@ -50,35 +50,8 @@ Facturacion
 
 
 
-*********************************************
-Factura global:
-    Observaciones guardar Factura Global del día {fecha}
-    Utilizar el mismo flujo y procedimiento que /facturas.vue para ignorar el pdfBase64 de la respuesta que da la API de iTimbre y hacer todo el proceso que se hace con la ruta /facturar, luego construir el PDF en xml2pdf.js y mostrar la factura en un fullscreen dialog tal 
-    como se hace en /facturas.vue
-    ¿Tienes dudas?
+*************************************************************
 
-
-Notas de Crédito
-    UUID relaconado automático
-    RFC Cliente automático
-Recuperar
-    Loading cuando se abre el modal de consulta
-    Desplegar en orden de fecha descendente la informacion de la tabla
-    Desplegar la fecha de la factura no fecha_registro
-    Auto-Enter al seleccionar la factura de la tabla en el campo v-model="folio"
-
-
-en 
-
-global.vue
- y la API 
-
-index.js
- para construir el PDF en 
-
-xml2pdf.js
- es necesario que los comentarios/observaciones sean `Factura Global del ${fecha}' por favor verifica que se muestre el valor de la fecha y
-asegurate que se guarde en factura.observaciones esa información correctamente
-
-el UUID sigue sin leerse, por favor verifica que se lea y se muestre en forma automática cuando corresponde y también la regla del uso del CFDI, cuando el RFC del cliente es 'XAXX010101000' entonces el uso del CFDI debe ser "S01 - Sin efectos fiscales" (UTILS.JS) de lo contrario el default debe ser "G02 - Devoluciones, descuentos o bonificaciones", se quedó en "G03" y debe cambiarse en el archivo en utils.js
-
+Marca de agua en Cancelaciones
+Revisar código de cliente al crearse uno nuevo en el PDF
+Mostrar en tabla de recuperar el estatus del CFDI

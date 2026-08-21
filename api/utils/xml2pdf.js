@@ -533,7 +533,7 @@ export async function parseCfdiXml(xmlString) {
 /**
  * Construye la definición del documento pdfmake para el CFDI.
  */
-function buildDocDefinition(cfdi, observacionesCustom = '') {
+function buildDocDefinition(cfdi, observacionesCustom = '', estatus = '') {
   const tieneDescuento = cfdi.items.some(i => i.descuentoNum > 0) || cfdi.descuentoTotal > 0
 
   // Columnas de la tabla de conceptos
@@ -964,6 +964,10 @@ function buildDocDefinition(cfdi, observacionesCustom = '') {
     })
   }
 
+  if (estatus === 'Cancelada' || estatus === 'CANCELADA') {
+    docDef.watermark = { text: 'CANCELADA', color: 'red', opacity: 0.3, bold: true, italics: false }
+  }
+
   return docDef
 }
 
@@ -1017,16 +1021,16 @@ export function saveCfdiFiles(cfdi, xml, pdfBuffer) {
  * @param {string} [params.noCliente] - Número de cliente a incluir
  * @returns {Promise<string>} Base64 del PDF generado
  */
-export async function generatePdfFromXml({ xml, observaciones = '', noCliente = '' }) {
+export async function generatePdfFromXml({ xml, observaciones = '', noCliente = '', estatus = '' }) {
   if (!xml || typeof xml !== 'string') {
     throw new Error('El parámetro xml es requerido y debe ser una cadena válida.')
   }
 
   const cfdi = await parseCfdiXml(xml)
-  if (noCliente) {
-    cfdi.receptor.numeroCliente = noCliente
+  if (noCliente !== undefined && noCliente !== null) {
+    cfdi.receptor.numeroCliente = String(noCliente)
   }
-  const docDefinition = buildDocDefinition(cfdi, observaciones)
+  const docDefinition = buildDocDefinition(cfdi, observaciones, estatus)
 
   const pdfDoc = printer.createPdfKitDocument(docDefinition)
 
@@ -1058,12 +1062,12 @@ export async function xml2pdfHandler(req, res) {
       (req.body.datos_factura && req.body.datos_factura.comentarios) ||
       ''
     )
-    const noCliente = req.body && (
-      req.body.noCliente ||
-      req.body.no_cliente ||
-      (req.body.cliente && req.body.cliente.id) ||
+    const noCliente = req.body ? (
+      req.body.noCliente ??
+      req.body.no_cliente ??
+      req.body.cliente?.id ??
       ''
-    )
+    ) : ''
 
     if (!xml) {
       return res.status(400).json({

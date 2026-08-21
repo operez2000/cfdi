@@ -1276,7 +1276,7 @@ app.get("/recuperarCFDI/:folio", mdi, async (req, res) => {
     if (row && row.xml) {
       let pdfBase64 = ''
       try {
-        pdfBase64 = await generatePdfFromXml({ xml: row.xml, observaciones: row.observaciones || '' })
+        pdfBase64 = await generatePdfFromXml({ xml: row.xml, observaciones: row.observaciones || '', estatus: row.estatus })
       } catch (errPdf) {
         console.error('Error al generar PDF en /recuperarCFDI desde BD:', errPdf)
       }
@@ -1325,7 +1325,7 @@ app.get("/recuperarCFDI/:folio", mdi, async (req, res) => {
 
     if (xmlRecuperado) {
       try {
-        const pdfBase64Propio = await generatePdfFromXml({ xml: xmlRecuperado })
+        const pdfBase64Propio = await generatePdfFromXml({ xml: xmlRecuperado, estatus: row ? row.estatus : '' })
         if (response.result.result) {
           response.result.result.pdfBase64 = pdfBase64Propio
         }
