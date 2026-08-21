@@ -326,6 +326,7 @@ export default {
       venta: {
         caja: "",
         folio: "",
+        fechayyyymmdd: "",
         bruto: "",
         descuento: "",
         subtotal: "",
@@ -487,6 +488,7 @@ export default {
           console.log("onClick BUSCAR_VENTA", resp.data)
           if (resp.data.response == 200) {
             // No hay errores
+            this.venta.fechayyyymmdd = resp.data.venta.fechayyyymmdd || ""
             this.venta.bruto = resp.data.venta.bruto
             this.venta.descuento = resp.data.venta.descuento
             this.venta.subtotal = resp.data.venta.subtotal
@@ -598,6 +600,7 @@ export default {
                 rfc: this.cliente.rfc,
                 email: this.cliente.email,
                 factura: this.folio.toString().padStart(8, '0'),
+                fecha_facturacion: this.venta.fechayyyymmdd,
                 fecha: (new Date().toLocaleDateString('fr-FR')),
                 importe: this.venta.total,
                 iva: this.venta.iva,

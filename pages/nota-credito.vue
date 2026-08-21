@@ -428,6 +428,7 @@ export default {
         caja: "",
         folio: "",
         fecha: "",
+        fechayyyymmdd: "",
         bruto: "",
         descuento: "",
         subtotal: "",
@@ -483,10 +484,8 @@ export default {
       let exento = 0
 
       for (const item of this.selectedItems) {
-        const cant = Number(item.Cantidad) || 0
-        const precUnit = Number(item.ValorUnitario) || 0
+        const itemSubtotal = Number(item.subTotal) || 0
         const desc = Number(item.Descuento) || 0
-        const itemSubtotal = (cant * precUnit) - desc
         const itemIva = Number(item.impIva) || 0
         const porIva = Number(item.porIva) || 0
         const tipoIva = String(item.tipoIva || item.mTIva || '').toUpperCase()
@@ -526,13 +525,7 @@ export default {
   },
   watch: {
     'cliente.rfc'(newVal) {
-      if (newVal === 'XAXX010101000') {
-        const usoS01 = this.usosCfdiFiltrados.find(u => u.startsWith('S01'))
-        if (usoS01) this.factura.usoCfdi = usoS01
-      } else {
-        const usoG02 = this.usosCfdiFiltrados.find(u => u.startsWith('G02'))
-        if (usoG02) this.factura.usoCfdi = usoG02
-      }
+      this.factura.usoCfdi = this.utils.getDefaultUsoCfdi(newVal, 'NC')
     }
   },
   mounted() {
@@ -679,25 +672,22 @@ export default {
       if (!this.venta.caja || !this.venta.folio) return
       this.loaders.getUuid = true
       try {
-        const fechaParam = this.venta.fecha || ''
+        let fechaParam = this.venta.fechayyyymmdd || this.venta.fecha || ''
+
         const resp = await this.$axios({
           method: 'get',
           url: `/api/facturacion/buscar-uuid-relacionado?caja=${this.venta.caja}&folio=${this.venta.folio}&fecha=${fechaParam}`
         })
-        if (resp.data && resp.data.result && resp.data.result.uuid) {
-          const facturaInfo = resp.data.result.factura || {}
-          this.factura.uuidRel = resp.data.result.uuid
+        if (resp.data && resp.data.response === 200 && resp.data.data && resp.data.data.uuid) {
+          const facturaInfo = resp.data.data.factura || {}
+          this.factura.uuidRel = resp.data.data.uuid
           
-          if (facturaInfo.tipo_factura === 'Global') {
-            this.cliente.rfc = 'XAXX010101000'
-            this.cliente.razonSocial1 = 'PUBLICO EN GENERAL'
-            this.cliente.numero = '000000'
-            
-            const usoS01 = this.usosCfdiFiltrados.find(u => u.startsWith('S01'))
-            if (usoS01) this.factura.usoCfdi = usoS01
-          } else {
-            const usoG02 = this.usosCfdiFiltrados.find(u => u.startsWith('G02'))
-            if (usoG02) this.factura.usoCfdi = usoG02
+          if (facturaInfo.rfc_receptor) {
+            this.cliente.rfc = facturaInfo.rfc_receptor
+            if (facturaInfo.rfc_receptor === 'XAXX010101000') {
+              this.cliente.razonSocial1 = 'PUBLICO EN GENERAL'
+              this.cliente.numero = '000000'
+            }
           }
         }
       } catch (e) {
@@ -751,6 +741,7 @@ export default {
             const vData = resp.data.venta
             const parseNum = val => Number(String(val || 0).replace(/,/g, '').trim())
             this.venta.fecha = vData.fecha || vData.Fecha || ""
+            this.venta.fechayyyymmdd = vData.fechayyyymmdd || ""
             this.venta.bruto = parseNum(vData.bruto)
             this.venta.descuento = parseNum(vData.descuento)
             this.venta.subtotal = parseNum(vData.subtotal)
@@ -981,40 +972,6 @@ export default {
         }
       }
     },
-    async buscarUuidRelacionado() {
-      try {
-        if (!this.venta.caja || !this.venta.folio) return
-
-        const resp = await this.$axios({
-          url: '/api/facturacion/buscar-uuid-relacionado',
-          method: 'get',
-          params: {
-            caja: this.venta.caja,
-            folio: this.venta.folio,
-            fecha: this.venta.fecha
-          }
-        })
-
-        if (resp.data.response === 200) {
-          const uuid = resp.data.data.uuid
-          const factura = resp.data.data.factura
-          if (uuid && factura) {
-            this.factura.uuidRel = uuid
-            if (factura.rfc_receptor) {
-              this.cliente.rfc = factura.rfc_receptor
-              if (factura.rfc_receptor === 'XAXX010101000') {
-                this.cliente.razonSocial1 = 'PUBLICO EN GENERAL'
-              }
-            }
-          } else {
-            this.factura.uuidRel = ""
-            // this.cliente.rfc = "" // Dejamos en blanco si se prefiere
-          }
-        }
-      } catch (error) {
-        console.error("Error al buscar UUID relacionado:", error)
-      }
-    },
 
     creaEstructura() {
       const tot = this.totalesNota
@@ -1101,7 +1058,7 @@ export default {
       return this.selectedItems.map(it => {
         const cant = Number(it.Cantidad) || 1
         const desc = Number(it.Descuento) || 0
-        const subTot = (Number(it.ValorUnitario) * cant) - desc
+        const subTot = Number(it.subTotal) || 0
         const baseSat = subTot.toFixed(2)
         const porIva = Number(it.porIva) || 0
         const impIva = Number(it.impIva) || 0
@@ -1112,7 +1069,7 @@ export default {
           ClaveProdServ: it.ClaveProdServ || "01010101",
           ClaveUnidad: "ACT",
           Descripcion: it.Descripcion || "PRODUCTO",
-          Importe: (cant * Number(it.ValorUnitario)).toFixed(2),
+          Importe: subTot.toFixed(2),
           NoIdentificacion: it.NoIdentificacion || it.parte || "",
           noIdentificacion: it.NoIdentificacion || it.parte || "",
           Unidad: 'Pza',

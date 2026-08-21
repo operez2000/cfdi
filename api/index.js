@@ -697,7 +697,11 @@ const guardarNotaEnAccess = async ({
     }
     console.log(`[Access MDB] Nota de Crédito ${serie}${folioNota} guardada con ID ${idNota}`)
   } catch (errMdb) {
-    console.error("[Access MDB] Error guardando Nota de Crédito en MDB:", errMdb)
+    console.error("[Access MDB] Error guardando Nota de Crédito en MDB:");
+    console.error(errMdb.process ? errMdb.process.message : (errMdb.message || errMdb));
+    if (errMdb.process && errMdb.process.message) {
+      console.error("[Access MDB] SQL Fallido:", typeof qryInsertNota !== 'undefined' ? qryInsertNota : 'Desconocido');
+    }
   }
 }
 
@@ -1609,7 +1613,8 @@ app.post("/facturar", mdi, async (req, res) => {
             noCliente,
             cuentaPago: req.body.factura?.numCtaPago || req.body.data?.numCtaPago || '',
             tipoFacturaCustom: esNotaCredito ? 'Nota de Crédito' : '',
-            uuidRelacionado: uuidRelacionadoEnviado
+            uuidRelacionadoCustom: uuidRelacionadoEnviado,
+            fechaFacturacionCustom: req.body.factura?.fecha_facturacion || null
           })
         } catch (dbErr) {
           console.error("Error al guardar factura en BD facturacion:", dbErr)
@@ -2340,7 +2345,8 @@ app.post("/timbra-global", async (req, res) => {
             xml: xmlTimbrado,
             observaciones,
             noCliente: '000000',
-            tipoFacturaCustom: 'Global'
+            tipoFacturaCustom: 'Global',
+            fechaFacturacionCustom: req.body.fecha2 || null
           })
         } catch (dbErr) {
           console.error("Error al guardar factura global en BD facturacion:", dbErr)
@@ -2440,22 +2446,37 @@ correos = 'opereznet@hotmail.com, operez2000@gmail.com'
 // Siguiente folio de Nota de Crédito
 app.get('/siguiente-folio-nota/:serie', mdi, async (req, res) => {
   let json = {}
-  let qry
-  let result
   try {
-    // Query
-    qry = `
-      SELECT TOP 1 (FolioNota + 1) AS FolioNota FROM Notas WHERE Serie = '${req.params.serie}' ORDER BY FolioNota DESC
+    const serie = req.params.serie || 'NCC'
+    const mysql = require('mysql2/promise')
+    const dbConfig = config.database.facturacion || { host: '127.0.0.1', dbname: 'facturacion', username: 'root', password: '' }
+    const dbConn = await mysql.createConnection({
+      host: dbConfig.host,
+      user: dbConfig.username,
+      password: dbConfig.password,
+      database: dbConfig.dbname
+    })
+    
+    // Consulta MySQL en vez de Access (MDB)
+    const qry = `
+      SELECT (CAST(folio AS UNSIGNED) + 1) AS FolioNota
+      FROM factura 
+      WHERE (tipo_factura = 'Nota de Crédito' OR tipo_factura = 'Nota de Credito') 
+        AND serie = ? 
+      ORDER BY CAST(folio AS UNSIGNED) DESC 
+      LIMIT 1
     `
-    result = await connection.query(qry)
+    const [rows] = await dbConn.query(qry, [serie])
+    dbConn.end()
+
     json.response = 200
     json.message = 'Ok'
-    json.data = (result.length > 0) ? result[0].FolioNota : 1
+    json.data = (rows && rows.length > 0 && rows[0].FolioNota) ? rows[0].FolioNota : 1
   } catch (error) {
-    console.log(error)
-    let msgError = (error.message) ? error.message : ''
+    console.error("Error en /siguiente-folio-nota:", error)
+    let msgError = error.message ? error.message : ''
     if (error.stack !== undefined) {
-      msgError += error.stack.replace(/\s+/gm, ' ')
+      msgError += ' ' + error.stack.replace(/\s+/gm, ' ')
     }
     json.response = 400
     json.message = msgError

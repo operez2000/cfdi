@@ -39,7 +39,8 @@ async function guardarFacturaEnDb({
   tipoFacturaCustom = '',
   uuidRelacionadoCustom = '',
   usuarioCancela = null,
-  motivoCancelacion = null
+  motivoCancelacion = null,
+  fechaFacturacionCustom = null
 }) {
   if (!xml) throw new Error('El XML es requerido para guardar en la BD')
 
@@ -84,7 +85,10 @@ async function guardarFacturaEnDb({
   const usoCfdi = (parsed.receptor?.usoCfdi || '').substring(0, 3)
 
   // Fecha facturación
-  const fechaFacturacion = toMysqlDateTime(parsed.fechaEmision || parsed.timbre?.fechaTimbrado)
+  let fechaFacturacion = toMysqlDateTime(parsed.fechaEmision || parsed.timbre?.fechaTimbrado)
+  if (fechaFacturacionCustom) {
+    fechaFacturacion = fechaFacturacionCustom.length <= 10 ? `${fechaFacturacionCustom} 00:00:00` : fechaFacturacionCustom
+  }
 
   // Observaciones
   const obs = observaciones || parsed.observaciones || ''

@@ -749,6 +749,7 @@ export default {
         folio: "",
         cajaFolio: "",
         fecha: "",
+        fechayyyymmdd: "",
         importe: 0,
         tipo: "",
         cancelada: "",
@@ -935,6 +936,7 @@ export default {
         this.recibo.folio = ""
         this.recibo.cajaFolio = ""
         this.recibo.fecha = ""
+        this.recibo.fechayyyymmdd = ""
         this.recibo.importe = 0
         this.recibo.tipo = ""
         this.recibo.cancelada = ""
@@ -1251,6 +1253,7 @@ export default {
               rfc: this.cliente.rfc,
               email: this.cliente.email,
               factura: this.folio,
+              fecha_facturacion: this.recibo.fechayyyymmdd || "",
               fecha: (new Date().toLocaleDateString('fr-FR')),
               importe: this.facturaOriginal.data.Total,
               iva: this.facturaOriginal.data.Impuestos.TotalImpuestosTrasladados,

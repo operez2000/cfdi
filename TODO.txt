@@ -66,3 +66,19 @@ Recuperar
     Desplegar en orden de fecha descendente la informacion de la tabla
     Desplegar la fecha de la factura no fecha_registro
     Auto-Enter al seleccionar la factura de la tabla en el campo v-model="folio"
+
+
+en 
+
+global.vue
+ y la API 
+
+index.js
+ para construir el PDF en 
+
+xml2pdf.js
+ es necesario que los comentarios/observaciones sean `Factura Global del ${fecha}' por favor verifica que se muestre el valor de la fecha y
+asegurate que se guarde en factura.observaciones esa información correctamente
+
+el UUID sigue sin leerse, por favor verifica que se lea y se muestre en forma automática cuando corresponde y también la regla del uso del CFDI, cuando el RFC del cliente es 'XAXX010101000' entonces el uso del CFDI debe ser "S01 - Sin efectos fiscales" (UTILS.JS) de lo contrario el default debe ser "G02 - Devoluciones, descuentos o bonificaciones", se quedó en "G03" y debe cambiarse en el archivo en utils.js
+

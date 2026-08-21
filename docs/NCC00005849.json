@@ -1,0 +1,169 @@
+{
+    "id_transaccion": 0,
+    "cliente": {
+        "id": "028980",
+        "UsoCFDI": "S01",
+        "nombre": "PUBLICO EN GENERAL",
+        "rfc": "XAXX010101000",
+        "DomicilioFiscalReceptor": "22010",
+        "RegimenFiscalReceptor": "616",
+        "correo": "suc.palmas@gusher.com.mx"
+    },
+    "datos_factura": {
+        "Serie": "NCC",
+        "Folio": "00005849",
+        "Version": "4.0",
+        "cfdiVersion": "4.0",
+        "FormaPago": "04",
+        "TipoCambio": "1",
+        "MetodoPago": "PUE",
+        "RegimenFiscal": "601",
+        "LugarExpedicion": "22010 ",
+        "Moneda": "MXN",
+        "TipoDeComprobante": "E",
+        "tipoDeComprobante": "6",
+        "Exportacion": "01",
+        "CondicionesDePago": "Contado",
+        "no_sucursal": "0",
+        "SubTotal": "2112.12",
+        "Total": "2188.90",
+        "Impuestos": {
+            "TotalImpuestosTrasladados": "76.78",
+            "Traslados": [
+                {
+                    "Base": "959.71",
+                    "Impuesto": "002",
+                    "TipoFactor": "Tasa",
+                    "TasaOCuota": "0.080000",
+                    "Importe": "76.78"
+                },
+                {
+                    "Base": "1152.40",
+                    "Impuesto": "002",
+                    "TipoFactor": "Tasa",
+                    "TasaOCuota": "0.000000",
+                    "Importe": "0.00"
+                }
+            ]
+        },
+        "comentarios": "Caja-Folio: 01-36451 | Fecha Venta: 08-Ago-2026 | Cajero: 032 | Vendedor: 029 | Cuenta 9524 SOLICITO FACTURA",
+        "CfdiRelacionados": {
+            "TipoRelacion": "01",
+            "CfdiRelacionado": {
+                "UUID": "2404B8AB-C9E6-4FFA-A50C-D78CAD09FEF0"
+            }
+        }
+    },
+    "conceptos": [
+        {
+            "Cantidad": "1",
+            "ClaveProdServ": "51102400",
+            "ClaveUnidad": "ACT",
+            "Descripcion": "ARTELAC SOL 3.2MG 10ML OFT / Lote 485 Cad 31-May-27",
+            "Importe": "420.20",
+            "NoIdentificacion": "12591",
+            "noIdentificacion": "12591",
+            "Unidad": "Pza",
+            "ValorUnitario": "420.20",
+            "subTotal": "420.20",
+            "total": "420.20",
+            "ObjetoImp": "02",
+            "Numero_CuentaPredial": "",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "420.20",
+                        "Impuesto": "002",
+                        "TipoFactor": "Tasa",
+                        "TasaOCuota": "0.080000",
+                        "Importe": "33.62"
+                    }
+                ]
+            }
+        },
+        {
+            "Cantidad": "1",
+            "ClaveProdServ": "42231801",
+            "ClaveUnidad": "ACT",
+            "Descripcion": "MACUHEALT 600MG C/30 CAPS / Lote 26A50036 Cad 30-Abr-29",
+            "Importe": "539.52",
+            "NoIdentificacion": "16111",
+            "noIdentificacion": "16111",
+            "Unidad": "Pza",
+            "ValorUnitario": "539.52",
+            "subTotal": "539.52",
+            "total": "539.52",
+            "ObjetoImp": "02",
+            "Numero_CuentaPredial": "",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "539.52",
+                        "Impuesto": "002",
+                        "TipoFactor": "Tasa",
+                        "TasaOCuota": "0.080000",
+                        "Importe": "43.16"
+                    }
+                ]
+            }
+        },
+        {
+            "Cantidad": "1",
+            "ClaveProdServ": "51181730",
+            "ClaveUnidad": "ACT",
+            "Descripcion": "ZEBESTEN GTS 5ML / Lote 4033787 Cad 07-Abr-28",
+            "Importe": "618.91",
+            "NoIdentificacion": "5578",
+            "noIdentificacion": "5578",
+            "Unidad": "Pza",
+            "ValorUnitario": "618.91",
+            "subTotal": "618.91",
+            "total": "618.91",
+            "ObjetoImp": "02",
+            "Numero_CuentaPredial": "",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "618.91",
+                        "Impuesto": "002",
+                        "TipoFactor": "Tasa",
+                        "TasaOCuota": "0.000000",
+                        "Importe": "0.00"
+                    }
+                ]
+            }
+        },
+        {
+            "Cantidad": "1",
+            "ClaveProdServ": "51121820",
+            "ClaveUnidad": "ACT",
+            "Descripcion": "HUMYLUB GTS OFT 15ML / Lote 4032100 Cad 30-Jun-27",
+            "Importe": "533.49",
+            "NoIdentificacion": "6171",
+            "noIdentificacion": "6171",
+            "Unidad": "Pza",
+            "ValorUnitario": "533.49",
+            "subTotal": "533.49",
+            "total": "533.49",
+            "ObjetoImp": "02",
+            "Numero_CuentaPredial": "",
+            "Impuestos": {
+                "Traslados": [
+                    {
+                        "Base": "533.49",
+                        "Impuesto": "002",
+                        "TipoFactor": "Tasa",
+                        "TasaOCuota": "0.000000",
+                        "Importe": "0.00"
+                    }
+                ]
+            }
+        }
+    ],
+    "cuenta": "gusher",
+    "user": "administrador",
+    "password": "$9KVnl81",
+    "getPdf": true,
+    "enviarFactura": true,
+    "method": "nueva_factura"
+}

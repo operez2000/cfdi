@@ -53,6 +53,16 @@ export default class Utils {
     'PPD'
   ]
 
+  getDefaultUsoCfdi = (rfc, tipoCfdi = 'NC') => {
+    if (rfc === 'XAXX010101000') {
+      return this.usosCfdi.find(u => u.startsWith('S01')) || "S01 - Sin efectos fiscales"
+    }
+    if (tipoCfdi === 'NC') {
+      return this.usosCfdi.find(u => u.startsWith('G02')) || "G02 - Devoluciones, descuentos o bonificaciones"
+    }
+    return this.usosCfdi.find(u => u.startsWith('G03')) || "G03 - Gastos en General"
+  }
+
   formatNumber = (num, dec = 2) => {
     num = (typeof num == "string") ? Number(num) : num
     return new Intl.NumberFormat('es-MX', { minimumFractionDigits: dec, maximumFractionDigits: dec } ).format(num)
