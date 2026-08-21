@@ -478,6 +478,7 @@ export async function parseCfdiXml(xmlString) {
     folio,
     tituloComprobante,
     tipoDeComprobante: tipoCompTexto,
+    tipoCompCode: tipoCompCode,
     fechaEmision: formatCfdiDate(comp.Fecha),
     noCertificado: comp.NoCertificado || '',
     lugarExpedicion: comp.LugarExpedicion ? `${comp.LugarExpedicion} - BCN` : '22010 - BCN',
@@ -666,7 +667,7 @@ function buildDocDefinition(cfdi, observacionesCustom = '') {
     }
   }
 
-  return {
+  const docDef = {
     pageSize: 'LETTER',
     pageOrientation: 'portrait',
     pageMargins: [25, 40, 25, 42],
@@ -927,6 +928,43 @@ function buildDocDefinition(cfdi, observacionesCustom = '') {
       color: '#000000'
     }
   }
+
+  if (cfdi.tipoCompCode === 'E') {
+    docDef.content.push({
+      margin: [0, 30, 0, 0],
+      stack: [
+        { text: 'OBSERVACIONES: __________________________________________________________________________________________', fontSize: 9, margin: [0, 0, 0, 15] },
+        { text: '_________________________________________________________________________________________________________', fontSize: 9, margin: [0, 0, 0, 40] },
+        {
+          columns: [
+            {
+              width: '*',
+              stack: [
+                { text: '___________________________', alignment: 'center' },
+                { text: 'CLIENTE', alignment: 'center', fontSize: 8, margin: [0, 2, 0, 0] }
+              ]
+            },
+            {
+              width: '*',
+              stack: [
+                { text: '___________________________', alignment: 'center' },
+                { text: 'CAJERA', alignment: 'center', fontSize: 8, margin: [0, 2, 0, 0] }
+              ]
+            },
+            {
+              width: '*',
+              stack: [
+                { text: '___________________________', alignment: 'center' },
+                { text: 'SUPERVISOR', alignment: 'center', fontSize: 8, margin: [0, 2, 0, 0] }
+              ]
+            }
+          ]
+        }
+      ]
+    })
+  }
+
+  return docDef
 }
 
 /**

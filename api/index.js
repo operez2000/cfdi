@@ -643,12 +643,15 @@ const guardarNotaEnAccess = async ({
 }) => {
   let qryInsertNota = ''
   try {
-    const dNota = fecha ? new Date(fecha) : new Date()
-    const dVenta = fechaVenta ? new Date(fechaVenta) : new Date()
+    let dVenta = new Date()
+    if (fechaVenta) {
+      // Como ya llega en formato YYYY-MM-DD, parseamos directo (agregamos T00:00:00 para evitar desface de zona horaria)
+      const pVenta = new Date(String(fechaVenta).includes('-') && String(fechaVenta).length === 10 ? fechaVenta + 'T00:00:00' : fechaVenta)
+      if (!isNaN(pVenta.getTime())) dVenta = pVenta
+    }
     
-    // Formato YYYY-MM-DD preferido por ADODB para evitar mismatch de fechas
-    const fNotaStr = `${dNota.getFullYear()}-${(dNota.getMonth() + 1).toString().padStart(2, '0')}-${dNota.getDate().toString().padStart(2, '0')} 00:00:00`
-    const fVentaStr = `${dVenta.getFullYear()}-${(dVenta.getMonth() + 1).toString().padStart(2, '0')}-${dVenta.getDate().toString().padStart(2, '0')} 00:00:00`
+    // Formato MM/DD/YYYY sin hora para Access
+    const fVentaStr = `${(dVenta.getMonth() + 1).toString().padStart(2, '0')}/${dVenta.getDate().toString().padStart(2, '0')}/${dVenta.getFullYear()}`
     
     const obsLimpia = String(observaciones || '').replace(/'/g, "''").substring(0, 250)
 
@@ -663,8 +666,8 @@ const guardarNotaEnAccess = async ({
         UUID, UUIDOrigen, observaciones, formaDePago, UsoCFDI
       ) VALUES (
         '${serie}', ${numFolioNota}, '${caja || ''}', ${numFolioVenta},
-        '${fNotaStr}', ${Number(subTotal) || 0}, ${Number(importeIva) || 0}, ${Number(totalNota) || 0},
-        '${clienteId || ''}', ${Number(tc) || 1}, '${tipoVenta || 'CO'}', 1,
+        Date(), ${Number(subTotal) || 0}, ${Number(importeIva) || 0}, ${Number(totalNota) || 0},
+        '${clienteId || ''}', ${Number(tc) || 1}, '${tipoVenta || 'CO'}', '1',
         '${userId || 'ADMIN'}', '${cajeroId || ''}', '${vendedorId || ''}', '${fVentaStr}',
         '${uuid || ''}', '${uuidOrigen || ''}', '${obsLimpia}',
         '${formaDePago || '01'}', '${usoCfdi || 'G02'}'

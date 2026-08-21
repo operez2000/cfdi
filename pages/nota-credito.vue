@@ -725,8 +725,6 @@ export default {
           return
         }
 
-        this.siguienteFolioNota()
-
         try {
           this.venta.caja = this.venta.caja.toString().padStart(2, '0')
           this.venta.bruto = ""
@@ -944,7 +942,7 @@ export default {
               rfc: this.cliente.rfc,
               email: this.cliente.email,
               fecha: new Date().toLocaleDateString('es-MX'),
-              fechaVenta: this.venta.fecha || new Date().toLocaleDateString('es-MX'),
+              fechaVenta: this.venta.fechayyyymmdd || new Date().toISOString().split('T')[0],
               subTotal: this.totalesNota.subtotal,
               iva: this.totalesNota.iva,
               total: this.totalesNota.total,
