@@ -618,7 +618,6 @@ const NotaDeCreditoDetalle = async (idNota) => {
   return data
 } // NotaDeCreditoDetalle(idNota)
 
-// Guardar Nota de Crédito en Access MDB (novartis.mdb)
 const guardarNotaEnAccess = async ({
   serie,
   folioNota,
@@ -642,22 +641,30 @@ const guardarNotaEnAccess = async ({
   usoCfdi,
   items
 }) => {
+  let qryInsertNota = ''
   try {
     const dNota = fecha ? new Date(fecha) : new Date()
     const dVenta = fechaVenta ? new Date(fechaVenta) : new Date()
-    const fNotaStr = `${dNota.getDate().toString().padStart(2, '0')}/${(dNota.getMonth() + 1).toString().padStart(2, '0')}/${dNota.getFullYear()}`
-    const fVentaStr = `${dVenta.getDate().toString().padStart(2, '0')}/${(dVenta.getMonth() + 1).toString().padStart(2, '0')}/${dVenta.getFullYear()}`
+    
+    // Formato YYYY-MM-DD preferido por ADODB para evitar mismatch de fechas
+    const fNotaStr = `${dNota.getFullYear()}-${(dNota.getMonth() + 1).toString().padStart(2, '0')}-${dNota.getDate().toString().padStart(2, '0')} 00:00:00`
+    const fVentaStr = `${dVenta.getFullYear()}-${(dVenta.getMonth() + 1).toString().padStart(2, '0')}-${dVenta.getDate().toString().padStart(2, '0')} 00:00:00`
+    
     const obsLimpia = String(observaciones || '').replace(/'/g, "''").substring(0, 250)
 
-    const qryInsertNota = `
+    // Convertir a número con limpieza en caso de que traiga espacios
+    const numFolioVenta = Number(String(folioVenta).replace(/[^0-9.]/g, '')) || 0
+    const numFolioNota = Number(folioNota) || 0
+
+    qryInsertNota = `
       INSERT INTO Notas (
         Serie, FolioNota, Caja, FolioVenta, Fecha, SubTotal, ImporteIVA, TotalNota,
         ClienteID, TC, TipoVenta, Estatus, UserID, CajeroID, VendedorID, FechaVenta,
         UUID, UUIDOrigen, observaciones, formaDePago, UsoCFDI
       ) VALUES (
-        '${serie}', ${Number(folioNota) || 0}, '${caja || ''}', ${Number(folioVenta) || 0},
+        '${serie}', ${numFolioNota}, '${caja || ''}', ${numFolioVenta},
         '${fNotaStr}', ${Number(subTotal) || 0}, ${Number(importeIva) || 0}, ${Number(totalNota) || 0},
-        '${clienteId || ''}', ${Number(tc) || 1}, '${tipoVenta || 'CO'}', '1',
+        '${clienteId || ''}', ${Number(tc) || 1}, '${tipoVenta || 'CO'}', 1,
         '${userId || 'ADMIN'}', '${cajeroId || ''}', '${vendedorId || ''}', '${fVentaStr}',
         '${uuid || ''}', '${uuidOrigen || ''}', '${obsLimpia}',
         '${formaDePago || '01'}', '${usoCfdi || 'G02'}'
@@ -666,7 +673,7 @@ const guardarNotaEnAccess = async ({
     await connection.execute(qryInsertNota)
 
     // Obtener ID generado
-    const rowId = await connection.query(`SELECT TOP 1 ID FROM Notas WHERE Serie = '${serie}' AND FolioNota = ${Number(folioNota)} ORDER BY ID DESC`)
+    const rowId = await connection.query(`SELECT TOP 1 ID FROM Notas WHERE Serie = '${serie}' AND FolioNota = ${numFolioNota} ORDER BY ID DESC`)
     const idNota = (rowId && rowId.length > 0) ? rowId[0].ID : null
 
     if (idNota && Array.isArray(items) && items.length > 0) {
@@ -700,7 +707,9 @@ const guardarNotaEnAccess = async ({
     console.error("[Access MDB] Error guardando Nota de Crédito en MDB:");
     console.error(errMdb.process ? errMdb.process.message : (errMdb.message || errMdb));
     if (errMdb.process && errMdb.process.message) {
-      console.error("[Access MDB] SQL Fallido:", typeof qryInsertNota !== 'undefined' ? qryInsertNota : 'Desconocido');
+      console.error("[Access MDB] SQL Fallido:", qryInsertNota || 'Desconocido');
+    } else {
+      console.error("[Access MDB] SQL Fallido:", qryInsertNota || 'Desconocido');
     }
   }
 }

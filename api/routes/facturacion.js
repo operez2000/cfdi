@@ -302,7 +302,7 @@ router.get('/buscar-uuid-relacionado', async (req, res) => {
     let uuidEncontrado = ''
     let facturaInfo = null
 
-    // 1. Intentar buscar por factura individual de la venta (Caja y Folio en observaciones o ticket)
+    // 1) Si la caja-folio existe en facturacion.factura y el rfc != "XAXX010101000"
     if (caja && folio) {
       const cajaPad = String(caja).trim().padStart(2, '0')
       const folioPad = String(folio).trim()
@@ -314,6 +314,7 @@ router.get('/buscar-uuid-relacionado', async (req, res) => {
         FROM factura
         WHERE estatus != 'Cancelada'
           AND tipo_factura NOT IN ('Nota de Crédito', 'Cancelada')
+          AND rfc_receptor != 'XAXX010101000'
           AND (
             (ticket_caja = ? AND ticket_folio = ?)
             OR (observaciones LIKE ? OR observaciones LIKE ?)
@@ -335,13 +336,13 @@ router.get('/buscar-uuid-relacionado', async (req, res) => {
       }
     }
 
-    // 2. Si no se encontró factura individual, buscar la primer Factura Global del día de la venta
+    // 2) Si la caja-folio no existe, buscar el primer registro con tipo_factura='Global' en la fecha de la venta
     if (!uuidEncontrado && fechaYmd) {
       const sqlGlobal = `
         SELECT uuid, serie, folio, fecha_facturacion, tipo_factura, rfc_receptor
         FROM factura
         WHERE DATE(fecha_facturacion) = ?
-          AND (tipo_factura = 'Global' OR rfc_receptor = 'XAXX010101000' OR razon_social LIKE '%PUBLICO EN GENERAL%' OR razon_social LIKE '%PÚBLICO EN GENERAL%')
+          AND tipo_factura = 'Global'
           AND estatus != 'Cancelada'
         ORDER BY fecha_facturacion ASC, id ASC
         LIMIT 1
@@ -353,6 +354,7 @@ router.get('/buscar-uuid-relacionado', async (req, res) => {
       }
     }
 
+    // 3) Si no se cumplen los dos puntos anteriores, uuidRel = "" (ya cubierto por let uuidEncontrado = '')
     return sendOk(res, {
       uuid: uuidEncontrado,
       factura: facturaInfo

@@ -672,21 +672,41 @@ export default {
       if (!this.venta.caja || !this.venta.folio) return
       this.loaders.getUuid = true
       try {
-        let fechaParam = this.venta.fechayyyymmdd || this.venta.fecha || ''
-
-        const resp = await this.$axios({
+        // 1) Intentar con el endpoint get-factura-uuid
+        const respFactura = await this.$axios({
           method: 'get',
-          url: `/api/facturacion/buscar-uuid-relacionado?caja=${this.venta.caja}&folio=${this.venta.folio}&fecha=${fechaParam}`
+          url: `${config.backEndUrl}/gusher/ws.prg?mod=get-factura-uuid&caja=${this.venta.caja}&folio=${this.venta.folio}`
         })
-        if (resp.data && resp.data.response === 200 && resp.data.data && resp.data.data.uuid) {
-          const facturaInfo = resp.data.data.factura || {}
-          this.factura.uuidRel = resp.data.data.uuid
+        
+        let found = false
+        if (respFactura.data && respFactura.data.response === 200 && respFactura.data.uuid) {
+          this.factura.uuidRel = respFactura.data.uuid.trim()
+          if (respFactura.data.rfc) this.cliente.rfc = respFactura.data.rfc.trim()
+          if (respFactura.data.cliente) this.cliente.numero = respFactura.data.cliente.trim()
           
-          if (facturaInfo.rfc_receptor) {
-            this.cliente.rfc = facturaInfo.rfc_receptor
-            if (facturaInfo.rfc_receptor === 'XAXX010101000') {
-              this.cliente.razonSocial1 = 'PUBLICO EN GENERAL'
-              this.cliente.numero = '000000'
+          if (this.cliente.rfc === 'XAXX010101000') {
+            this.cliente.razonSocial1 = 'PUBLICO EN GENERAL'
+          }
+          found = true
+        }
+
+        // 2) Si no se encontró, buscar con el endpoint get-global-uuid
+        if (!found) {
+          let fechaParam = this.venta.fechayyyymmdd || ''
+          if (fechaParam) {
+            const respGlobal = await this.$axios({
+              method: 'get',
+              url: `${config.backEndUrl}/gusher/ws.prg?mod=get-global-uuid&fecha=${fechaParam}`
+            })
+            
+            if (respGlobal.data && respGlobal.data.response === 200 && respGlobal.data.uuid) {
+              this.factura.uuidRel = respGlobal.data.uuid.trim()
+              if (respGlobal.data.rfc) this.cliente.rfc = respGlobal.data.rfc.trim()
+              if (respGlobal.data.cliente) this.cliente.numero = respGlobal.data.cliente.trim()
+              
+              if (this.cliente.rfc === 'XAXX010101000') {
+                this.cliente.razonSocial1 = 'PUBLICO EN GENERAL'
+              }
             }
           }
         }
