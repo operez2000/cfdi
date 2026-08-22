@@ -164,7 +164,7 @@ router.get('/listado', async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 500, 2000)
     const rows = await query(`
-      SELECT id, serie, folio, rfc_receptor, razon_social, fecha_facturacion, total, tipo_factura, observaciones, estatus, uuid
+      SELECT id, serie, folio, rfc_receptor, razon_social, fecha_facturacion, total, tipo_factura, observaciones, estatus, uuid, no_cliente
       FROM factura
       ORDER BY fecha_facturacion DESC, id DESC
       LIMIT ?

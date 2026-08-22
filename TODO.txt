@@ -52,6 +52,7 @@ Facturacion
 
 *************************************************************
 
-Marca de agua en Cancelaciones
-Revisar código de cliente al crearse uno nuevo en el PDF
-Mostrar en tabla de recuperar el estatus del CFDI
+* Marca de agua en Cancelaciones
+* Revisar código de cliente al crearse uno nuevo en el PDF
+*Mostrar en tabla de recuperar el estatus del CFDI
+

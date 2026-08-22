@@ -1027,9 +1027,15 @@ export async function generatePdfFromXml({ xml, observaciones = '', noCliente = 
   }
 
   const cfdi = await parseCfdiXml(xml)
-  if (noCliente !== undefined && noCliente !== null) {
-    cfdi.receptor.numeroCliente = String(noCliente)
+  if (noCliente !== undefined && noCliente !== null && String(noCliente).trim() !== '') {
+    cfdi.receptor.numeroCliente = String(noCliente).trim()
+  } else if (!cfdi.receptor.numeroCliente || String(cfdi.receptor.numeroCliente).trim() === '') {
+    cfdi.receptor.numeroCliente = '0'
   }
+  
+  // Asegurar formato de 6 dígitos con ceros a la izquierda
+  cfdi.receptor.numeroCliente = String(cfdi.receptor.numeroCliente).padStart(6, '0')
+
   const docDefinition = buildDocDefinition(cfdi, observaciones, estatus)
 
   const pdfDoc = printer.createPdfKitDocument(docDefinition)
@@ -1066,6 +1072,8 @@ export async function xml2pdfHandler(req, res) {
       req.body.noCliente ??
       req.body.no_cliente ??
       req.body.cliente?.id ??
+      req.body.receptor?.numeroCliente ??
+      req.body.receptor?.numero_cliente ??
       ''
     ) : ''
 

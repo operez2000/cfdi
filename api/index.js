@@ -653,11 +653,24 @@ const guardarNotaEnAccess = async ({
     // Formato MM/DD/YYYY sin hora para Access
     const fVentaStr = `${(dVenta.getMonth() + 1).toString().padStart(2, '0')}/${dVenta.getDate().toString().padStart(2, '0')}/${dVenta.getFullYear()}`
     
-    const obsLimpia = String(observaciones || '').replace(/'/g, "''").substring(0, 250)
+    const obsLimpia = String(observaciones || '').replace(/'/g, "''").substring(0, 50)
 
     // Convertir a número con limpieza en caso de que traiga espacios
     const numFolioVenta = Number(String(folioVenta).replace(/[^0-9.]/g, '')) || 0
     const numFolioNota = Number(folioNota) || 0
+
+    // Limpiar y asegurar longitudes máximas (especialmente para campos UUID y Serie)
+    const cSerie = String(serie || 'NC').trim().substring(0, 6)
+    const cCaja = String(caja || '').trim().substring(0, 5)
+    const cClienteId = String(clienteId || '').trim().substring(0, 20)
+    const cTipoVenta = String(tipoVenta || 'CO').trim().substring(0, 5)
+    const cUserId = String(userId || 'ADMIN').trim().substring(0, 20)
+    const cCajeroId = String(cajeroId || '').trim().substring(0, 20)
+    const cVendedorId = String(vendedorId || '').trim().substring(0, 20)
+    const cUuid = String(uuid || '').trim().substring(0, 36)
+    const cUuidOrigen = String(uuidOrigen || '').trim().substring(0, 36)
+    const cFormaPago = String(formaDePago || '01').trim().substring(0, 5)
+    const cUsoCfdi = String(usoCfdi || 'G02').trim().substring(0, 5)
 
     qryInsertNota = `
       INSERT INTO Notas (
@@ -665,12 +678,12 @@ const guardarNotaEnAccess = async ({
         ClienteID, TC, TipoVenta, Estatus, UserID, CajeroID, VendedorID, FechaVenta,
         UUID, UUIDOrigen, observaciones, formaDePago, UsoCFDI
       ) VALUES (
-        '${serie}', ${numFolioNota}, '${caja || ''}', ${numFolioVenta},
+        '${cSerie}', ${numFolioNota}, '${cCaja}', ${numFolioVenta},
         Date(), ${Number(subTotal) || 0}, ${Number(importeIva) || 0}, ${Number(totalNota) || 0},
-        '${clienteId || ''}', ${Number(tc) || 1}, '${tipoVenta || 'CO'}', '1',
-        '${userId || 'ADMIN'}', '${cajeroId || ''}', '${vendedorId || ''}', '${fVentaStr}',
-        '${uuid || ''}', '${uuidOrigen || ''}', '${obsLimpia}',
-        '${formaDePago || '01'}', '${usoCfdi || 'G02'}'
+        '${cClienteId}', ${Number(tc) || 1}, '${cTipoVenta}', '1',
+        '${cUserId}', '${cCajeroId}', '${cVendedorId}', '${fVentaStr}',
+        '${cUuid}', '${cUuidOrigen}', '${obsLimpia}',
+        '${cFormaPago}', '${cUsoCfdi}'
       )
     `
     await connection.execute(qryInsertNota)
@@ -1276,7 +1289,7 @@ app.get("/recuperarCFDI/:folio", mdi, async (req, res) => {
     if (row && row.xml) {
       let pdfBase64 = ''
       try {
-        pdfBase64 = await generatePdfFromXml({ xml: row.xml, observaciones: row.observaciones || '', estatus: row.estatus })
+        pdfBase64 = await generatePdfFromXml({ xml: row.xml, observaciones: row.observaciones || '', estatus: row.estatus, noCliente: row.no_cliente || '' })
       } catch (errPdf) {
         console.error('Error al generar PDF en /recuperarCFDI desde BD:', errPdf)
       }
@@ -1325,7 +1338,7 @@ app.get("/recuperarCFDI/:folio", mdi, async (req, res) => {
 
     if (xmlRecuperado) {
       try {
-        const pdfBase64Propio = await generatePdfFromXml({ xml: xmlRecuperado, estatus: row ? row.estatus : '' })
+        const pdfBase64Propio = await generatePdfFromXml({ xml: xmlRecuperado, estatus: row ? row.estatus : '', noCliente: row ? (row.no_cliente || '') : '' })
         if (response.result.result) {
           response.result.result.pdfBase64 = pdfBase64Propio
         }

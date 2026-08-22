@@ -290,6 +290,7 @@ export default {
       { text: 'Serie', value: 'serie', width: '80px' },
       { text: 'Folio', value: 'folio', width: '90px' },
       { text: 'RFC Receptor', value: 'rfc_receptor', width: '130px' },
+      { text: 'No. Cliente', value: 'no_cliente', width: '100px' },
       { text: 'Razón Social', value: 'razon_social' },
       { text: 'Fecha', value: 'fecha_facturacion', width: '160px' },
       { text: 'Total', value: 'total', align: 'end', width: '110px' },
