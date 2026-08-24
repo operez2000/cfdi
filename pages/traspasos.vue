@@ -601,6 +601,7 @@ export default {
   data () {
     return {
       autorizado: false,
+      pendingSupervisorAction: null,
       tarjetaSupervisorInput: '',
       errorSupervisor: '',
       menuFecha: false,
@@ -855,7 +856,12 @@ export default {
       }
     },
 
-    abrirDialogoAutorizacion () {
+    abrirDialogoAutorizacion (action = null) {
+      if (typeof action === 'function') {
+        this.pendingSupervisorAction = action
+      } else {
+        this.pendingSupervisorAction = null
+      }
       this.tarjetaSupervisorInput = ''
       this.errorSupervisor = ''
       this.dialog.autorizacion = true
@@ -872,6 +878,7 @@ export default {
       this.dialog.autorizacion = false
       this.tarjetaSupervisorInput = ''
       this.errorSupervisor = ''
+      this.pendingSupervisorAction = null
     },
 
     validarSupervisor () {
@@ -884,11 +891,17 @@ export default {
       }
 
       if (input === supervisorEsperado) {
-        this.autorizado = true
         this.dialog.autorizacion = false
         this.tarjetaSupervisorInput = ''
         this.errorSupervisor = ''
-        this.showSnack('Modificación autorizada por Supervisor', 'success')
+        if (this.pendingSupervisorAction) {
+          const action = this.pendingSupervisorAction
+          this.pendingSupervisorAction = null
+          action()
+        } else {
+          this.autorizado = true
+          this.showSnack('Modificación autorizada por Supervisor', 'success')
+        }
       } else {
         this.errorSupervisor = 'Tarjeta de supervisor no válida'
         this.tarjetaSupervisorInput = ''
@@ -1247,13 +1260,17 @@ export default {
     },
 
     abrirSucursales () {
-      this.limpiarSucursalForm()
-      this.dialog.sucursales = true
+      this.abrirDialogoAutorizacion(() => {
+        this.limpiarSucursalForm()
+        this.dialog.sucursales = true
+      })
     },
 
     abrirMotivos () {
-      this.limpiarMotivoForm()
-      this.dialog.motivos = true
+      this.abrirDialogoAutorizacion(() => {
+        this.limpiarMotivoForm()
+        this.dialog.motivos = true
+      })
     },
 
     editarSucursal (item) {

@@ -425,6 +425,17 @@ export default {
           this.cliente.numero = '000000';
         }
       }
+
+      // Asignar Uso CFDI dinámicamente según el RFC
+      const rfc = this.cliente.rfc ? this.cliente.rfc.toUpperCase() : ''
+      if (rfc === 'XAXX010101000' || rfc === 'XEXX010101000') {
+        const usoCfdi = this.utils.usosCfdi.find(u => u.startsWith('S01'))
+        if (usoCfdi) this.factura.usoCfdi = usoCfdi
+      } else {
+        const usoCfdi = this.utils.usosCfdi.find(u => u.startsWith('G03'))
+        if (usoCfdi) this.factura.usoCfdi = usoCfdi
+      }
+
       this.tab = 'factura'
       setTimeout(() => {
         const idCaja = document.getElementById("caja")

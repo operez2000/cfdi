@@ -552,6 +552,18 @@ export default {
           console.log("resp.data", resp.data)
           if (resp.data.response == 200) {
             this.cliente.nuevo = false
+
+            // Asegurarnos de que el número de cliente se actualiza si fue un alta nueva o viene en la respuesta
+            if (resp.data.numero) {
+              this.cliente.numero = String(resp.data.numero).trim()
+            } else if (resp.data.mNumero) {
+              this.cliente.numero = String(resp.data.mNumero).trim()
+            } else if (resp.data.data && resp.data.data.numero) {
+              this.cliente.numero = String(resp.data.data.numero).trim()
+            } else if (resp.data.data && resp.data.data.mNumero) {
+              this.cliente.numero = String(resp.data.data.mNumero).trim()
+            }
+
             this.warning.msg = "Cliente actualizado correctamente"
             this.warning.type = "success"
             this.$emit('facturasClientesComp', this.cliente)  // emito la información a /facturas
