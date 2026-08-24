@@ -50,9 +50,8 @@ Facturacion
 
 
 
-*************************************************************
+********************************************************************************
 
-* Marca de agua en Cancelaciones
-* Revisar código de cliente al crearse uno nuevo en el PDF
-*Mostrar en tabla de recuperar el estatus del CFDI
-
+Asegurar que se guarde primero el No. de Cliente antes de generar la factura
+Crear un Endpoint en ws.prg para leer el No. de Cliente en base al RFC de la Factura
+Si no está el No. de Cliente

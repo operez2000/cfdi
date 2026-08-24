@@ -639,6 +639,17 @@ export default {
         regFiscal: item.regFiscal || item.regimenFiscal || "",
         email: item.email || item.mEmail || ""
       }
+      if (!this.cliente.numero || this.cliente.numero === '0') {
+        if (this.cliente.rfc && this.cliente.rfc !== 'XAXX010101000') {
+          this.$axios.get(`/api/cliente/rfc/${this.cliente.rfc}`).then(res => {
+            if (res.data && res.data.mNumero) {
+              this.cliente.numero = String(res.data.mNumero).trim();
+            }
+          }).catch(e => console.warn("Error consultando cliente:", e));
+        } else if (this.cliente.rfc === 'XAXX010101000') {
+          this.cliente.numero = '000000';
+        }
+      }
       this.tab = 'factura'
       setTimeout(() => {
         const idCaja = document.getElementById("caja")

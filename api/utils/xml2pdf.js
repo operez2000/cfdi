@@ -449,6 +449,23 @@ export async function parseCfdiXml(xmlString) {
   const qrUrl = `verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?id=${uuid}&re=${rfcEmisor}&rr=${rfcReceptor}&tt=${totalStr}&fe=${sello8}`
   // https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?id=F325CEF4-D97C-42D5-BB64-F6DBC54B3234&re=FGU811107SV0&rr=XAXX010101000&tt=387.18&fe=OerVqA==
 
+  // Obtener numero de cliente con fallback
+  let numeroCliente = receptor.NumRegIdTrib || receptor.id || receptor.NumeroCliente || ''
+  if ((!numeroCliente || numeroCliente === '0' || numeroCliente === '') && rfcReceptor && rfcReceptor !== 'XAXX010101000') {
+    try {
+      const url = `${config.baseUrl || 'http://127.0.0.1:3001'}/api/cliente/rfc/${rfcReceptor}`
+      const resp = await axios.get(url, { timeout: 5000 })
+      if (resp && resp.data && resp.data.mNumero) {
+        numeroCliente = String(resp.data.mNumero).trim()
+      }
+    } catch(err) {
+      console.warn(`xml2pdf: Error fetching no_cliente para ${rfcReceptor}:`, err.message)
+    }
+  }
+  if ((!numeroCliente || numeroCliente === '' || numeroCliente === '0') && rfcReceptor === 'XAXX010101000') {
+    numeroCliente = '000000'
+  }
+  if (!numeroCliente) numeroCliente = '0'
 
   // Observaciones en XML (Addenda, Comprobante o InformacionGlobal)
   let autoObservaciones = comp.Observaciones || comp.comentarios || comp['cfdi:Observaciones'] || ''
@@ -496,7 +513,7 @@ export async function parseCfdiXml(xmlString) {
       direccion: 'Av Paseo de los Heroes 9550 27 B, Zona Urbana Rio Tijuana\nTijuana, Baja California México C.P. 22010\nTeléfono: 664 684 02 35 Y 664 684 02 29'
     },
     receptor: {
-      numeroCliente: receptor.NumRegIdTrib || receptor.id || receptor.NumeroCliente || '0',
+      numeroCliente: numeroCliente,
       nombre: receptor.Nombre || '',
       rfc: rfcReceptor,
       regimenFiscal: CATALOGOS.regimenFiscal[receptor.RegimenFiscalReceptor] || receptor.RegimenFiscalReceptor || '',

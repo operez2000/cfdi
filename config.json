@@ -1,6 +1,6 @@
 {
-  "backEndUrl": "http://192.168.184.1:8888",
-  "baseUrl": "http://192.168.184.1:3001",
+  "backEndUrl": "http://127.0.0.1:8888",
+  "baseUrl": "http://127.0.0.1:3001",
   "dbfLocation": "d:/oscar/gusher",
   "pac": {
     "url": "https://facturacion.itimbre.com/service.php",
