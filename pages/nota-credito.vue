@@ -224,6 +224,7 @@
                   :rules="[v => !!v || 'Dato obligatorio']"
                   ref="refFormaPago"
                   dense
+                  clearable
                 />
               </v-col>
 
@@ -248,6 +249,7 @@
                   mandatory
                   row
                   dense
+                  @change="onCondicionesChange"
                 >
                   <v-radio label="Contado" value="Contado" dense></v-radio>
                   <v-radio label="Crédito" value="Crédito" dense></v-radio>
@@ -340,7 +342,7 @@
     <v-dialog v-model="modalFactura" fullscreen>
       <v-card>
         <v-toolbar dark color="primary">
-          <v-btn icon dark @click="modalFactura = false">
+          <v-btn icon dark @click="cerrarModalFactura">
             <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>Nota de Crédito {{ serie + folio }}</v-toolbar-title>
@@ -571,11 +573,26 @@ export default {
       link.click()
     },
 
+    cerrarModalFactura() {
+      this.modalFactura = false
+      this.nuevaNota()
+    },
+
     nuevaNota() {
+      this.cliente = {
+        nuevo: true,
+        numero: "",
+        razonSocial1: "",
+        rfc: "",
+        codPos: "",
+        regFiscal: "",
+        email: ""
+      }
       this.venta = {
         caja: "",
         folio: "",
         fecha: "",
+        fechayyyymmdd: "",
         bruto: "",
         descuento: "",
         subtotal: "",
@@ -601,10 +618,12 @@ export default {
       this.factura.comentarios = ""
       this.factura.numCtaPago = ""
       this.factura.formaPago = ""
+      this.factura.condiciones = "Contado"
       this.factura.usoCfdi = "G02 - Devoluciones, descuentos o bonificaciones"
       this.showBtnPdf = false
       this.tablaFactura.items = []
       this.selectedItems = []
+      this.tab = 'cliente'
       this.siguienteFolioNota()
     },
 
@@ -662,6 +681,21 @@ export default {
         setTimeout(() => {
           if (this.$refs.refCaja) this.$refs.refCaja.focus()
         }, 100)
+      }
+    },
+
+    onCondicionesChange(val) {
+      if (val === 'Crédito') {
+        const fp99 = this.utils.formasDePago.find(v => v.substring(0, 2) === '99')
+        this.factura.formaPago = fp99 || '99 - Por definir'
+      } else {
+        if (this.venta.formaDePago) {
+          const fpCode = String(this.venta.formaDePago).trim().padStart(2, '0')
+          const matchedFp = this.utils.formasDePago.find(v => v.substring(0, 2) === fpCode)
+          this.factura.formaPago = matchedFp || ""
+        } else {
+          this.factura.formaPago = ""
+        }
       }
     },
 
@@ -809,13 +843,20 @@ export default {
             // Seleccionar todas las partidas por defecto
             this.selectedItems = [...itemsProcesados]
 
-            // Asignar forma de pago sugerida
-            if (vData.formaDePago) {
-              const matchedFp = this.utils.formasDePago.find(v => v.substring(0, 2) === vData.formaDePago)
-              if (matchedFp) this.factura.formaPago = matchedFp
-            }
-            if (!this.factura.formaPago && this.utils.formasDePago.length > 0) {
-              this.factura.formaPago = this.utils.formasDePago[0]
+            // Asignar forma de pago y condiciones
+            if (vData.tipoVenta === 'CR' || vData.condiciones === 'Crédito' || String(vData.formaDePago).trim() === '99') {
+              this.factura.condiciones = 'Crédito'
+              const fp99 = this.utils.formasDePago.find(v => v.substring(0, 2) === '99')
+              this.factura.formaPago = fp99 || '99 - Por definir'
+            } else if (this.factura.condiciones === 'Crédito') {
+              const fp99 = this.utils.formasDePago.find(v => v.substring(0, 2) === '99')
+              this.factura.formaPago = fp99 || '99 - Por definir'
+            } else if (vData.formaDePago) {
+              const fpCode = String(vData.formaDePago).trim().padStart(2, '0')
+              const matchedFp = this.utils.formasDePago.find(v => v.substring(0, 2) === fpCode)
+              this.factura.formaPago = matchedFp || ""
+            } else {
+              this.factura.formaPago = ""
             }
 
             // Comentarios por defecto
@@ -861,7 +902,8 @@ export default {
             this.factura.comentarios = nData.observaciones || nData.comentarios || ""
 
             if (nData.formaDePago) {
-              const fpMatch = this.utils.formasDePago.find(v => v.substring(0, 2) === nData.formaDePago)
+              const fpCode = String(nData.formaDePago).trim().padStart(2, '0')
+              const fpMatch = this.utils.formasDePago.find(v => v.substring(0, 2) === fpCode)
               if (fpMatch) this.factura.formaPago = fpMatch
             }
 
