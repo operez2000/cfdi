@@ -3,8 +3,9 @@
 - Nuxt 2.17.0
 - Node 18
 - Vue 2
-- Element UI
+- Vuetify
 - Axios
+- /api (Node/Express integrada) y modHarbour como backend
 
 ### Descripción
 Cliente web para facturación electrónica
