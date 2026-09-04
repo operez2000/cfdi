@@ -295,6 +295,32 @@
               no-data-text="No hay partidas cargadas. Busca una venta con Caja y Recibo."
               dense
             >
+              <template #[`item.Cantidad`]="{ item }">
+                <div class="d-flex align-center justify-center" style="gap: 4px;">
+                  <v-text-field
+                    v-model.number="item.Cantidad"
+                    type="number"
+                    min="1"
+                    :max="item.cantidadOriginal || 1"
+                    step="1"
+                    dense
+                    outlined
+                    hide-details
+                    :disabled="showBtnPdf || !!factura.uuid"
+                    class="cant-input mx-auto my-1 text-center"
+                    style="max-width: 80px;"
+                    @input="recalcularPartida(item)"
+                    @change="validarCantidad(item)"
+                    @blur="validarCantidad(item)"
+                  />
+                  <span
+                    class="text-caption grey--text font-weight-medium"
+                    :title="'Cantidad original: ' + (item.cantidadOriginal || item.Cantidad)"
+                  >
+                    / {{ item.cantidadOriginal || item.Cantidad }}
+                  </span>
+                </div>
+              </template>
               <template #[`item.ValorUnitario`]="{ item }">
                 {{ formatCurrency(item.ValorUnitario) }}
               </template>
@@ -406,7 +432,7 @@ export default {
       selectedItems: [],
       tablaFactura: {
         headers: [
-          { text: 'Cantidad', value: 'Cantidad', sortable: true, align: "center" },
+          { text: 'Cantidad', value: 'Cantidad', sortable: true, align: "center", width: "135px" },
           { text: 'Código', value: 'NoIdentificacion' },
           { text: 'Clave SAT', value: 'ClaveProdServ' },
           { text: 'Descripción', value: 'Descripcion' },
@@ -491,21 +517,22 @@ export default {
         const itemIva = Number(item.impIva) || 0
         const porIva = Number(item.porIva) || 0
         const tipoIva = String(item.tipoIva || item.mTIva || '').toUpperCase()
+        const netBase = Math.max(0, itemSubtotal - desc)
 
         subtotal += itemSubtotal
         descuento += desc
         iva += itemIva
 
         if (tipoIva === 'A') {
-          exento += itemSubtotal
+          exento += netBase
         } else if (tipoIva === 'B' || porIva === 0) {
-          tasa0 += itemSubtotal
+          tasa0 += netBase
         } else {
-          gravable += itemSubtotal
+          gravable += netBase
         }
       }
 
-      const total = subtotal + iva
+      const total = subtotal - descuento + iva
 
       return {
         subtotal: Number(subtotal.toFixed(2)),
@@ -534,6 +561,64 @@ export default {
     this.getParametros()
   },
   methods: {
+    validarCantidad(item) {
+      if (!item) return
+      let val = Number(item.Cantidad)
+      const max = Number(item.cantidadOriginal) || 1
+      if (isNaN(val) || val < 1) {
+        val = 1
+      } else if (val > max) {
+        val = max
+      } else {
+        val = Math.floor(val)
+      }
+      item.Cantidad = val
+      this.recalcularPartida(item)
+    },
+
+    recalcularPartida(item) {
+      if (!item) return
+      let cant = Number(item.Cantidad)
+      const max = Number(item.cantidadOriginal) || 1
+
+      if (isNaN(cant) || cant < 1) {
+        return
+      }
+
+      if (cant > max) {
+        cant = max
+        item.Cantidad = max
+      }
+
+      if (cant === item.cantidadOriginal) {
+        item.subTotal = item.subtotalOriginal
+        item.Importe = item.subtotalOriginal
+        item.Descuento = item.descuentoOriginal
+        item.impIva = item.impIvaOriginal
+        item.totalNeto = item.totalNetoOriginal
+      } else {
+        const valorUnit = Number(item.ValorUnitario) || 0
+        const descUnit = Number(item.descuentoUnitario) || 0
+        const porIva = Number(item.porIva) || 0
+        const factorIva = porIva >= 1 ? porIva / 100 : porIva
+
+        const subTotal = Number((cant * valorUnit).toFixed(2))
+        const descuento = Number((cant * descUnit).toFixed(2))
+        const baseIva = Math.max(0, subTotal - descuento)
+        const impIva = porIva > 0 ? Number((baseIva * factorIva).toFixed(2)) : 0
+        const totalNeto = Number((subTotal - descuento + impIva).toFixed(2))
+
+        item.subTotal = subTotal
+        item.Importe = subTotal
+        item.Descuento = descuento
+        item.impIva = impIva
+        item.totalNeto = totalNeto
+      }
+
+      // Disparar actualización reactiva de las sumas de la nota
+      this.selectedItems = [...this.selectedItems]
+    },
+
     formatCaja() {
       if (this.venta.caja) {
         let val = Number(this.venta.caja)
@@ -649,11 +734,12 @@ export default {
     },
 
     getCustomerData(item) {
+      const rfc = (item.rfc || item.mrfc || "").replace(/-/g, "").toUpperCase().trim()
       this.cliente = {
         nuevo: false,
         numero: item.numero || item.mnumero || item.id || "",
         razonSocial1: item.razonSocial1 || item.mnombre || item.nombre || "",
-        rfc: (item.rfc || item.mrfc || "").replace(/-/g, ""),
+        rfc: rfc,
         codPos: item.codPos || item.mzp || "",
         regFiscal: item.regFiscal || item.regimenFiscal || "",
         email: item.email || item.mEmail || ""
@@ -669,6 +755,14 @@ export default {
           this.cliente.numero = '000000';
         }
       }
+
+      // Asignar Uso del CFDI: 'S01 - Sin efectos fiscales' para XAXX010101000, de lo contrario 'G02 - Devoluciones, descuentos o bonificaciones'
+      if (rfc === 'XAXX010101000') {
+        this.factura.usoCfdi = this.utils.usosCfdi.find(u => u.startsWith('S01')) || 'S01 - Sin efectos fiscales'
+      } else {
+        this.factura.usoCfdi = this.utils.usosCfdi.find(u => u.startsWith('G02')) || 'G02 - Devoluciones, descuentos o bonificaciones'
+      }
+
       this.tab = 'factura'
       setTimeout(() => {
         const idCaja = document.getElementById("caja")
@@ -822,20 +916,37 @@ export default {
 
             // Formato partidas
             const itemsProcesados = (vData.data || []).map((p, idx) => {
+              const cant = parseNum(p.Cantidad || p.cantidad || 1)
+              const subTot = parseNum(p.subTotal || p.subtotal || p.SubTotal)
+              const valorUnit = parseNum(p.ValorUnitario || p.precio || p.Precio) || (cant > 0 ? subTot / cant : 0)
+              const desc = parseNum(p.Descuento || p.descuento)
+              const porIva = parseNum(p.porIva || p.porIVA)
+              const impIva = parseNum(p.impIva || p.impIVA)
+              const totalNeto = parseNum(p.totalNeto || p.total || p.Total)
+              const descUnit = cant > 0 ? (desc / cant) : 0
+
               return {
                 ...p,
                 uniqueId: `item_${idx}`,
                 NoIdentificacion: p.NoIdentificacion || p.parte || p.codigo || '',
                 ClaveProdServ: p.ClaveProdServ || p.cveSat || '01010101',
                 Descripcion: p.Descripcion || p.descripcion || '',
-                Cantidad: parseNum(p.Cantidad || p.cantidad || 1),
-                ValorUnitario: parseNum(p.ValorUnitario || p.precio || p.Precio),
-                subTotal: parseNum(p.subTotal || p.subtotal || p.SubTotal),
-                Descuento: parseNum(p.Descuento || p.descuento),
-                porIva: parseNum(p.porIva || p.porIVA),
-                impIva: parseNum(p.impIva || p.impIVA),
-                totalNeto: parseNum(p.totalNeto || p.total || p.Total),
-                tipoIva: p.tipoIva || p.mTIva || (parseNum(p.porIva || p.porIVA) > 0 ? 'C' : 'B')
+                Cantidad: cant,
+                cantidadOriginal: cant,
+                ValorUnitario: valorUnit,
+                valorUnitarioOriginal: valorUnit,
+                subTotal: subTot,
+                subtotalOriginal: subTot,
+                Importe: subTot,
+                Descuento: desc,
+                descuentoOriginal: desc,
+                descuentoUnitario: descUnit,
+                porIva: porIva,
+                impIva: impIva,
+                impIvaOriginal: impIva,
+                totalNeto: totalNeto,
+                totalNetoOriginal: totalNeto,
+                tipoIva: p.tipoIva || p.mTIva || (porIva > 0 ? 'C' : 'B')
               }
             })
 
@@ -912,21 +1023,40 @@ export default {
               if (usoMatch) this.factura.usoCfdi = usoMatch
             }
 
-            const itemsNota = (nData.items || []).map((p, idx) => ({
-              ...p,
-              uniqueId: `item_${idx}`,
-              NoIdentificacion: p.NoIdentificacion || p.Parte || '',
-              ClaveProdServ: p.ClaveProdServ || p.cveSat || '',
-              Descripcion: p.Descripcion || p.descripcion || '',
-              Cantidad: Number(p.Cantidad || 1),
-              ValorUnitario: Number(p.ValorUnitario || p.Precio || 0),
-              subTotal: Number(p.subTotal || p.Importe || 0),
-              Descuento: Number(p.Descuento || p.ImpDes || 0),
-              porIva: Number(p.porIva || p.PorIVA || 0),
-              impIva: Number(p.impIva || p.ImpIVA || 0),
-              totalNeto: Number(p.totalNeto || p.Importe || 0),
-              tipoIva: p.tipoIva || p.tipoIVA || 'C'
-            }))
+            const itemsNota = (nData.items || []).map((p, idx) => {
+              const cant = Number(p.Cantidad || 1)
+              const subTot = Number(p.subTotal || p.Importe || 0)
+              const valorUnit = Number(p.ValorUnitario || p.Precio || 0) || (cant > 0 ? subTot / cant : 0)
+              const desc = Number(p.Descuento || p.ImpDes || 0)
+              const porIva = Number(p.porIva || p.PorIVA || 0)
+              const impIva = Number(p.impIva || p.ImpIVA || 0)
+              const totalNeto = Number(p.totalNeto || p.Importe || 0)
+              const descUnit = cant > 0 ? (desc / cant) : 0
+
+              return {
+                ...p,
+                uniqueId: `item_${idx}`,
+                NoIdentificacion: p.NoIdentificacion || p.Parte || '',
+                ClaveProdServ: p.ClaveProdServ || p.cveSat || '',
+                Descripcion: p.Descripcion || p.descripcion || '',
+                Cantidad: cant,
+                cantidadOriginal: cant,
+                ValorUnitario: valorUnit,
+                valorUnitarioOriginal: valorUnit,
+                subTotal: subTot,
+                subtotalOriginal: subTot,
+                Importe: subTot,
+                Descuento: desc,
+                descuentoOriginal: desc,
+                descuentoUnitario: descUnit,
+                porIva: porIva,
+                impIva: impIva,
+                impIvaOriginal: impIva,
+                totalNeto: totalNeto,
+                totalNetoOriginal: totalNeto,
+                tipoIva: p.tipoIva || p.tipoIVA || 'C'
+              }
+            })
 
             this.tablaFactura.items = itemsNota
             this.selectedItems = [...itemsNota]
@@ -952,6 +1082,20 @@ export default {
           this.alert.msg = "Debes seleccionar al menos un producto para la Nota de Crédito"
           this.alert.active = true
           return
+        }
+        for (const it of this.selectedItems) {
+          const cant = Number(it.Cantidad)
+          const max = Number(it.cantidadOriginal) || 1
+          if (isNaN(cant) || cant < 1) {
+            this.alert.msg = `La partida "${it.Descripcion}" tiene una cantidad inválida (mínimo 1).`
+            this.alert.active = true
+            return
+          }
+          if (cant > max) {
+            this.alert.msg = `La partida "${it.Descripcion}" excede la cantidad original (${max}).`
+            this.alert.active = true
+            return
+          }
         }
         if (!this.factura.formaPago) {
           this.alert.msg = "Es necesario indicar la Forma de Pago"
@@ -1130,10 +1274,13 @@ export default {
         const cant = Number(it.Cantidad) || 1
         const desc = Number(it.Descuento) || 0
         const subTot = Number(it.subTotal) || 0
-        const baseSat = subTot.toFixed(2)
+        const baseSat = Math.max(0, subTot - desc).toFixed(2)
         const porIva = Number(it.porIva) || 0
         const impIva = Number(it.impIva) || 0
-        const valorUnitarioSat = Number(it.ValorUnitario).toFixed(2)
+        let valorUnitarioSat = Number(it.ValorUnitario).toFixed(2)
+        if (Number(it.ValorUnitario).toFixed(6).slice(-4) !== '0000') {
+          valorUnitarioSat = Number(it.ValorUnitario).toFixed(6)
+        }
 
         const concepto = {
           Cantidad: cant.toString(),
@@ -1179,5 +1326,10 @@ export default {
   }
   .v-text-field >>> button {
     font-size: 0.9rem;
+  }
+  .cant-input >>> input {
+    text-align: center;
+    padding: 0 4px;
+    height: 28px;
   }
 </style>
