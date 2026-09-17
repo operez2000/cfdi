@@ -1546,11 +1546,7 @@ export default {
 
         destinoIds.forEach((destId) => {
           const items = grupos[destId]
-          const itemsPerPage = 37
-          const footerRows = 12
-          const itemPages = Math.max(1, Math.ceil(items.length / itemsPerPage))
-          const lastPageItems = items.length - itemsPerPage * (itemPages - 1)
-          const estimatedPages = (lastPageItems + footerRows > itemsPerPage) ? itemPages + 1 : itemPages
+          const estimatedPages = items.length <= 30 ? 1 : Math.ceil((items.length - 30) / 37) + 1
 
           pageRanges.push({
             destId,
@@ -1577,6 +1573,7 @@ export default {
           content.push({
             table: {
               headerRows: 3,
+              dontBreakRows: true,
               widths: [31, 71, '*', 44, 56, 55, 20],
               body: [
                 [
@@ -1659,29 +1656,34 @@ export default {
                   it.lote || '',
                   this.formatFechaPdf(it.fecha_caducidad) || '',
                   { text: String(it.cantidad), alignment: 'center' }
-                ])
+                ]),
+                [
+                  {
+                    colSpan: 7,
+                    border: noBorder,
+                    stack: [
+                      { text: `Motivo: ${motivo ? motivo.descripcion : '—'}`, style: 'small', margin: [0, 8, 0, 4] },
+                      { text: `Caja: ${caja || '—'}`, style: 'small', margin: [0, 0, 0, 4] },
+                      { text: `Observaciones: ${this.form.observaciones || '—'}`, style: 'small', margin: [0, 0, 0, 12] },
+                      {
+                        columns: [
+                          { text: `Surte:\n\n_______________________________\n${this.form.persona_surte}`, style: 'firma' },
+                          { text: `Captura:\n\n_______________________________\n${this.form.persona_captura}`, style: 'firma' },
+                          // { text: `Revisa:\n\n________________________\n${this.form.persona_revisa}`, style: 'firma' },
+                          { text: `Autoriza:\n\n_______________________________\n${this.form.persona_autoriza}`, style: 'firma' },
+                          { text: `Chofer:\n\n_______________________________\n${this.form.chofer}`, style: 'firma' }
+                        ],
+                        margin: [0, 8, 0, 0]
+                      }
+                    ]
+                  },
+                  ...emptyColSpanCells
+                ]
               ]
             },
             layout: 'lightHorizontalLines',
             margin: [0, 0, 0, 16]
           })
-
-
-          content.push(
-            { text: `Motivo: ${motivo ? motivo.descripcion : '—'}`, style: 'small', margin: [0, 0, 0, 4] },
-            { text: `Caja: ${caja || '—'}`, style: 'small', margin: [0, 0, 0, 4] },
-            { text: `Observaciones: ${this.form.observaciones || '—'}`, style: 'small', margin: [0, 0, 0, 12] },
-            {
-              columns: [
-                { text: `Surte:\n\n_______________________________\n${this.form.persona_surte}`, style: 'firma' },
-                { text: `Captura:\n\n_______________________________\n${this.form.persona_captura}`, style: 'firma' },
-               // { text: `Revisa:\n\n________________________\n${this.form.persona_revisa}`, style: 'firma' },
-                { text: `Autoriza:\n\n_______________________________\n${this.form.persona_autoriza}`, style: 'firma' },
-                { text: `Chofer:\n\n_______________________________\n${this.form.chofer}`, style: 'firma' }
-              ],
-              margin: [0, 8, 0, 0]
-            }
-          )
         })
 
         const docDefinition = {
