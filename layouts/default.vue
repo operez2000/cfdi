@@ -161,6 +161,23 @@
             <v-list-item-title v-text="'Cancelación'"></v-list-item-title>
           </v-list-item> -->
         </v-list-group>
+        <v-list-group
+          dense
+          prepend-icon="mdi-currency-usd"
+        >
+          <template v-slot:activator>
+            <v-list-item-title>Ventas</v-list-item-title>
+          </template>
+          <v-list-item
+            class="ml-14"
+            dense
+            link
+            to="/ventas-categoria"
+            @click="drawer=false"
+          >
+            <v-list-item-title v-text="'Categoría (Antibióticos)'"></v-list-item-title>
+          </v-list-item>
+        </v-list-group>        
       </v-list>
 
     </v-navigation-drawer>

@@ -25,6 +25,7 @@ const _134552af = () => interopDefault(import('..\\pages\\Recuperar - Copy.vue' 
 const _7282fdaa = () => interopDefault(import('..\\pages\\refacturacion.vue' /* webpackChunkName: "pages/refacturacion" */))
 const _43dee00c = () => interopDefault(import('..\\pages\\refacturacion4.vue' /* webpackChunkName: "pages/refacturacion4" */))
 const _f846c754 = () => interopDefault(import('..\\pages\\traspasos.vue' /* webpackChunkName: "pages/traspasos" */))
+const _6c7d5c86 = () => interopDefault(import('..\\pages\\ventas-categoria.vue' /* webpackChunkName: "pages/ventas-categoria" */))
 const _6cff7252 = () => interopDefault(import('..\\pages\\index.vue' /* webpackChunkName: "pages/index" */))
 
 const emptyFn = () => {}
@@ -122,6 +123,10 @@ export const routerOptions = {
     path: "/traspasos",
     component: _f846c754,
     name: "traspasos"
+  }, {
+    path: "/ventas-categoria",
+    component: _6c7d5c86,
+    name: "ventas-categoria"
   }, {
     path: "/",
     component: _6cff7252,

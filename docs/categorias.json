@@ -1,0 +1,626 @@
+{
+    "response": 200,
+    "msg": "Categorias leidas correctamente",
+    "data": [
+        {
+            "categoria": "102",
+            "descripcion": "GELES "
+        },
+        {
+            "categoria": "104",
+            "descripcion": "GOTAS "
+        },
+        {
+            "categoria": "105",
+            "descripcion": "JARABES "
+        },
+        {
+            "categoria": "106",
+            "descripcion": "SPRAYS "
+        },
+        {
+            "categoria": "107",
+            "descripcion": "MEDICINA DE REFIGERADOR "
+        },
+        {
+            "categoria": "108",
+            "descripcion": "SEMICONTROL "
+        },
+        {
+            "categoria": "109",
+            "descripcion": "SUPOSITORIOS "
+        },
+        {
+            "categoria": "110",
+            "descripcion": "TABLETAS "
+        },
+        {
+            "categoria": "111",
+            "descripcion": "PARTE ALTA MEDICINAS "
+        },
+        {
+            "categoria": "112",
+            "descripcion": "POLVO MEDICINAL "
+        },
+        {
+            "categoria": "201",
+            "descripcion": "MEDICAMENTOS CONTROL 2 "
+        },
+        {
+            "categoria": "301",
+            "descripcion": "ANT ADN DISTRIB "
+        },
+        {
+            "categoria": "601",
+            "descripcion": "MENONITA PRODUCTOS CARRETE "
+        },
+        {
+            "categoria": "602",
+            "descripcion": "GENERICOS IMPULSO "
+        },
+        {
+            "categoria": "501",
+            "descripcion": "PERFUMERIA "
+        },
+        {
+            "categoria": "113",
+            "descripcion": "LECHES "
+        },
+        {
+            "categoria": "001",
+            "descripcion": "MEDICINA "
+        },
+        {
+            "categoria": "202",
+            "descripcion": "MEDICAMENTOS CONTROL 3 "
+        },
+        {
+            "categoria": "603",
+            "descripcion": "LAB LE ROY "
+        },
+        {
+            "categoria": "604",
+            "descripcion": "CIPRO VICTORY "
+        },
+        {
+            "categoria": "605",
+            "descripcion": "CAROLETAS PALETAS "
+        },
+        {
+            "categoria": "606",
+            "descripcion": "SESDERMA LABS "
+        },
+        {
+            "categoria": "607",
+            "descripcion": "DERMA SOURCE "
+        },
+        {
+            "categoria": "608",
+            "descripcion": "THERBAL "
+        },
+        {
+            "categoria": "609",
+            "descripcion": "KOKUSAI NATURISTA "
+        },
+        {
+            "categoria": "610",
+            "descripcion": "PRODIN "
+        },
+        {
+            "categoria": "611",
+            "descripcion": "ANAHUAC PLANTAS MED "
+        },
+        {
+            "categoria": "612",
+            "descripcion": "BAUMANOMETROS "
+        },
+        {
+            "categoria": "613",
+            "descripcion": "GENERICOS CAROS "
+        },
+        {
+            "categoria": "614",
+            "descripcion": "LIOMONT FARMA F "
+        },
+        {
+            "categoria": "615",
+            "descripcion": "MAYAKS "
+        },
+        {
+            "categoria": "616",
+            "descripcion": "DIINSEL PRUEBAS COVID "
+        },
+        {
+            "categoria": "617",
+            "descripcion": "COLLARINES MEDIPAR "
+        },
+        {
+            "categoria": "618",
+            "descripcion": "GENOMMA LAB "
+        },
+        {
+            "categoria": "620",
+            "descripcion": "LIOMONT OTC M "
+        },
+        {
+            "categoria": "621",
+            "descripcion": "PAY PHARMA "
+        },
+        {
+            "categoria": "622",
+            "descripcion": "DAGLAB LABS "
+        },
+        {
+            "categoria": "623",
+            "descripcion": "JALOMA "
+        },
+        {
+            "categoria": "624",
+            "descripcion": "SANDOZ LABS "
+        },
+        {
+            "categoria": "625",
+            "descripcion": "THERMOMETROS "
+        },
+        {
+            "categoria": "626",
+            "descripcion": "DNA BIOPHARMA "
+        },
+        {
+            "categoria": "627",
+            "descripcion": "ISISPHARMA LABS "
+        },
+        {
+            "categoria": " GY",
+            "descripcion": "TYTYYTYTYTYTYYTYTYTYTYTYTYTYTY"
+        },
+        {
+            "categoria": "630",
+            "descripcion": "DESCONTINUADOS "
+        },
+        {
+            "categoria": "631",
+            "descripcion": "LAB. COLLIN'S "
+        },
+        {
+            "categoria": "632",
+            "descripcion": "BOMUCA "
+        },
+        {
+            "categoria": "633",
+            "descripcion": "******************** "
+        },
+        {
+            "categoria": "634",
+            "descripcion": "APHA SOLUCIONES "
+        },
+        {
+            "categoria": "635",
+            "descripcion": "************** "
+        },
+        {
+            "categoria": "628",
+            "descripcion": "GROSSMAN VALEANT "
+        },
+        {
+            "categoria": "636",
+            "descripcion": "GALIA SANAX MAYAKS "
+        },
+        {
+            "categoria": "637",
+            "descripcion": "HORMONA SANFER GENERICOS "
+        },
+        {
+            "categoria": "638",
+            "descripcion": "COMER RIVAMART (GEL LINAZA) "
+        },
+        {
+            "categoria": "639",
+            "descripcion": "HORMONA LABS "
+        },
+        {
+            "categoria": "629",
+            "descripcion": "DISTRIB. ARVIEN/AM TECNOLOGIA "
+        },
+        {
+            "categoria": "640",
+            "descripcion": "GALDERMA PHARMA "
+        },
+        {
+            "categoria": "641",
+            "descripcion": "XOTZIL "
+        },
+        {
+            "categoria": "642",
+            "descripcion": "CALDERA "
+        },
+        {
+            "categoria": "643",
+            "descripcion": "IPHARMA "
+        },
+        {
+            "categoria": "644",
+            "descripcion": "BIODERMA "
+        },
+        {
+            "categoria": "103",
+            "descripcion": "CREMAS Y POMADAS "
+        },
+        {
+            "categoria": "645",
+            "descripcion": "GALDERMA DERMATOLOGICOS "
+        },
+        {
+            "categoria": "646",
+            "descripcion": "PROSANA PROD. DE MIEL "
+        },
+        {
+            "categoria": "619",
+            "descripcion": "PROSA "
+        },
+        {
+            "categoria": "647",
+            "descripcion": "DIST MEDIFARMA "
+        },
+        {
+            "categoria": "648",
+            "descripcion": "FARMAPIEL DERMATOLOGICOS "
+        },
+        {
+            "categoria": "649",
+            "descripcion": "LANDSTEINER "
+        },
+        {
+            "categoria": "650",
+            "descripcion": "DISTRIB. HOME CARE "
+        },
+        {
+            "categoria": "652",
+            "descripcion": "ULTRA LABORATORIOS "
+        },
+        {
+            "categoria": "651",
+            "descripcion": "NEILMED "
+        },
+        {
+            "categoria": "653",
+            "descripcion": "COSTURA INGLESA (CUBREBOCAS) "
+        },
+        {
+            "categoria": "654",
+            "descripcion": "CANTABRIA LAB DERMA "
+        },
+        {
+            "categoria": "600",
+            "descripcion": "MUSTELA "
+        },
+        {
+            "categoria": "655",
+            "descripcion": "CARGOLET "
+        },
+        {
+            "categoria": "656",
+            "descripcion": "AVENE MEPIEL "
+        },
+        {
+            "categoria": "657",
+            "descripcion": "FEDELE DERMATOLOCICA "
+        },
+        {
+            "categoria": "658",
+            "descripcion": "LABORATORIOS PISA "
+        },
+        {
+            "categoria": "659",
+            "descripcion": "QUIMICA NORDIN "
+        },
+        {
+            "categoria": "660",
+            "descripcion": "REPRESENTACIONES SOMMS "
+        },
+        {
+            "categoria": "661",
+            "descripcion": "TOK BARBER/KOHN "
+        },
+        {
+            "categoria": "662",
+            "descripcion": "SIMILIA LABS "
+        },
+        {
+            "categoria": "663",
+            "descripcion": "DERMI MARTIN "
+        },
+        {
+            "categoria": "664",
+            "descripcion": "GLENMARCK "
+        },
+        {
+            "categoria": "665",
+            "descripcion": "SUPER CONFORT TURKIMEX "
+        },
+        {
+            "categoria": "666",
+            "descripcion": "PACIFICA "
+        },
+        {
+            "categoria": "667",
+            "descripcion": "NIRVANA-EVEVIL COSMETICOS "
+        },
+        {
+            "categoria": "668",
+            "descripcion": "DIFESA DISTRIB ELIZABETH "
+        },
+        {
+            "categoria": "669",
+            "descripcion": "FRABEL LA ROCHE "
+        },
+        {
+            "categoria": "670",
+            "descripcion": "LABORATORIOS ISDIN "
+        },
+        {
+            "categoria": "671",
+            "descripcion": "TECNOFARMA "
+        },
+        {
+            "categoria": "672",
+            "descripcion": "GRISSI "
+        },
+        {
+            "categoria": "673",
+            "descripcion": "SYDENHAM LABS "
+        },
+        {
+            "categoria": "674",
+            "descripcion": "SUN STAR GUM "
+        },
+        {
+            "categoria": "675",
+            "descripcion": "LAB. DS DIVINE SKINE "
+        },
+        {
+            "categoria": "677",
+            "descripcion": "ATLANTIS FARMA "
+        },
+        {
+            "categoria": "678",
+            "descripcion": "ESSENTIAL NATURAL "
+        },
+        {
+            "categoria": "114",
+            "descripcion": "GERBER'S "
+        },
+        {
+            "categoria": "679",
+            "descripcion": "DIST BOREAL GFT "
+        },
+        {
+            "categoria": "302",
+            "descripcion": "ANTIBIOTICO PATENTE "
+        },
+        {
+            "categoria": "303",
+            "descripcion": "PISA LABS "
+        },
+        {
+            "categoria": "304",
+            "descripcion": "ANTIBIOTICOS IMPULSO "
+        },
+        {
+            "categoria": "305",
+            "descripcion": "ANTIBIOTICOS DESCONTINUADOS "
+        },
+        {
+            "categoria": "306",
+            "descripcion": "ANTIBIOTICOS GROSSMAN VALEANT "
+        },
+        {
+            "categoria": "307",
+            "descripcion": "ANT. CVS LABS "
+        },
+        {
+            "categoria": "308",
+            "descripcion": "ANT. BOREAL "
+        },
+        {
+            "categoria": "309",
+            "descripcion": "ANT. PANALAB "
+        },
+        {
+            "categoria": "310",
+            "descripcion": "ANTIBIOTICOS GALDERMA "
+        },
+        {
+            "categoria": "311",
+            "descripcion": "ANTIBIOTICOS LIOMONT FARMA "
+        },
+        {
+            "categoria": "312",
+            "descripcion": "ANT. COVID "
+        },
+        {
+            "categoria": "313",
+            "descripcion": "ANT. TECNOFARMA "
+        },
+        {
+            "categoria": "314",
+            "descripcion": "ANT. ATLANTIS "
+        },
+        {
+            "categoria": "315",
+            "descripcion": "ANTIBIOTICOS PHARMA DEPOT "
+        },
+        {
+            "categoria": "316",
+            "descripcion": "ANTIBIOTICOS HORMONA "
+        },
+        {
+            "categoria": "810",
+            "descripcion": "PRODIN "
+        },
+        {
+            "categoria": "317",
+            "descripcion": "ANT. COLLIN'S "
+        },
+        {
+            "categoria": "334",
+            "descripcion": "ANT. COLLIN'S "
+        },
+        {
+            "categoria": "318",
+            "descripcion": "ANT. ULTRA LABS "
+        },
+        {
+            "categoria": "331",
+            "descripcion": "5 "
+        },
+        {
+            "categoria": "385",
+            "descripcion": "8 "
+        },
+        {
+            "categoria": "680",
+            "descripcion": "DIST ARPE EXDERM "
+        },
+        {
+            "categoria": "681",
+            "descripcion": "NARTEX LABS "
+        },
+        {
+            "categoria": "682",
+            "descripcion": "ALPHAPRO NUCITEC "
+        },
+        {
+            "categoria": "683",
+            "descripcion": "PERSONAL CARE SILVIA MARTIN "
+        },
+        {
+            "categoria": "684",
+            "descripcion": "QUIM NOROESTE ACCUCHECK "
+        },
+        {
+            "categoria": "300",
+            "descripcion": "GERBER'S "
+        },
+        {
+            "categoria": "685",
+            "descripcion": "SALIMEX "
+        },
+        {
+            "categoria": "686",
+            "descripcion": "VICHY CERAVE "
+        },
+        {
+            "categoria": "687",
+            "descripcion": "GENOVE COSMETIC "
+        },
+        {
+            "categoria": "689",
+            "descripcion": "*********** "
+        },
+        {
+            "categoria": "690",
+            "descripcion": "PANALAB LABS "
+        },
+        {
+            "categoria": "691",
+            "descripcion": "******************* "
+        },
+        {
+            "categoria": "319",
+            "descripcion": "ANT. LOEFFLER (g) "
+        },
+        {
+            "categoria": " 30",
+            "descripcion": "1 "
+        },
+        {
+            "categoria": "692",
+            "descripcion": "************ "
+        },
+        {
+            "categoria": "693",
+            "descripcion": "****************** "
+        },
+        {
+            "categoria": "694",
+            "descripcion": "**** "
+        },
+        {
+            "categoria": "695",
+            "descripcion": "**** "
+        },
+        {
+            "categoria": "696",
+            "descripcion": "**** "
+        },
+        {
+            "categoria": "697",
+            "descripcion": "**** "
+        },
+        {
+            "categoria": "320",
+            "descripcion": "**** "
+        },
+        {
+            "categoria": "321",
+            "descripcion": "***** "
+        },
+        {
+            "categoria": "322",
+            "descripcion": "**** "
+        },
+        {
+            "categoria": "323",
+            "descripcion": "*** "
+        },
+        {
+            "categoria": "324",
+            "descripcion": "*** "
+        },
+        {
+            "categoria": "325",
+            "descripcion": "ANTIBIOTICOS FARMAPIEL "
+        },
+        {
+            "categoria": "502",
+            "descripcion": "BDF "
+        },
+        {
+            "categoria": "503",
+            "descripcion": "PROTER PG "
+        },
+        {
+            "categoria": "101",
+            "descripcion": "AMPOLLETAS "
+        },
+        {
+            "categoria": "504",
+            "descripcion": "COLGATE "
+        },
+        {
+            "categoria": "790",
+            "descripcion": "BOREAL FARMACEUTICA "
+        },
+        {
+            "categoria": "807",
+            "descripcion": "ECOWIPES "
+        },
+        {
+            "categoria": "688",
+            "descripcion": "MEDICOR LABS "
+        },
+        {
+            "categoria": "699",
+            "descripcion": "ALTA ESPECIALIDAD "
+        },
+        {
+            "categoria": "676",
+            "descripcion": "COSMETICS ARUAL "
+        },
+        {
+            "categoria": "505",
+            "descripcion": "PERFUMERIA ESPECIAL "
+        }
+    ]
+}
