@@ -480,7 +480,7 @@ export default {
           { header: 'Salida',         width: 12 },  // col 9  - salidas
           { header: 'Saldo',          width: 12 },  // col 10 - saldo
           { header: 'Receta',         width: 12 },  // col 11 - receta
-          { header: 'Vendedor',       width: 12 },  // col 12 - vendedor
+          { header: 'Vend',           width: 12 },  // col 12 - vendedor
           { header: 'Usuario',        width: 14 },  // col 13 - usuario
           { header: 'Clasif',         width: 12 },  // col 14 - clasificacion
           { header: 'Lote',           width: 14 },  // col 15 - lote
@@ -509,6 +509,34 @@ export default {
           }
         })
         headerRow.height = 24
+
+        // ── Calcular anchos dinámicos (máx. valor de cada columna + padding) ──
+        // Valores por columna en el mismo orden que row.values
+        const colKeys = [
+          'codigo', 'descripcion', 'barras', 'fecha', 'hora', 'folio',
+          'tipo_movim', 'entradas', 'salidas', 'saldo', 'receta', 'vendedor',
+          'usuario', 'clasificacion', 'lote', 'caducidad', 'proveedor', 'observaciones'
+        ]
+        // Ancho máximo absoluto por columna (en caracteres)
+        const colMaxWidth = [20, 60, 22, 12, 8, 12, 12, 10, 10, 10, 12, 12, 18, 12, 18, 12, 24, 60]
+        const PADDING = 2
+
+        // Inicializar con el largo de cada header
+        const colWidths = columns.map(col => col.header.length + PADDING)
+
+        // Recorrer los datos y ajustar al valor más largo
+        this.ventas.forEach(item => {
+          colKeys.forEach((key, idx) => {
+            const val = item[key] !== null && item[key] !== undefined ? String(item[key]).trim() : ''
+            const len = val.length + PADDING
+            if (len > colWidths[idx]) colWidths[idx] = len
+          })
+        })
+
+        // Aplicar el tope máximo por columna
+        colWidths.forEach((w, idx) => {
+          colWidths[idx] = Math.min(w, colMaxWidth[idx])
+        })
 
         // ── Filas de datos ────────────────────────────────────────────────────
         let currentRowIdx = 7
@@ -541,7 +569,7 @@ export default {
 
           for (let i = 1; i <= columns.length; i++) {
             const cell = row.getCell(i)
-            cell.font = { name: 'Calibri', size: 10 }
+            cell.font = { name: 'Calibri', size: 9 }
             cell.fill = {
               type: 'pattern',
               pattern: 'solid',
@@ -593,10 +621,20 @@ export default {
         }
         totalRow.height = 24
 
-        // ── Anchos de columnas ────────────────────────────────────────────────
-        columns.forEach((col, idx) => {
-          ws.getColumn(idx + 1).width = col.width
+        // ── Anchos dinámicos de columnas ──────────────────────────────────────
+        colWidths.forEach((w, idx) => {
+          ws.getColumn(idx + 1).width = w
         })
+
+        // ── Márgenes estrechos (Narrow) ───────────────────────────────────────
+        ws.pageSetup.margins = {
+          left:   0.25,
+          right:  0.25,
+          top:    0.75,
+          bottom: 0.75,
+          header: 0.3,
+          footer: 0.3
+        }
 
         // ── Generar y descargar archivo ───────────────────────────────────────
         const buffer = await wb.xlsx.writeBuffer()
