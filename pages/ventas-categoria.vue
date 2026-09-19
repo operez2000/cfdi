@@ -155,7 +155,7 @@
             </v-chip>
             <v-chip color="secondary" outlined small v-if="ventas.length > 0">
               <v-icon left small>mdi-pill</v-icon>
-              Total Piezas: <strong>{{ totalPiezas }}</strong>
+              Total Salidas: <strong>{{ totalPiezas }}</strong>
             </v-chip>
           </v-col>
 
@@ -207,14 +207,12 @@
           <span class="font-weight-bold text--primary">{{ item.codigo }}</span>
         </template>
 
-        <template v-slot:item.cantidad="{ item }">
-          <span class="font-weight-medium success--text text--darken-2">{{ item.cantidad }}</span>
+        <template v-slot:item.salidas="{ item }">
+          <span class="font-weight-medium success--text text--darken-2">{{ item.salidas }}</span>
         </template>
 
-        <template v-slot:item.devolucion="{ item }">
-          <span :class="item.devolucion > 0 ? 'error--text font-weight-bold' : ''">
-            {{ item.devolucion }}
-          </span>
+        <template v-slot:item.entradas="{ item }">
+          <span class="font-weight-medium blue--text text--darken-2">{{ item.entradas }}</span>
         </template>
 
         <template v-slot:item.tipo_movim="{ item }">
@@ -252,6 +250,7 @@ export default {
       // Búsqueda en tabla y datos
       search: '',
       ventas: [],
+      parametros: null,
 
       // Loaders
       loaders: {
@@ -269,20 +268,24 @@ export default {
 
       // Encabezados de tabla
       headers: [
-        { text: 'Código', value: 'codigo', align: 'start', sortable: true },
-        { text: 'Descripción', value: 'descripcion', sortable: true },
-        { text: 'Fecha', value: 'fecha', sortable: true },
-        { text: 'Hora', value: 'hora', sortable: true },
-        { text: 'Folio', value: 'folio', sortable: true },
-        { text: 'Tipo Mov.', value: 'tipo_movim', sortable: true },
-        { text: 'Cant.', value: 'cantidad', align: 'end', sortable: true },
-        { text: 'Dev.', value: 'devolucion', align: 'end', sortable: true },
-        { text: 'Exist.', value: 'existencia', align: 'end', sortable: true },
-        { text: 'Cód. Barras', value: 'barras', sortable: true },
-        { text: 'Receta', value: 'receta', sortable: true },
-        { text: 'Vendedor', value: 'vendedor', sortable: true },
-        { text: 'Clasif.', value: 'clasificacion', sortable: true },
-        { text: 'Concepto', value: 'concepto', sortable: true }
+        { text: 'Código',      value: 'codigo',         align: 'start', sortable: true },
+        { text: 'Descripción', value: 'descripcion',                     sortable: true },
+        { text: 'Cód. Barras', value: 'barras',                          sortable: true },
+        { text: 'Fecha',       value: 'fecha',                           sortable: true },
+        { text: 'Hora',        value: 'hora',                            sortable: true },
+        { text: 'Folio',       value: 'folio',                           sortable: true },
+        { text: 'Tipo Mov.',   value: 'tipo_movim',                      sortable: true },
+        { text: 'Entrada',     value: 'entradas',       align: 'end',    sortable: true },
+        { text: 'Salida',      value: 'salidas',        align: 'end',    sortable: true },
+        { text: 'Saldo',       value: 'saldo',          align: 'end',    sortable: true },
+        { text: 'Receta',      value: 'receta',                          sortable: true },
+        { text: 'Vendedor',    value: 'vendedor',                        sortable: true },
+        { text: 'Usuario',     value: 'usuario',                         sortable: true },
+        { text: 'Clasif.',     value: 'clasificacion',                   sortable: true },
+        { text: 'Lote',        value: 'lote',                            sortable: true },
+        { text: 'Caducidad',   value: 'caducidad',                       sortable: true },
+        { text: 'Proveedor',   value: 'proveedor',                       sortable: true },
+        { text: 'Observ.',     value: 'observaciones',                   sortable: true }
       ]
     }
   },
@@ -293,7 +296,7 @@ export default {
     },
 
     totalPiezas() {
-      return this.ventas.reduce((acc, curr) => acc + (Number(curr.cantidad) || 0), 0)
+      return this.ventas.reduce((acc, curr) => acc + (Number(curr.salidas) || 0), 0)
     }
   },
 
@@ -348,6 +351,7 @@ export default {
 
       this.loaders.ventas = true
       this.ventas = []
+      this.parametros = null
 
       try {
         const url = `${config.backEndUrl}/gusher/ws.prg?mod=ventas-por-categoria&fecha_inicial=${this.fecha_inicial}&fecha_final=${this.fecha_final}&categoria=${encodeURIComponent(this.categoria)}`
@@ -355,6 +359,9 @@ export default {
 
         if (resp && resp.data) {
           if (resp.data.response === 200 || Array.isArray(resp.data.data)) {
+            // Guardar parámetros del reporte
+            this.parametros = resp.data.parametros || null
+
             const data = resp.data.data || []
             this.ventas = data.map(item => ({
               codigo: (item.codigo || '').toString().trim(),
@@ -362,15 +369,19 @@ export default {
               fecha: (item.fecha || '').toString().trim(),
               hora: (item.hora || '').toString().trim(),
               folio: (item.folio || '').toString().trim(),
-              devolucion: Number(item.devolucion || 0),
-              cantidad: Number(item.cantidad || 0),
-              concepto: (item.concepto || '').toString().trim(),
+              entradas: Number(item.entradas || 0),
+              salidas: Number(item.salidas || 0),
+              saldo: Number(item.saldo || 0),
               barras: (item.barras || '').toString().trim(),
-              existencia: Number(item.existencia || 0),
               receta: (item.receta || '').toString().trim(),
               vendedor: (item.vendedor || '').toString().trim(),
               clasificacion: (item.clasificacion || '').toString().trim(),
-              tipo_movim: (item.tipo_movim || '').toString().trim()
+              tipo_movim: (item.tipo_movim || '').toString().trim(),
+              lote: (item.lote || '').toString().trim(),
+              caducidad: (item.caducidad || '').toString().trim(),
+              usuario: (item.usuario || '').toString().trim(),
+              proveedor: (item.proveedor || '').toString().trim(),
+              observaciones: (item.observaciones || '').toString().trim()
             }))
 
             if (this.ventas.length === 0) {
@@ -409,47 +420,77 @@ export default {
         const catObj = this.categorias.find(c => c.categoria === this.categoria)
         const catTexto = catObj ? `${catObj.categoria} - ${catObj.descripcion}` : this.categoria
 
-        // Título principal
-        ws.mergeCells('A1:N1')
-        const titleCell = ws.getCell('A1')
-        titleCell.value = 'FARMACIAS GUSHER - REPORTE DE VENTAS POR CATEGORÍA'
-        titleCell.font = { name: 'Calibri', size: 14, bold: true, color: { argb: 'FFFFFFFF' } }
-        titleCell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FF1976D2' }
-        }
-        titleCell.alignment = { horizontal: 'center', vertical: 'middle' }
+        // Número de columnas
+        const NUM_COLS = 18
+        const lastCol = String.fromCharCode(64 + NUM_COLS) // 'R' para 18 columnas
+
+        // ── Fila 1: Nombre de la empresa ──────────────────────────────────────
+        ws.mergeCells(`A1:${lastCol}1`)
+        const empresaCell = ws.getCell('A1')
+        empresaCell.value = this.parametros ? (this.parametros.empresa || 'FARMACIAS GUSHER').toUpperCase() : 'FARMACIAS GUSHER'
+        empresaCell.font = { name: 'Calibri', size: 14, bold: true, color: { argb: 'FFFFFFFF' } }
+        empresaCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1976D2' } }
+        empresaCell.alignment = { horizontal: 'center', vertical: 'middle' }
         ws.getRow(1).height = 28
 
-        // Subtítulo con parámetros del reporte
-        ws.mergeCells('A2:N2')
-        const subtitleCell = ws.getCell('A2')
-        subtitleCell.value = `Categoría: ${catTexto}   |   Periodo: ${this.fecha_inicial} al ${this.fecha_final}   |   Total Registros: ${this.ventas.length}   |   Total Piezas: ${this.totalPiezas}`
-        subtitleCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF263238' } }
-        subtitleCell.alignment = { horizontal: 'center', vertical: 'middle' }
-        ws.getRow(2).height = 20
+        // ── Fila 2: Sucursal ──────────────────────────────────────────────────
+        ws.mergeCells(`A2:${lastCol}2`)
+        const sucursalCell = ws.getCell('A2')
+        sucursalCell.value = this.parametros ? (this.parametros.sucursal || '') : ''
+        sucursalCell.font = { name: 'Calibri', size: 12, bold: true, color: { argb: 'FFFFFFFF' } }
+        sucursalCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1565C0' } }
+        sucursalCell.alignment = { horizontal: 'center', vertical: 'middle' }
+        ws.getRow(2).height = 22
 
-        // Columnas
+        // ── Fila 3: Dirección compuesta ───────────────────────────────────────
+        ws.mergeCells(`A3:${lastCol}3`)
+        const dirCell = ws.getCell('A3')
+        if (this.parametros) {
+          const dir = [this.parametros.direccion, this.parametros.colonia, this.parametros.ciudad]
+            .filter(Boolean)
+            .join(' | ')
+          dirCell.value = dir
+        } else {
+          dirCell.value = ''
+        }
+        dirCell.font = { name: 'Calibri', size: 10, bold: false, color: { argb: 'FFFFFFFF' } }
+        dirCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D47A1' } }
+        dirCell.alignment = { horizontal: 'center', vertical: 'middle' }
+        ws.getRow(3).height = 18
+
+        // ── Fila 4: Parámetros del reporte ────────────────────────────────────
+        ws.mergeCells(`A4:${lastCol}4`)
+        const subtitleCell = ws.getCell('A4')
+        subtitleCell.value = `Reporte de Ventas por Categoría   |   Categoría: ${catTexto}   |   Periodo: ${this.fecha_inicial} al ${this.fecha_final}   |   Registros: ${this.ventas.length}   |   Total Salidas: ${this.totalPiezas}`
+        subtitleCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF263238' } }
+        subtitleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE3F2FD' } }
+        subtitleCell.alignment = { horizontal: 'center', vertical: 'middle' }
+        ws.getRow(4).height = 20
+
+        // ── Columnas ──────────────────────────────────────────────────────────
         const columns = [
-          { header: 'Código', width: 12 },
-          { header: 'Descripción', width: 35 },
-          { header: 'Fecha', width: 14 },
-          { header: 'Hora', width: 10 },
-          { header: 'Folio', width: 12 },
-          { header: 'Tipo Movimiento', width: 16 },
-          { header: 'Cantidad', width: 12 },
-          { header: 'Devolución', width: 12 },
-          { header: 'Existencia', width: 12 },
-          { header: 'Cód. Barras', width: 18 },
-          { header: 'Receta', width: 12 },
-          { header: 'Vendedor', width: 12 },
-          { header: 'Clasificación', width: 14 },
-          { header: 'Concepto', width: 22 }
+          { header: '# Parte',        width: 12 },  // col 1  - codigo
+          { header: 'Descripción',    width: 35 },  // col 2  - descripcion
+          { header: 'Cód. Barras',    width: 18 },  // col 3  - barras
+          { header: 'Fecha',          width: 14 },  // col 4  - fecha
+          { header: 'Hora',           width: 10 },  // col 5  - hora
+          { header: 'Folio',          width: 12 },  // col 6  - folio
+          { header: 'Tipo Mov',       width: 14 },  // col 7  - tipo_movim
+          { header: 'Entrada',        width: 12 },  // col 8  - entradas
+          { header: 'Salida',         width: 12 },  // col 9  - salidas
+          { header: 'Saldo',          width: 12 },  // col 10 - saldo
+          { header: 'Receta',         width: 12 },  // col 11 - receta
+          { header: 'Vendedor',       width: 12 },  // col 12 - vendedor
+          { header: 'Usuario',        width: 14 },  // col 13 - usuario
+          { header: 'Clasif',         width: 12 },  // col 14 - clasificacion
+          { header: 'Lote',           width: 14 },  // col 15 - lote
+          { header: 'Caducidad',      width: 14 },  // col 16 - caducidad
+          { header: 'Proveedor',      width: 18 },  // col 17 - proveedor
+          { header: 'Observaciones',  width: 30 }   // col 18 - observaciones
         ]
 
-        // Encabezados en Fila 4
-        const headerRow = ws.getRow(4)
+        // ── Encabezados en Fila 6 ─────────────────────────────────────────────
+        const headerRow = ws.getRow(6)
         columns.forEach((col, idx) => {
           const cell = headerRow.getCell(idx + 1)
           cell.value = col.header
@@ -469,25 +510,29 @@ export default {
         })
         headerRow.height = 24
 
-        // Filas de datos
-        let currentRowIdx = 5
+        // ── Filas de datos ────────────────────────────────────────────────────
+        let currentRowIdx = 7
         this.ventas.forEach((item, index) => {
           const row = ws.getRow(currentRowIdx)
           row.values = [
             item.codigo,
             item.descripcion,
+            item.barras,
             item.fecha,
             item.hora,
             item.folio,
             item.tipo_movim,
-            item.cantidad,
-            item.devolucion,
-            item.existencia,
-            item.barras,
+            item.entradas,
+            item.salidas,
+            item.saldo,
             item.receta,
             item.vendedor,
+            item.usuario,
             item.clasificacion,
-            item.concepto
+            item.lote,
+            item.caducidad,
+            item.proveedor,
+            item.observaciones
           ]
           row.height = 20
 
@@ -509,35 +554,35 @@ export default {
               right: { style: 'thin', color: { argb: 'FFE0E0E0' } }
             }
 
-            // Alineación numérica o centrada según columna
-            if ([7, 8, 9].includes(i)) {
+            // Alineación: numérica para entradas/salidas/saldo (cols 8,9,10), izq para descripción y observaciones
+            if ([8, 9, 10].includes(i)) {
               cell.alignment = { horizontal: 'right', vertical: 'middle' }
-            } else if ([1, 3, 4, 5, 6, 10, 11, 12, 13].includes(i)) {
-              cell.alignment = { horizontal: 'center', vertical: 'middle' }
+            } else if ([2, 18].includes(i)) {
+              cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true }
             } else {
-              cell.alignment = { horizontal: 'left', vertical: 'middle' }
+              cell.alignment = { horizontal: 'center', vertical: 'middle' }
             }
           }
           currentRowIdx++
         })
 
-        // Fila de Totales
+        // ── Fila de Totales ───────────────────────────────────────────────────
         const totalRow = ws.getRow(currentRowIdx)
         totalRow.getCell(2).value = 'TOTALES:'
         totalRow.getCell(2).font = { name: 'Calibri', size: 11, bold: true }
         totalRow.getCell(2).alignment = { horizontal: 'right', vertical: 'middle' }
 
-        const totalCantidad = this.ventas.reduce((acc, curr) => acc + (Number(curr.cantidad) || 0), 0)
-        const cellTotCant = totalRow.getCell(7)
-        cellTotCant.value = totalCantidad
-        cellTotCant.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF1B5E20' } }
-        cellTotCant.alignment = { horizontal: 'right', vertical: 'middle' }
+        const totalEntradas = this.ventas.reduce((acc, curr) => acc + (Number(curr.entradas) || 0), 0)
+        const cellTotEnt = totalRow.getCell(8)
+        cellTotEnt.value = totalEntradas
+        cellTotEnt.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF1565C0' } }
+        cellTotEnt.alignment = { horizontal: 'right', vertical: 'middle' }
 
-        const totalDev = this.ventas.reduce((acc, curr) => acc + (Number(curr.devolucion) || 0), 0)
-        const cellTotDev = totalRow.getCell(8)
-        cellTotDev.value = totalDev
-        cellTotDev.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFB71C1C' } }
-        cellTotDev.alignment = { horizontal: 'right', vertical: 'middle' }
+        const totalSalidas = this.ventas.reduce((acc, curr) => acc + (Number(curr.salidas) || 0), 0)
+        const cellTotSal = totalRow.getCell(9)
+        cellTotSal.value = totalSalidas
+        cellTotSal.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF1B5E20' } }
+        cellTotSal.alignment = { horizontal: 'right', vertical: 'middle' }
 
         for (let i = 1; i <= columns.length; i++) {
           const cell = totalRow.getCell(i)
@@ -548,12 +593,12 @@ export default {
         }
         totalRow.height = 24
 
-        // Asignación de anchos a columnas
+        // ── Anchos de columnas ────────────────────────────────────────────────
         columns.forEach((col, idx) => {
           ws.getColumn(idx + 1).width = col.width
         })
 
-        // Generación del archivo y descarga en navegador
+        // ── Generar y descargar archivo ───────────────────────────────────────
         const buffer = await wb.xlsx.writeBuffer()
         const blob = new Blob([buffer], {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
