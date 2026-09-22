@@ -184,47 +184,51 @@
 
       <v-divider></v-divider>
 
-      <!-- Tabla de Datos con Ordenamiento y Paginación -->
-      <v-data-table
-        :headers="headers"
-        :items="ventas"
-        :search="search"
-        :loading="loaders.ventas"
-        loading-text="Consultando ventas por categoría..."
-        no-data-text="No hay datos para mostrar. Seleccione un rango de fechas y una categoría para consultar."
-        no-results-text="No se encontraron registros que coincidan con el filtro."
-        dense
-        class="elevation-1"
-        :items-per-page="15"
-        :footer-props="{
-          'items-per-page-options': [10, 15, 25, 50, 100, -1],
-          'items-per-page-text': 'Filas por página',
-          'items-per-page-all-text': 'Todos'
-        }"
-      >
-        <!-- Slot personalizado para formatear columnas -->
-        <template v-slot:item.codigo="{ item }">
-          <span class="font-weight-bold text--primary">{{ item.codigo }}</span>
-        </template>
+      <!-- Tabla de Datos con Ordenamiento, Paginación y Scroll Horizontal -->
+      <div class="table-responsive-wrapper">
+        <v-data-table
+          :headers="headersResponsivos"
+          :items="ventas"
+          :search="search"
+          :loading="loaders.ventas"
+          loading-text="Consultando ventas por categoría..."
+          no-data-text="No hay datos para mostrar. Seleccione un rango de fechas y una categoría para consultar."
+          no-results-text="No se encontraron registros que coincidan con el filtro."
+          dense
+          fixed-header
+          height="520"
+          class="elevation-1 tabla-ventas"
+          :items-per-page="15"
+          :footer-props="{
+            'items-per-page-options': [10, 15, 25, 50, 100, -1],
+            'items-per-page-text': 'Filas por página',
+            'items-per-page-all-text': 'Todos'
+          }"
+        >
+          <!-- Slot personalizado para formatear columnas -->
+          <template v-slot:item.codigo="{ item }">
+            <span class="font-weight-bold text--primary">{{ item.codigo }}</span>
+          </template>
 
-        <template v-slot:item.salidas="{ item }">
-          <span class="font-weight-medium success--text text--darken-2">{{ item.salidas }}</span>
-        </template>
+          <template v-slot:item.salidas="{ item }">
+            <span class="font-weight-medium success--text text--darken-2">{{ item.salidas }}</span>
+          </template>
 
-        <template v-slot:item.entradas="{ item }">
-          <span class="font-weight-medium blue--text text--darken-2">{{ item.entradas }}</span>
-        </template>
+          <template v-slot:item.entradas="{ item }">
+            <span class="font-weight-medium blue--text text--darken-2">{{ item.entradas }}</span>
+          </template>
 
-        <template v-slot:item.tipo_movim="{ item }">
-          <v-chip
-            x-small
-            :color="item.tipo_movim === 'Venta' ? 'primary' : 'warning'"
-            outlined
-          >
-            {{ item.tipo_movim }}
-          </v-chip>
-        </template>
-      </v-data-table>
+          <template v-slot:item.tipo_movim="{ item }">
+            <v-chip
+              x-small
+              :color="item.tipo_movim === 'Venta' ? 'primary' : 'warning'"
+              outlined
+            >
+              {{ item.tipo_movim }}
+            </v-chip>
+          </template>
+        </v-data-table>
+      </div>
     </v-card>
   </v-container>
 </template>
@@ -268,23 +272,23 @@ export default {
 
       // Encabezados de tabla
       headers: [
-        { text: 'Código',      value: 'codigo',         align: 'start', sortable: true },
+        { text: 'Código',      value: 'codigo',         align: 'start', sortable: true, cellClass: 'td-nowrap' },
         { text: 'Descripción', value: 'descripcion',                     sortable: true },
-        { text: 'Cód. Barras', value: 'barras',                          sortable: true },
-        { text: 'Fecha',       value: 'fecha',                           sortable: true },
-        { text: 'Hora',        value: 'hora',                            sortable: true },
-        { text: 'Folio',       value: 'folio',                           sortable: true },
-        { text: 'Tipo Mov.',   value: 'tipo_movim',                      sortable: true },
-        { text: 'Entrada',     value: 'entradas',       align: 'end',    sortable: true },
-        { text: 'Salida',      value: 'salidas',        align: 'end',    sortable: true },
-        { text: 'Saldo',       value: 'saldo',          align: 'end',    sortable: true },
-        { text: 'Receta',      value: 'receta',                          sortable: true },
-        { text: 'Vendedor',    value: 'vendedor',                        sortable: true },
-        { text: 'Usuario',     value: 'usuario',                         sortable: true },
-        { text: 'Clasif.',     value: 'clasificacion',                   sortable: true },
-        { text: 'Lote',        value: 'lote',                            sortable: true },
-        { text: 'Caducidad',   value: 'caducidad',                       sortable: true },
-        { text: 'Proveedor',   value: 'proveedor',                       sortable: true },
+        { text: 'Cód. Barras', value: 'barras',                          sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Fecha',       value: 'fecha',                           sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Hora',        value: 'hora',                            sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Folio',       value: 'folio',                           sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Tipo Mov.',   value: 'tipo_movim',                      sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Entrada',     value: 'entradas',       align: 'end',    sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Salida',      value: 'salidas',        align: 'end',    sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Saldo',       value: 'saldo',          align: 'end',    sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Receta',      value: 'receta',                          sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Vendedor',    value: 'vendedor',                        sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Usuario',     value: 'usuario',                         sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Clasif.',     value: 'clasificacion',                   sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Lote',        value: 'lote',                            sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Caducidad',   value: 'caducidad',                       sortable: true, cellClass: 'td-nowrap' },
+        { text: 'Proveedor',   value: 'proveedor',                       sortable: true, cellClass: 'td-nowrap' },
         { text: 'Observ.',     value: 'observaciones',                   sortable: true }
       ]
     }
@@ -297,6 +301,34 @@ export default {
 
     totalPiezas() {
       return this.ventas.reduce((acc, curr) => acc + (Number(curr.salidas) || 0), 0)
+    },
+
+    // Headers adaptados al tamaño de pantalla:
+    // xs/sm: sólo columnas esenciales
+    // md: columnas principales
+    // lg+: todas las columnas
+    headersResponsivos() {
+      const bp = this.$vuetify.breakpoint.name // 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+
+      // Columnas que SIEMPRE se muestran
+      const esenciales = ['codigo', 'descripcion', 'tipo_movim', 'entradas', 'salidas', 'saldo']
+
+      // Columnas adicionales en pantallas medianas (md)
+      const medianas = [...esenciales, 'barras', 'fecha', 'hora', 'folio', 'receta', 'vendedor']
+
+      // Todas las columnas en pantallas grandes
+      const todas = this.headers.map(h => h.value)
+
+      let visibles
+      if (bp === 'xs' || bp === 'sm') {
+        visibles = esenciales
+      } else if (bp === 'md') {
+        visibles = medianas
+      } else {
+        visibles = todas
+      }
+
+      return this.headers.filter(h => visibles.includes(h.value))
     }
   },
 
@@ -663,5 +695,22 @@ export default {
 <style scoped>
 .w-100 {
   width: 100%;
+}
+
+/* Wrapper con scroll horizontal nativo para la tabla */
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* scroll suave en iOS */
+}
+
+/* Asegura que la tabla ocupe el ancho mínimo necesario en móvil */
+.tabla-ventas {
+  min-width: 600px;
+}
+
+/* Evita que celdas con fechas, códigos y valores cortos se partan en múltiples líneas */
+::v-deep .td-nowrap {
+  white-space: nowrap;
 }
 </style>
