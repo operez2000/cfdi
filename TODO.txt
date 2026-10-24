@@ -52,6 +52,8 @@ Facturacion
 
 ********************************************************************************
 
-Asegurar que se guarde primero el No. de Cliente antes de generar la factura
-Crear un Endpoint en ws.prg para leer el No. de Cliente en base al RFC de la Factura
-Si no está el No. de Cliente
+Agrega un watermark a la nota de crédito cuando está cancelada
+Agrega la columna de estatus (Activa, Cancelada) en /pages/recuperar en la tabla del dialogo
+
+En /recuperar has una revisión para que api/routes/facturacion.js haga el INSERT en MySQL en caso de que no exista el registro y se pueda consultar desde la tabla que está en el diálogo.
+Actualmente al hacer la recuperación api/index.js se encarga de insertar el registro en FacCli02.dbf en caso de que no exista, entonces solo faltaría que lo hagas dentro de MySQL facturas.

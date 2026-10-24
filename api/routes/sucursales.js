@@ -142,4 +142,5 @@ router.delete('/:id', async (req, res) => {
   }
 })
 
+router.default = router
 export default router

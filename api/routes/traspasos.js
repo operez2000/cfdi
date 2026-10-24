@@ -229,6 +229,77 @@ router.get('/', async (req, res) => {
   }
 })
 
+
+router.get('/plantilla', async (req, res) => {
+  try {
+    const rows = await query(`
+      SELECT id, clave, codigo_barras, descripcion, etiqueta, lote,
+             fecha_caducidad, cantidad, caja
+      FROM traspaso_plantilla
+      ORDER BY id ASC
+    `)
+    sendOk(res, rows.map(r => ({
+      ...r,
+      fecha_caducidad: r.fecha_caducidad ? fechaPst(r.fecha_caducidad) : r.fecha_caducidad
+    })))
+  } catch (err) {
+    sendError(res, err)
+  }
+})
+
+router.post('/plantilla', async (req, res) => {
+  try {
+    const { items } = req.body || {}
+    if (!Array.isArray(items)) {
+      return sendBadRequest(res, 'La plantilla debe contener una lista de artículos')
+    }
+
+    await transaction(async (t) => {
+      await execute('DELETE FROM traspaso_plantilla', [], { transaction: t })
+      for (const item of items) {
+        if (!item.clave) continue
+        await execute(`
+          INSERT INTO traspaso_plantilla (
+            clave, codigo_barras, descripcion, etiqueta, lote,
+            fecha_caducidad, cantidad, caja
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          item.clave,
+          item.codigo_barras || null,
+          item.descripcion || '',
+          item.etiqueta || null,
+          item.lote || null,
+          item.fecha_caducidad ? fechaPst(item.fecha_caducidad) || null : null,
+          Math.floor(Number(item.cantidad)) || 1,
+          item.caja || null
+        ], { transaction: t })
+      }
+    })
+
+    const rows = await query(`
+      SELECT id, clave, codigo_barras, descripcion, etiqueta, lote,
+             fecha_caducidad, cantidad, caja
+      FROM traspaso_plantilla
+      ORDER BY id ASC
+    `)
+    sendOk(res, rows.map(r => ({
+      ...r,
+      fecha_caducidad: r.fecha_caducidad ? fechaPst(r.fecha_caducidad) : r.fecha_caducidad
+    })))
+  } catch (err) {
+    sendError(res, err)
+  }
+})
+
+router.delete('/plantilla', async (req, res) => {
+  try {
+    await execute('DELETE FROM traspaso_plantilla')
+    sendOk(res, { mensaje: 'Plantilla limpiada correctamente' })
+  } catch (err) {
+    sendError(res, err)
+  }
+})
+
 router.get('/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10)
@@ -372,13 +443,19 @@ router.patch('/:id/cancelar', async (req, res) => {
       return sendNotFound(res)
     }
 
+    if (existing.cancelado) {
+      return sendBadRequest(res, 'El traspaso ya se encuentra cancelado')
+    }
+
+    const ts = nowPst()
     await execute(`
       UPDATE traspaso_header SET
         cancelado = 1,
         estado = 'CANCELADO',
+        fecha_cancelacion = ?,
         fecha_actualizacion = ?
       WHERE id = ? AND borrado = 0
-    `, [nowPst(), id])
+    `, [ts, ts, id])
 
     const header = await getHeaderById(id)
     sendOk(res, await buildEditPayload(header))
@@ -419,4 +496,5 @@ router.delete('/:id', async (req, res) => {
   }
 })
 
+router.default = router
 export default router

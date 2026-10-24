@@ -10,14 +10,14 @@ import nodeMailer from 'nodemailer'
 import ExcelJS from 'exceljs'
 import ADODB from '@el3um4s/node-adodb'
 import Utils from '../assets/utils'
-import pdfParse from 'pdf-parse'
+import pdfParse from 'pdf-parse/lib/pdf-parse.js'
 import xml2js from 'xml2js'
 import util from 'util'
 import traspasosRouter from './routes/traspasos'
 import sucursalesRouter from './routes/sucursales'
 import motivosRouter from './routes/motivos'
-import facturacionRouter, { guardarFacturaEnDb } from './routes/facturacion'
-import { queryOne as queryOneFactura } from './db_facturacion.js'
+import facturacionRouter, { guardarFacturaEnDb, parsePdfData } from './routes/facturacion'
+import { query as queryFactura, queryOne as queryOneFactura, execute as executeFactura } from './db_facturacion.js'
 import { xml2pdfHandler, generatePdfFromXml } from './utils/xml2pdf'
 
 const app = Express();
@@ -672,6 +672,17 @@ const guardarNotaEnAccess = async ({
     const cFormaPago = String(formaDePago || '01').trim().substring(0, 5)
     const cUsoCfdi = String(usoCfdi || 'G02').trim().substring(0, 5)
 
+    // Verificar si ya existe en Notas de Access para evitar duplicados
+    try {
+      const checkAccess = await connection.query(`SELECT TOP 1 ID FROM Notas WHERE Serie = '${cSerie}' AND FolioNota = ${numFolioNota}`)
+      if (checkAccess && checkAccess.length > 0) {
+        console.log(`[Access MDB] La Nota de Crédito ${cSerie}${numFolioNota} ya existe en Access (ID: ${checkAccess[0].ID}). Se omite INSERT.`)
+        return checkAccess[0].ID
+      }
+    } catch (eCheck) {
+      console.warn('[Access MDB] Aviso al verificar existencia previa:', eCheck.message)
+    }
+
     qryInsertNota = `
       INSERT INTO Notas (
         Serie, FolioNota, Caja, FolioVenta, Fecha, SubTotal, ImporteIVA, TotalNota,
@@ -807,7 +818,7 @@ const AfectarFacturasDbf = async (uuid, xml, pdfBase64) => {
     // body (data)
     data = {
       folio,
-      numero: '',
+      numero: numero ? numero.trim() : '',
       nombre: json['cfdi:Comprobante']['cfdi:Receptor'][0].$.Nombre,
       rfc,
       factura: json['cfdi:Comprobante'].$.Folio,
@@ -866,12 +877,118 @@ const recuperarCfdi = async (params, folio = '') => {
       data: {}
     })
     response = response.data
-    if (response && tipoDeComprobante == 'I') {
-      if (response.result) {
-        if (response.result.result){
-          if (response.result.result.pdfBase64) {
-            await AfectarFacturasDbf(response.result.result.uuid, response.result.result.xml, response.result.result.pdfBase64)
+    if (response) {
+      // Extraer componentes principales de la respuesta de iTimbre
+      let xml = ''
+      let pdfBase64 = ''
+      let uuid = ''
+      if (response.result && response.result.result) {
+        xml = response.result.result.xml || ''
+        pdfBase64 = response.result.result.pdfBase64 || ''
+        uuid = response.result.result.uuid || ''
+      }
+      if (!xml && response.result && response.result.data) xml = response.result.data
+      if (!pdfBase64 && response.result && response.result.pdfBase64) pdfBase64 = response.result.pdfBase64
+      if (!uuid && response.result && response.result.UUID) uuid = response.result.UUID
+
+      // Parsear PDF con pdf-parse para extraer Caja-Folio, cliente, observaciones, etc.
+      let pdfData = null
+      if (pdfBase64) {
+        pdfData = await parsePdfData(pdfBase64)
+      }
+
+      // 1. Si es Ingreso, afectar DBF (FacCli02.dbf) con ws.prg
+      if (tipoDeComprobante == 'I' && pdfBase64 && xml) {
+        await AfectarFacturasDbf(uuid, xml, pdfBase64)
+      }
+
+      // 2. Si es Nota de Crédito (Egreso), afectar Access (novartis.mdb) si no existe
+      if (tipoDeComprobante == 'E' && xml) {
+        try {
+          const jsonXml = await getJsonFromXml(xml)
+          if (jsonXml && jsonXml['cfdi:Comprobante']) {
+            const comp = jsonXml['cfdi:Comprobante']
+            const serieXml = comp.$.Serie || (folio.match(/^[A-Za-z]+/)?.[0] || 'NC')
+            const folioNotaXml = comp.$.Folio || (folio.replace(/^[A-Za-z]+/, '') || 0)
+            const subTotal = comp.$.SubTotal || 0
+            const total = comp.$.Total || 0
+            let iva = 0
+            if (comp['cfdi:Impuestos'] && comp['cfdi:Impuestos'][0] && comp['cfdi:Impuestos'][0]['$'] && comp['cfdi:Impuestos'][0]['$'].TotalImpuestosTrasladados) {
+              iva = comp['cfdi:Impuestos'][0]['$'].TotalImpuestosTrasladados
+            }
+            const clienteId = pdfData?.noCliente || (comp['cfdi:Receptor'] && comp['cfdi:Receptor'][0]?.$?.Rfc) || ''
+            const formaPago = comp.$.FormaPago || '01'
+            const usoCfdi = (comp['cfdi:Receptor'] && comp['cfdi:Receptor'][0]?.$?.UsoCFDI) || 'G02'
+            const fechaComp = comp.$.Fecha || new Date()
+
+            let uuidOrigen = pdfData?.uuidRelacionado || ''
+            if (!uuidOrigen && comp['cfdi:CfdiRelacionados'] && comp['cfdi:CfdiRelacionados'][0]) {
+              const rel = comp['cfdi:CfdiRelacionados'][0]['cfdi:CfdiRelacionado']
+              if (rel && rel[0] && rel[0].$) {
+                uuidOrigen = rel[0].$.UUID
+              }
+            }
+
+            let items = []
+            if (comp['cfdi:Conceptos'] && comp['cfdi:Conceptos'][0] && comp['cfdi:Conceptos'][0]['cfdi:Concepto']) {
+              items = comp['cfdi:Conceptos'][0]['cfdi:Concepto'].map(c => ({
+                parte: c.$.NoIdentificacion || '',
+                descripcion: c.$.Descripcion || '',
+                cantidad: c.$.Cantidad || 0,
+                precio: c.$.ValorUnitario || 0,
+                importe: c.$.Importe || 0,
+                descuento: c.$.Descuento || 0,
+                cveSat: c.$.ClaveProdServ || ''
+              }))
+            }
+
+            await guardarNotaEnAccess({
+              serie: serieXml,
+              folioNota: folioNotaXml,
+              caja: pdfData?.ticketCaja || '',
+              folioVenta: pdfData?.ticketFolio || 0,
+              fecha: fechaComp,
+              subTotal,
+              importeIva: iva,
+              totalNota: total,
+              clienteId,
+              tc: comp.$.TipoCambio || 1,
+              tipoVenta: 'CO',
+              userId: 'ADMIN',
+              cajeroId: pdfData?.cajeroId || '',
+              vendedorId: pdfData?.vendedorId || '',
+              fechaVenta: pdfData?.fechaVenta || fechaComp,
+              uuid,
+              uuidOrigen,
+              observaciones: pdfData?.observaciones || '',
+              formaDePago: formaPago,
+              usoCfdi,
+              items
+            })
           }
+        } catch (errAccess) {
+          console.error('[Recuperar] Error al guardar Nota de Crédito en Access:', errAccess)
+        }
+      }
+
+      // 3. Afectar tabla factura en MySQL (facturacion.factura): INSERT si no existe, UPDATE si existe
+      if (xml) {
+        try {
+          const estatusDetectado = (pdfData && pdfData.isCancelado) ? 'Cancelada' : null
+          await guardarFacturaEnDb({
+            xml,
+            observaciones: pdfData?.observaciones || '',
+            ticketCaja: pdfData?.ticketCaja || null,
+            ticketFolio: pdfData?.ticketFolio || null,
+            noCliente: pdfData?.noCliente || '',
+            cuentaPago: pdfData?.cuentaPago || '',
+            tipoFacturaCustom: (tipoDeComprobante === 'E') ? 'Nota de Crédito' : '',
+            uuidRelacionadoCustom: pdfData?.uuidRelacionado || '',
+            estatus: estatusDetectado
+          })
+          console.log(`[MySQL Facturación] Factura/NC ${folio} sincronizada en BD facturacion`)
+        } catch (errMysql) {
+          console.error('[Recuperar] Error al guardar en MySQL facturacion:', errMysql)
         }
       }
     }
@@ -1315,38 +1432,38 @@ app.get("/recuperarCFDI/:folio", mdi, async (req, res) => {
     console.error('Error consultando factura en BD local en /recuperarCFDI:', errDb)
   }
 
-  // 2. Fallback: Si no está en BD local, llamar a la API de iTimbre
+  // 2. Fallback: Si no está en BD local, llamar a la API de iTimbre con getPdf: true
   let params = `{
     "method": "recuperar",
     "cuenta": "${config.pac.cuenta}",
     "user": "${config.pac.user}",
     "password": "${config.pac.password}",
     "folio": "${req.params.folio}",
-    "getPdf": false
+    "getPdf": true
   }`.trim().replace(/^\s+|\s+$/gm,'')
 
   const response = await recuperarCfdi(params, req.params.folio)
 
-  // Si iTimbre regresa exitosamente el XML, generar PDF propio y guardar en BD local
+  // Si iTimbre regresa XML pero no trae PDF en Base64, generar PDF propio
   if (response && response.result) {
     let xmlRecuperado = ''
-    if (response.result.result && response.result.result.xml) {
-      xmlRecuperado = response.result.result.xml
-    } else if (response.result.data) {
-      xmlRecuperado = response.result.data
+    let pdfRecuperado = ''
+    if (response.result.result) {
+      xmlRecuperado = response.result.result.xml || ''
+      pdfRecuperado = response.result.result.pdfBase64 || ''
     }
+    if (!xmlRecuperado && response.result.data) xmlRecuperado = response.result.data
+    if (!pdfRecuperado && response.result.pdfBase64) pdfRecuperado = response.result.pdfBase64
 
-    if (xmlRecuperado) {
+    if (xmlRecuperado && !pdfRecuperado) {
       try {
-        const pdfBase64Propio = await generatePdfFromXml({ xml: xmlRecuperado, estatus: row ? row.estatus : '', noCliente: row ? (row.no_cliente || '') : '' })
+        const pdfBase64Propio = await generatePdfFromXml({ xml: xmlRecuperado })
         if (response.result.result) {
           response.result.result.pdfBase64 = pdfBase64Propio
         }
         response.result.pdfBase64 = pdfBase64Propio
-
-        await guardarFacturaEnDb({ xml: xmlRecuperado })
       } catch (errGen) {
-        console.error('Error al procesar PDF/guardar en BD tras recuperar de iTimbre:', errGen)
+        console.error('Error al generar PDF tras recuperar de iTimbre:', errGen)
       }
     }
   }
@@ -1758,7 +1875,7 @@ app.post("/cancelarFactura", mdi, (req, res) => {
   }).catch( err => {
     console.error('Error resp', err)
     response.error = ctrlError(err)
-  }).finally( () => {
+  }).finally( async () => {
     res.json(response)
 
     try {
@@ -1768,7 +1885,7 @@ app.post("/cancelarFactura", mdi, (req, res) => {
     }
 
     let retcode
-    if (response.result.retcode) {
+    if (response.result && response.result.retcode) {
       retcode = response.result.retcode
     } else {
       retcode = -1
@@ -1779,26 +1896,55 @@ app.post("/cancelarFactura", mdi, (req, res) => {
         CancelaNotaDeCredito(req.body.serie, req.body.folio)
       } 
 
-      // Actualizar estatus en BD facturacion
+      // Actualizar o insertar estatus en MySQL facturacion
       try {
         const uuidCancelado = req.body.dataPac?.uuid || req.body.uuid || ''
-        const motivoCanc = req.body.dataPac?.motivo || req.body.motivo || 'Cancelación'
+        const motivoCanc = req.body.dataPac?.Motivo || req.body.dataPac?.motivo || req.body.motivo || 'Cancelación'
         const uuidRel = req.body.dataPac?.FolioSustitucion || req.body.uuidRel || null
-        const usuarioCanc = req.body.usuario || req.body.user || 'Sistema'
+        const usuarioCanc = req.body.usuario || req.body.user || req.body.dataFact?.usuario || 'Sistema'
+        const serieCanc = req.body.serie || ''
+        const folioCanc = req.body.folio || req.body.dataFact?.factura || ''
+        const fechaCanc = utils.nowDateTime()
 
+        let existing = null
         if (uuidCancelado) {
+          existing = await queryOneFactura('SELECT id FROM factura WHERE uuid = ?', [uuidCancelado])
+        }
+        if (!existing && serieCanc && folioCanc) {
+          existing = await queryOneFactura(
+            'SELECT id FROM factura WHERE serie = ? AND (folio = ? OR CAST(folio AS UNSIGNED) = CAST(? AS UNSIGNED)) LIMIT 1',
+            [serieCanc, folioCanc, folioCanc]
+          )
+        }
+
+        if (existing) {
           let sqlCanc = `UPDATE factura SET estatus = 'Cancelada', usuario_cancela = ?, motivo_cancelacion = ?, fecha_cancelacion = ?`
-          const paramsCanc = [usuarioCanc, motivoCanc, utils.nowDateTime()]
+          const paramsCanc = [usuarioCanc, motivoCanc, fechaCanc]
           if (uuidRel) {
             sqlCanc += `, uuid_relacionado = ?`
             paramsCanc.push(uuidRel)
           }
-          sqlCanc += ` WHERE uuid = ?`
-          paramsCanc.push(uuidCancelado)
-
-          import('./db_facturacion.js').then(({ execute }) => {
-            execute(sqlCanc, paramsCanc).catch(e => console.error("Error al actualizar cancelación en BD:", e))
-          })
+          sqlCanc += ` WHERE id = ?`
+          paramsCanc.push(existing.id)
+          await executeFactura(sqlCanc, paramsCanc)
+          console.log(`[MySQL Facturación] Factura ID ${existing.id} (${serieCanc}${folioCanc}) actualizada a Cancelada`)
+        } else {
+          // Si no existía en MySQL, insertar registro directamente como Cancelada
+          let sqlInsertCanc = `
+            INSERT INTO factura (
+              serie, folio, uuid, estatus, usuario_cancela, motivo_cancelacion, fecha_cancelacion, uuid_relacionado
+            ) VALUES (?, ?, ?, 'Cancelada', ?, ?, ?, ?)
+          `
+          await executeFactura(sqlInsertCanc, [
+            serieCanc,
+            folioCanc,
+            uuidCancelado || null,
+            usuarioCanc,
+            motivoCanc,
+            fechaCanc,
+            uuidRel || null
+          ])
+          console.log(`[MySQL Facturación] Factura ${serieCanc}${folioCanc} insertada como Cancelada en MySQL`)
         }
       } catch (errDbCanc) {
         console.error("Error al registrar cancelación en BD facturacion:", errDbCanc)
@@ -2557,11 +2703,42 @@ app.get('/lee-nota-credito/:serie/:folio', mdi, async (req, res) => {
 
 
 
-app.use('/traspasos', traspasosRouter)
-app.use('/sucursales', sucursalesRouter)
-app.use('/motivos', motivosRouter)
-app.use('/facturacion', facturacionRouter)
-app.post('/xml2pdf', xml2pdfHandler)
+function resolveMiddleware(m) {
+  let fn = m
+  while (fn && typeof fn === 'object' && fn.default) {
+    fn = fn.default
+  }
+  if (typeof fn === 'function') {
+    return fn
+  }
+  if (fn && typeof fn === 'object') {
+    for (const key of Object.keys(fn)) {
+      if (typeof fn[key] === 'function') {
+        return fn[key]
+      }
+    }
+  }
+  return null
+}
+
+const safeUse = (path, routerOrMiddleware) => {
+  const handler = resolveMiddleware(routerOrMiddleware)
+  if (typeof handler === 'function') {
+    app.use(path, handler)
+  } else {
+    console.warn(`[WARN] No se pudo registrar middleware en "${path}":`, routerOrMiddleware)
+  }
+}
+
+safeUse('/traspasos', traspasosRouter)
+safeUse('/sucursales', sucursalesRouter)
+safeUse('/motivos', motivosRouter)
+safeUse('/facturacion', facturacionRouter)
+
+const safeXml2pdf = resolveMiddleware(xml2pdfHandler)
+if (typeof safeXml2pdf === 'function') {
+  app.post('/xml2pdf', safeXml2pdf)
+}
 
 
 // Final => exportación del módulo para el Server

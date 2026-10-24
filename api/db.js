@@ -69,6 +69,40 @@ async function initDb() {
   if (seqRow[0].count === 0) {
     await sequelize.query("INSERT INTO `secuencia`(`nombre`, `valor`) VALUES ('traspaso_folio', 0)")
   }
+
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS \`traspaso_plantilla\` (
+      \`id\` INT PRIMARY KEY AUTO_INCREMENT,
+      \`clave\` varchar(15) NOT NULL,
+      \`codigo_barras\` varchar(20),
+      \`descripcion\` varchar(100),
+      \`etiqueta\` varchar(10),
+      \`lote\` varchar(30),
+      \`fecha_caducidad\` DATE,
+      \`cantidad\` INT NOT NULL DEFAULT 1,
+      \`caja\` varchar(30),
+      \`fecha_registro\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      \`fecha_actualizacion\` DATETIME
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `)
+
+  await ensureConstraints()
+
+}
+
+// Asegurar que el CHECK constraint de traspaso_header admita 'CANCELADO'
+async function ensureConstraints() {
+  try {
+    const [constraints] = await sequelize.query(`
+      SELECT CONSTRAINT_NAME, CHECK_CLAUSE
+      FROM information_schema.CHECK_CONSTRAINTS
+      WHERE CONSTRAINT_SCHEMA = DATABASE() AND CONSTRAINT_NAME = 'ck_th_estado'
+    `)
+    if (constraints.length && !constraints[0].CHECK_CLAUSE.includes('CANCELADO')) {
+      await sequelize.query('ALTER TABLE `traspaso_header` DROP CONSTRAINT `ck_th_estado`')
+      await sequelize.query("ALTER TABLE `traspaso_header` ADD CONSTRAINT `ck_th_estado` CHECK (`estado` IN ('BORRADOR','GUARDADO','CANCELADO'))")
+    }
+  } catch (_) { }
 }
 
 export async function query(sql, replacements = [], opts = {}) {

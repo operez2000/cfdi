@@ -23,6 +23,22 @@
       </v-tooltip>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on" @click="abrirPlantilla">
+            <v-icon>mdi-file-table-box-multiple-outline</v-icon>
+          </v-btn>
+        </template>
+        <span>Plantilla Base (Bloque)</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on" :disabled="deshabilitarEdicion" :loading="loading.plantilla" @click="confirmarCargarPlantilla">
+            <v-icon>mdi-database-import-outline</v-icon>
+          </v-btn>
+        </template>
+        <span>Cargar Plantilla a la Tabla</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
           <v-btn icon v-on="on" :disabled="deshabilitarEdicion || !puedeGuardar" :loading="loading.guardar" @click="guardar">
             <v-icon>mdi-content-save</v-icon>
           </v-btn>
@@ -209,7 +225,7 @@
             @keyup.enter.native="focusInputCodigo"
           />
         </v-col>
-        <v-col cols="12" sm="8" md="9">
+        <v-col cols="12" sm="5" md="6">
           <v-text-field
             ref="inputCodigo"
             v-model="captura.codigo"
@@ -220,13 +236,34 @@
             append-icon="mdi-magnify"
             :loading="loading.codigo"
             :disabled="deshabilitarEdicion"
-            @click:append="dialog.catalogo = true"
+            @click:append="abrirCatalogoMain"
             @keyup.enter.native="capturarCodigo"
           />
         </v-col>
-        <v-col cols="12" sm="2" md="2">
-          <v-btn block color="primary" :disabled="deshabilitarEdicion" @click="dialog.catalogo = true">
+        <v-col cols="6" sm="2" md="2">
+          <v-btn block color="primary" :disabled="deshabilitarEdicion" @click="abrirCatalogoMain">
+            <v-icon left>mdi-magnify</v-icon>
             Catálogo
+          </v-btn>
+        </v-col>
+        <v-col cols="6" sm="3" md="3" class="d-flex">
+          <v-btn
+            color="secondary"
+            class="mr-2 flex-grow-1"
+            :disabled="deshabilitarEdicion"
+            :loading="loading.plantilla"
+            @click="confirmarCargarPlantilla"
+          >
+            <v-icon left>mdi-database-import-outline</v-icon>
+            Cargar Plantilla
+          </v-btn>
+          <v-btn
+            outlined
+            color="secondary"
+            @click="abrirPlantilla"
+          >
+            <v-icon left>mdi-file-table-box-multiple-outline</v-icon>
+            Plantilla
           </v-btn>
         </v-col>
       </v-row>
@@ -327,27 +364,7 @@
         </template>
 
         <template v-slot:item.id_traspaso_destino="{ item }">
-          <v-edit-dialog
-            v-if="!deshabilitarEdicion"
-            :return-value.sync="item.id_traspaso_destino"
-            large
-            cancel-text="Cancelar"
-            save-text="Ok"
-            @save="() => sincronizarRelacionRenglon(item)"
-          >
-            {{ nombreSucursal(item.id_traspaso_destino) }}
-            <template v-slot:input>
-              <v-select
-                v-model="item.id_traspaso_destino"
-                :items="sucursalesDestino"
-                item-text="nombre"
-                item-value="id"
-                label="Sucursal destino"
-                single-line
-              />
-            </template>
-          </v-edit-dialog>
-          <span v-else>{{ nombreSucursal(item.id_traspaso_destino) }}</span>
+          <span>{{ nombreSucursal(form.id_traspaso_destino || item.id_traspaso_destino) }}</span>
         </template>
 
         <template v-slot:item.id_motivo_traspaso="{ item }">
@@ -579,6 +596,216 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Modal Plantilla de Productos Base -->
+    <v-dialog v-model="dialog.plantilla" max-width="1200" scrollable persistent>
+      <v-card>
+        <v-card-title class="pa-0">
+          <v-toolbar color="blue-grey" dense dark flat>
+            <v-icon left>mdi-file-table-box-multiple-outline</v-icon>
+            <v-toolbar-title class="subtitle-1">Plantilla de Productos Base (Bloque para Traspasos)</v-toolbar-title>
+            <v-spacer />
+            <v-btn icon @click="dialog.plantilla = false"><v-icon>mdi-close</v-icon></v-btn>
+          </v-toolbar>
+        </v-card-title>
+
+        <v-card-text class="pt-3">
+          <v-alert dense outlined type="info" class="text-body-2 mb-3">
+            Capture los productos base que se enviarán a las diferentes sucursales. Podrá guardar la plantilla en base de datos, limpiarla o anexarla al traspaso actual con un solo clic.
+          </v-alert>
+
+          <v-row dense align="center">
+            <v-col cols="12" sm="2" md="1">
+              <v-text-field
+                v-model.number="capturaPlantilla.cantidad"
+                label="Cantidad"
+                type="number"
+                min="1"
+                step="1"
+                dense
+                filled
+                @keyup.enter.native="focusInputCodigoPlantilla"
+              />
+            </v-col>
+            <v-col cols="12" sm="7" md="9">
+              <v-text-field
+                ref="inputCodigoPlantilla"
+                v-model="capturaPlantilla.codigo"
+                label="Código / Etiqueta / Barras (Enter para agregar)"
+                dense
+                filled
+                clearable
+                append-icon="mdi-magnify"
+                :loading="loading.codigoPlantilla"
+                @click:append="abrirCatalogoPlantilla"
+                @keyup.enter.native="capturarCodigoPlantilla"
+              />
+            </v-col>
+            <v-col cols="12" sm="3" md="2">
+              <v-btn block color="primary" @click="abrirCatalogoPlantilla">
+                <v-icon left>mdi-magnify</v-icon>
+                Catálogo
+              </v-btn>
+            </v-col>
+          </v-row>
+
+          <v-data-table
+            :headers="headersPlantilla"
+            :items="plantillaDetalle"
+            :search="filtroPlantilla"
+            dense
+            class="elevation-1 mt-2"
+          >
+            <template v-slot:top>
+              <v-text-field
+                v-model="filtroPlantilla"
+                label="Filtrar artículos de la plantilla..."
+                class="mx-4 my-2"
+                dense
+                filled
+                clearable
+                append-icon="mdi-magnify"
+              />
+            </template>
+
+            <template v-slot:item.acciones="{ item }">
+              <v-btn icon small color="error" @click="eliminarRenglonPlantilla(item)">
+                <v-icon small>mdi-delete</v-icon>
+              </v-btn>
+            </template>
+
+            <template v-slot:item.etiqueta="{ item }">
+              <v-edit-dialog
+                :return-value.sync="item.etiqueta"
+                large
+                cancel-text="Cancelar"
+                save-text="Ok"
+                @save="() => {}"
+              >
+                {{ item.etiqueta || '—' }}
+                <template v-slot:input>
+                  <v-text-field v-model="item.etiqueta" label="Etiqueta" single-line counter />
+                </template>
+              </v-edit-dialog>
+            </template>
+
+            <template v-slot:item.lote="{ item }">
+              <v-edit-dialog
+                :return-value.sync="item.lote"
+                large
+                cancel-text="Cancelar"
+                save-text="Ok"
+                @save="() => {}"
+              >
+                {{ item.lote || '—' }}
+                <template v-slot:input>
+                  <v-text-field v-model="item.lote" label="Lote" single-line counter />
+                </template>
+              </v-edit-dialog>
+            </template>
+
+            <template v-slot:item.fecha_caducidad="{ item }">
+              <v-edit-dialog
+                :return-value.sync="item.fecha_caducidad"
+                large
+                cancel-text="Cancelar"
+                save-text="Ok"
+                @save="() => item.fecha_caducidad = formatDateYMD(item.fecha_caducidad)"
+              >
+                {{ formatDateYMD(item.fecha_caducidad) || '—' }}
+                <template v-slot:input>
+                  <v-text-field v-model="item.fecha_caducidad" label="Fecha caducidad" type="text" placeholder="yyyy-mm-dd" single-line />
+                </template>
+              </v-edit-dialog>
+            </template>
+
+            <template v-slot:item.cantidad="{ item }">
+              <v-edit-dialog
+                :return-value.sync="item.cantidad"
+                large
+                cancel-text="Cancelar"
+                save-text="Ok"
+                @save="() => normalizarCantidad(item)"
+              >
+                {{ item.cantidad }}
+                <template v-slot:input>
+                  <v-text-field v-model.number="item.cantidad" label="Cantidad" type="number" min="1" single-line />
+                </template>
+              </v-edit-dialog>
+            </template>
+
+            <template v-slot:item.caja="{ item }">
+              <v-edit-dialog
+                :return-value.sync="item.caja"
+                large
+                cancel-text="Cancelar"
+                save-text="Ok"
+                @save="() => {}"
+              >
+                {{ item.caja || '—' }}
+                <template v-slot:input>
+                  <v-text-field v-model="item.caja" label="Caja" single-line counter />
+                </template>
+              </v-edit-dialog>
+            </template>
+          </v-data-table>
+        </v-card-text>
+
+        <v-card-actions class="px-4 pb-4">
+          <v-btn
+            color="error"
+            outlined
+            :disabled="plantillaDetalle.length === 0"
+            @click="dialog.confirmarLimpiarPlantilla = true"
+          >
+            <v-icon left>mdi-trash-can-outline</v-icon>
+            Limpiar Plantilla
+          </v-btn>
+          <v-spacer />
+          <v-btn text @click="dialog.plantilla = false">Cerrar</v-btn>
+          <v-btn
+            color="primary"
+            :loading="loading.guardarPlantilla"
+            @click="guardarPlantillaBD"
+          >
+            <v-icon left>mdi-content-save</v-icon>
+            Guardar Plantilla
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Diálogo confirmación anexar plantilla a tabla -->
+    <v-dialog v-model="dialog.confirmarAnexar" max-width="480" persistent>
+      <v-card>
+        <v-card-title class="headline">Anexar productos de plantilla</v-card-title>
+        <v-card-text>
+          La tabla actual ya contiene <strong>{{ detalle.length }}</strong> producto(s) capturados.<br><br>
+          ¿Desea <strong>sumar y anexar</strong> los {{ plantillaDetalle.length }} productos de la plantilla base a la tabla actual?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text @click="dialog.confirmarAnexar = false">Cancelar</v-btn>
+          <v-btn color="primary" @click="ejecutarCargarPlantilla(true)">Continuar y Anexar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Diálogo confirmación limpiar plantilla -->
+    <v-dialog v-model="dialog.confirmarLimpiarPlantilla" max-width="480" persistent>
+      <v-card>
+        <v-card-title class="headline">Limpiar Plantilla Base</v-card-title>
+        <v-card-text>
+          ¿Está seguro de eliminar todos los productos de la plantilla base?<br>
+          Esta acción borrará la plantilla permanentemente de la base de datos.
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text @click="dialog.confirmarLimpiarPlantilla = false">Cancelar</v-btn>
+          <v-btn color="error" :loading="loading.limpiarPlantilla" @click="limpiarPlantillaBD">Limpiar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -633,6 +860,7 @@ export default {
       motivoForm: this.motivoFormInicial(),
       loading: {
         codigo: false,
+        codigoPlantilla: false,
         guardar: false,
         cancelar: false,
         consulta: false,
@@ -640,7 +868,28 @@ export default {
         motivo: false,
         pdf: false,
         email: false,
+        plantilla: false,
+        guardarPlantilla: false,
+        limpiarPlantilla: false
       },
+      plantillaDetalle: [],
+      filtroPlantilla: '',
+      capturaPlantilla: {
+        codigo: '',
+        cantidad: 1
+      },
+      catalogoTarget: 'traspaso',
+      headersPlantilla: [
+        { text: '', value: 'acciones', sortable: false, width: '60px' },
+        { text: 'Clave', value: 'clave' },
+        { text: 'Código Barras', value: 'codigo_barras' },
+        { text: 'Descripción', value: 'descripcion' },
+        { text: 'Etiqueta', value: 'etiqueta' },
+        { text: 'Lote', value: 'lote' },
+        { text: 'Fecha Caducidad', value: 'fecha_caducidad' },
+        { text: 'Cantidad', value: 'cantidad', width: '90px' },
+        { text: 'Caja', value: 'caja' }
+      ],
       dialog: {
         consulta: false,
         catalogo: false,
@@ -648,7 +897,10 @@ export default {
         motivos: false,
         pdf: false,
         email: false,
-        autorizacion: false
+        autorizacion: false,
+        plantilla: false,
+        confirmarAnexar: false,
+        confirmarLimpiarPlantilla: false
       },
       headersDetalle: [
         { text: '', value: 'acciones', sortable: false, width: '60px' },
@@ -696,7 +948,7 @@ export default {
       return `${this.form.prefijo || 'TRA'}-${folio}`
     },
     pdfFolioDisplay () {
-      return this.getPdfFolioDisplay(this.form.id_traspaso_destino)
+      return this.getPdfFolioDisplay()
     },
     sucursalesDestino () {
       if (!this.form.id_sucursal_origen) return this.sucursales
@@ -706,12 +958,12 @@ export default {
       return this.motivos.filter(m => m.activo)
     },
     puedeGuardar () {
-      const { destinos, sinMotivo } = this.validarDestinosParaGuardar()
       return !this.deshabilitarEdicion &&
         !!this.form.fecha &&
         !!this.form.id_sucursal_origen &&
-        destinos.length > 0 &&
-        sinMotivo.length === 0 &&
+        !!this.form.id_traspaso_destino &&
+        this.form.id_traspaso_destino !== this.form.id_sucursal_origen &&
+        !!this.form.id_motivo_traspaso &&
         this.detalle.length > 0
     },
     puedePdf () {
@@ -747,13 +999,17 @@ export default {
       })
       this.sincronizarDestinoActual()
     },
-    'form.id_traspaso_destino' () {
+    'form.id_traspaso_destino' (val) {
+      this.detalle.forEach(r => {
+        r.id_traspaso_destino = val
+      })
       this.sincronizarDestinoActual()
     }
   },
 
   mounted () {
     this.cargarCatalogos()
+    this.cargarPlantillaBD()
     this.nuevo()
   },
 
@@ -990,21 +1246,40 @@ export default {
       }
     },
 
-    seleccionCatalogo (item) {
+    abrirCatalogoMain () {
       if (this.deshabilitarEdicion) {
         this.showSnack('Se requiere autorización de supervisor para modificar', 'warning')
         return
       }
+      this.catalogoTarget = 'traspaso'
+      this.dialog.catalogo = true
+    },
+
+    abrirCatalogoPlantilla () {
+      this.catalogoTarget = 'plantilla'
+      this.dialog.catalogo = true
+    },
+
+    seleccionCatalogo (item) {
       this.dialog.catalogo = false
       if (!item || !item.mpart) return
-      this.agregarArticulo({
+      const data = {
         mPart: item.mpart,
         mDesc: item.mdesc,
         mBarCode: item.mbarcode,
         barra: '',
         lote: '',
         fCaduc: ''
-      })
+      }
+      if (this.catalogoTarget === 'plantilla') {
+        this.agregarArticuloPlantilla(data)
+      } else {
+        if (this.deshabilitarEdicion) {
+          this.showSnack('Se requiere autorización de supervisor para modificar', 'warning')
+          return
+        }
+        this.agregarArticulo(data)
+      }
     },
 
     eliminarRenglon (item) {
@@ -1036,40 +1311,12 @@ export default {
     },
 
     buildDestinos () {
-      const map = {}
-      for (const [destinoId, relacion] of Object.entries(this.destinoMotivos || {})) {
-        const id = parseInt(destinoId, 10)
-        if (!id) continue
-        map[id] = {
-          id_motivo_traspaso: relacion && relacion.id_motivo_traspaso != null ? relacion.id_motivo_traspaso : null,
-          caja: relacion && relacion.caja != null ? relacion.caja : null
-        }
-      }
-
-      for (const row of this.detalle) {
-        const destinoId = parseInt(row.id_traspaso_destino, 10)
-        if (!destinoId) continue
-        const existente = map[destinoId] || {}
-        map[destinoId] = {
-          id_motivo_traspaso: row.id_motivo_traspaso != null ? row.id_motivo_traspaso : existente.id_motivo_traspaso || null,
-          caja: row.caja != null ? row.caja : existente.caja || null
-        }
-      }
-
-      if (this.form.id_traspaso_destino) {
-        const destinoId = parseInt(this.form.id_traspaso_destino, 10)
-        const existente = map[destinoId] || {}
-        map[destinoId] = {
-          id_motivo_traspaso: this.form.id_motivo_traspaso != null ? this.form.id_motivo_traspaso : existente.id_motivo_traspaso || null,
-          caja: this.form.caja != null ? this.form.caja : existente.caja || null
-        }
-      }
-
-      return Object.keys(map).map(id => ({
-        id_traspaso_destino: parseInt(id, 10),
-        id_motivo_traspaso: map[id].id_motivo_traspaso,
-        caja: map[id].caja
-      }))
+      if (!this.form.id_traspaso_destino) return []
+      return [{
+        id_traspaso_destino: parseInt(this.form.id_traspaso_destino, 10),
+        id_motivo_traspaso: this.form.id_motivo_traspaso || null,
+        caja: this.form.caja || null
+      }]
     },
 
     validarDestinosParaGuardar () {
@@ -1107,6 +1354,11 @@ export default {
       this.autorizado = false
       this.tarjetaSupervisorInput = ''
       this.errorSupervisor = ''
+      if (this.pdfUrl) URL.revokeObjectURL(this.pdfUrl)
+      this.pdfUrl = null
+      this.pdfBlob = null
+      this.pdfPrinter = null
+      this.pdfFileName = ''
       const h = data.header
       this.destinoMotivos = {}
       this.form = {
@@ -1170,17 +1422,20 @@ export default {
         this.showSnack('La sucursal origen es obligatoria', 'warning')
         return
       }
+      if (!this.form.id_traspaso_destino) {
+        this.showSnack('La sucursal destino es obligatoria', 'warning')
+        return
+      }
+      if (this.form.id_traspaso_destino === this.form.id_sucursal_origen) {
+        this.showSnack('La sucursal destino no puede ser igual a la sucursal origen', 'warning')
+        return
+      }
+      if (!this.form.id_motivo_traspaso) {
+        this.showSnack('Debe seleccionar un motivo para el traspaso', 'warning')
+        return
+      }
       if (!this.detalle || this.detalle.length === 0) {
         this.showSnack('Debe agregar al menos un artículo en el detalle', 'warning')
-        return
-      }
-      const { destinos, sinMotivo } = this.validarDestinosParaGuardar()
-      if (!destinos.length) {
-        this.showSnack('Debe agregar al menos una sucursal destino', 'warning')
-        return
-      }
-      if (sinMotivo.length > 0) {
-        this.showSnack('Cada sucursal destino debe tener un motivo', 'warning')
         return
       }
       if (!this.puedeGuardar) return
@@ -1188,14 +1443,21 @@ export default {
       try {
         const payload = this.buildPayload()
         let resp
+        const esNuevo = !this.form.id
         if (this.form.id) {
           resp = await this.$axios.put(`/api/traspasos/${this.form.id}`, payload)
         } else {
           resp = await this.$axios.post('/api/traspasos', payload)
         }
         if (resp.data.response === 200) {
+          const header = resp.data.data.header
+          const folioGuardado = String(header.folio).padStart(5, '0')
           this.aplicarTraspaso(resp.data.data)
-          this.showSnack('Traspaso guardado correctamente', 'success')
+          if (esNuevo) {
+            this.showSnack(`Traspaso TRA-${folioGuardado} guardado exitosamente`, 'success')
+          } else {
+            this.showSnack(`Traspaso TRA-${folioGuardado} actualizado correctamente`, 'success')
+          }
         } else {
           this.showSnack(resp.data.msg || 'Error al guardar', 'error')
         }
@@ -1402,26 +1664,23 @@ export default {
       return (value || '').replace(/0/g, 'Ø')
     },
 
-    getPdfFolioDisplay (destinoId) {
+    getPdfFolioDisplay () {
       if (!this.form.folio) return ''
       const folio = String(this.form.folio).padStart(5, '0')
-      const destino = this.sucursales.find(s => s.id === parseInt(destinoId, 10)) || {}
-      const abre = (destino.abreviacion || '').toString().substring(0, 2).toUpperCase()
+      const origen = this.sucursales.find(s => s.id === parseInt(this.form.id_sucursal_origen, 10)) || {}
+      const abre = (origen.abreviacion || '').toString().substring(0, 2).toUpperCase()
       return `${this.form.prefijo || 'TRA'}${folio}${abre}`
     },
 
     getEmailDocumentoNombre () {
-      const destinoId = this.form.id_traspaso_destino || (this.detalle[0] && this.detalle[0].id_traspaso_destino)
-      return this.getPdfFolioDisplay(destinoId)
+      return this.getPdfFolioDisplay()
     },
 
     getDefaultEmailDestinos () {
-      const destinoIds = this.buildDestinos().map(dest => parseInt(dest.id_traspaso_destino, 10)).filter(Boolean)
-      const emails = this.sucursales
-        .filter(s => destinoIds.includes(s.id) && s.email)
-        .map(s => (s.email || '').trim())
-        .filter(Boolean)
-      return [...new Set(emails)].join(', ')
+      const destinoId = parseInt(this.form.id_traspaso_destino, 10)
+      if (!destinoId) return ''
+      const sucursal = this.sucursales.find(s => s.id === destinoId)
+      return sucursal && sucursal.email ? (sucursal.email || '').trim() : ''
     },
 
     abrirDialogoEmail () {
@@ -1561,7 +1820,7 @@ export default {
           const destino = this.sucursales.find(s => s.id === parseInt(destId, 10)) || {}
           const items = grupos[destId]
           const motivoId = motivoPorDestino[destId] || this.form.id_motivo_traspaso
-          const folioDestino = this.getPdfFolioDisplay(destId)
+          const folioDestino = this.getPdfFolioDisplay()
           const motivo = this.motivos.find(m => m.id === motivoId)
           const caja = items[0] && items[0].caja
 
@@ -1686,6 +1945,8 @@ export default {
           })
         })
 
+        const esCancelado = this.form.estado === 'CANCELADO' || Boolean(this.form.cancelado)
+
         const docDefinition = {
           pageSize: 'LETTER',
           pageMargins: [40, 40, 40, 50],
@@ -1693,6 +1954,15 @@ export default {
             title: this.pdfFolioDisplay || 'traspaso'
           },
           ...(logo ? { images: { logo } } : {}),
+          ...(esCancelado ? {
+            watermark: {
+              text: 'CANCELADO',
+              color: 'red',
+              opacity: 0.3,
+              bold: true,
+              italics: false
+            }
+          } : {}),
           content,
           header: (currentPage) => {
             const section = pageRanges.find(range => currentPage >= range.startPage && currentPage <= range.endPage)
@@ -1731,6 +2001,190 @@ export default {
       } finally {
         this.loading.pdf = false
       }
+    },
+
+
+    async cargarPlantillaBD () {
+      this.loading.plantilla = true
+      try {
+        const resp = await this.$axios.get('/api/traspasos/plantilla')
+        if (resp.data.response === 200) {
+          this.plantillaDetalle = (resp.data.data || []).map((r, i) => ({
+            _uid: `plantilla-${Date.now()}-${i}-${Math.random()}`,
+            clave: r.clave,
+            codigo_barras: r.codigo_barras || '',
+            descripcion: r.descripcion || '',
+            etiqueta: r.etiqueta || '',
+            lote: r.lote || '',
+            fecha_caducidad: this.formatDateYMD(r.fecha_caducidad) || '',
+            cantidad: Math.floor(Number(r.cantidad)) || 1,
+            caja: r.caja || ''
+          }))
+        }
+      } catch (err) {
+        console.error('Error al cargar plantilla:', err)
+      } finally {
+        this.loading.plantilla = false
+      }
+    },
+
+    abrirPlantilla () {
+      this.catalogoTarget = 'plantilla'
+      this.cargarPlantillaBD()
+      this.dialog.plantilla = true
+      this.$nextTick(() => {
+        this.focusInputCodigoPlantilla()
+      })
+    },
+
+    focusInputCodigoPlantilla () {
+      this.$nextTick(() => {
+        try {
+          if (this.$refs.inputCodigoPlantilla) {
+            this.$refs.inputCodigoPlantilla.focus()
+          }
+        } catch (e) { /* noop */ }
+      })
+    },
+
+    async capturarCodigoPlantilla () {
+      const id = (this.capturaPlantilla.codigo || '').trim()
+      if (!id) return
+      this.loading.codigoPlantilla = true
+      try {
+        const resp = await this.$axios.get(`${config.backEndUrl}/gusher/ws.prg?mod=codigo&id=${id}`)
+        if (resp.data.response === 200) {
+          this.agregarArticuloPlantilla(resp.data.data)
+        } else {
+          this.showSnack(resp.data.msg || 'Artículo no encontrado', 'warning')
+        }
+      } catch (err) {
+        this.showSnack('Error al consultar artículo para plantilla', 'error')
+      } finally {
+        this.loading.codigoPlantilla = false
+      }
+    },
+
+    agregarArticuloPlantilla (data) {
+      const cantidad = Math.floor(Number(this.capturaPlantilla.cantidad)) || 1
+      this.plantillaDetalle.unshift({
+        _uid: `plantilla-${Date.now()}-${Math.random()}`,
+        clave: data.mPart || data.codigo || data.mpart || '',
+        codigo_barras: data.mBarCode || data.mbarcode || '',
+        descripcion: data.mDesc || data.mdesc || '',
+        etiqueta: data.barra || '',
+        lote: data.lote || '',
+        fecha_caducidad: this.formatDateYMD(data.fCaduc) || '',
+        cantidad,
+        caja: ''
+      })
+      this.capturaPlantilla.codigo = ''
+      this.capturaPlantilla.cantidad = 1
+      this.focusInputCodigoPlantilla()
+    },
+
+    eliminarRenglonPlantilla (item) {
+      this.plantillaDetalle = this.plantillaDetalle.filter(r => r._uid !== item._uid)
+    },
+
+    async guardarPlantillaBD () {
+      if (!this.plantillaDetalle || this.plantillaDetalle.length === 0) {
+        this.showSnack('Agregue al menos un producto a la plantilla antes de guardar', 'warning')
+        return
+      }
+      this.loading.guardarPlantilla = true
+      try {
+        const payload = {
+          items: this.plantillaDetalle.map(it => ({
+            clave: it.clave,
+            codigo_barras: it.codigo_barras,
+            descripcion: it.descripcion,
+            etiqueta: it.etiqueta,
+            lote: it.lote,
+            fecha_caducidad: it.fecha_caducidad,
+            cantidad: it.cantidad,
+            caja: it.caja
+          }))
+        }
+        const resp = await this.$axios.post('/api/traspasos/plantilla', payload)
+        if (resp.data && resp.data.response === 200) {
+          this.showSnack('Plantilla guardada exitosamente en la base de datos', 'success')
+          this.dialog.plantilla = false
+        } else {
+          this.showSnack(resp.data.msg || 'Error al guardar la plantilla', 'error')
+        }
+      } catch (err) {
+        this.showSnack('Error al guardar la plantilla en base de datos', 'error')
+      } finally {
+        this.loading.guardarPlantilla = false
+      }
+    },
+
+    async limpiarPlantillaBD () {
+      this.loading.limpiarPlantilla = true
+      try {
+        const resp = await this.$axios.delete('/api/traspasos/plantilla')
+        if (resp.data && resp.data.response === 200) {
+          this.plantillaDetalle = []
+          this.dialog.confirmarLimpiarPlantilla = false
+          this.showSnack('Plantilla limpiada correctamente', 'success')
+        } else {
+          this.showSnack(resp.data.msg || 'Error al limpiar plantilla', 'error')
+        }
+      } catch (err) {
+        this.showSnack('Error al limpiar plantilla', 'error')
+      } finally {
+        this.loading.limpiarPlantilla = false
+      }
+    },
+
+    async confirmarCargarPlantilla () {
+      if (this.deshabilitarEdicion) {
+        this.showSnack('Se requiere autorización de supervisor para modificar', 'warning')
+        return
+      }
+      if (!this.form.id_sucursal_origen) {
+        this.showSnack('Seleccione primero la sucursal origen', 'warning')
+        return
+      }
+      if (!this.form.id_traspaso_destino) {
+        this.showSnack('Seleccione primero la sucursal destino', 'warning')
+        return
+      }
+      if (this.plantillaDetalle.length === 0) {
+        await this.cargarPlantillaBD()
+      }
+      if (this.plantillaDetalle.length === 0) {
+        this.showSnack('No hay productos en la plantilla. Abra la plantilla para agregarlos.', 'warning')
+        return
+      }
+
+      // Si ya hay productos en la tabla, pedir confirmación antes de sumar/anexar
+      if (this.detalle.length > 0) {
+        this.dialog.confirmarAnexar = true
+      } else {
+        this.ejecutarCargarPlantilla(false)
+      }
+    },
+
+    ejecutarCargarPlantilla (anexar = false) {
+      this.dialog.confirmarAnexar = false
+      const nuevos = this.plantillaDetalle.map(it => ({
+        _uid: Date.now() + Math.random(),
+        clave: it.clave,
+        codigo_barras: it.codigo_barras || '',
+        descripcion: it.descripcion || '',
+        etiqueta: it.etiqueta || '',
+        lote: it.lote || '',
+        fecha_caducidad: it.fecha_caducidad || '',
+        cantidad: it.cantidad,
+        id_traspaso_destino: this.form.id_traspaso_destino,
+        id_motivo_traspaso: this.form.id_motivo_traspaso,
+        caja: it.caja || this.form.caja || ''
+      }))
+
+      this.detalle = [...nuevos, ...this.detalle]
+      this.showSnack(`${nuevos.length} producto(s) de la plantilla agregados a la tabla`, 'success')
     },
 
     descargarPdf () {

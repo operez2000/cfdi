@@ -1,11 +1,107 @@
 import Express from 'express'
 import Utils from '../../assets/utils.js'
+import pdfParse from 'pdf-parse/lib/pdf-parse.js'
 import { query, queryOne, execute, transaction } from '../db_facturacion.js'
 import { sendOk, sendBadRequest, sendNotFound, sendError } from '../utils/response.js'
 import { parseCfdiXml } from '../utils/xml2pdf.js'
 
 const router = Express.Router()
 const utils = new Utils()
+
+/**
+ * Parsea el buffer o base64 de un PDF con pdf-parse para extraer metadatos
+ */
+async function parsePdfData(pdfBufferOrBase64) {
+  if (!pdfBufferOrBase64) return null
+  try {
+    const buffer = Buffer.isBuffer(pdfBufferOrBase64)
+      ? pdfBufferOrBase64
+      : Buffer.from(pdfBufferOrBase64, 'base64')
+    const info = await pdfParse(buffer)
+    const text = info.text || ''
+
+    // 1. Extraer ticket caja y ticket folio
+    let ticketCaja = ''
+    let ticketFolio = ''
+    let m = text.match(/Caja-Folio:\s*(\d+)[\s-]+(\d+)/i)
+    if (m) {
+      ticketCaja = m[1]
+      ticketFolio = m[2]
+    } else {
+      m = text.match(/Caja:\s*(\d+)[^|]*\|\s*Folio\s*Venta:\s*(\d+)/i)
+      if (m) {
+        ticketCaja = m[1]
+        ticketFolio = m[2]
+      }
+    }
+
+    // 2. Extraer número de cliente
+    let noCliente = ''
+    m = text.match(/(?:N[uú]mero|mero)\s+de\s+cliente:\s*([A-Za-z0-9_-]+?)(?:Uso\s*CFDI|\s|$)/i)
+    if (m) {
+      noCliente = m[1].trim()
+    }
+
+    // 3. Extraer Observaciones
+    let observaciones = ''
+    m = text.match(/Observaciones\s*=\s*([^\r\n]+)/i)
+    if (m) {
+      observaciones = m[1].trim()
+    } else {
+      m = text.match(/Observaciones:\s*([^\r\n]+)/i)
+      if (m) {
+        observaciones = m[1].trim()
+      }
+    }
+
+    // 4. Extraer cuenta de pago si viene en observaciones
+    let cuentaPago = ''
+    m = observaciones.match(/(?:Cuenta|Cta)\s*[:#]?\s*(\d+)/i)
+    if (m) {
+      cuentaPago = m[1].trim()
+    }
+
+    // 5. Extraer UUID Relacionado del PDF si viene impreso
+    let uuidRelacionado = ''
+    m = text.match(/UUID\s*Relacionado(?:\(s\))?:\s*([0-9a-fA-F-]{36})/i)
+    if (m) {
+      uuidRelacionado = m[1].trim()
+    }
+
+    // 6. Extraer Cajero, Vendedor, Fecha de Venta (para Notas de Crédito / Access)
+    let cajeroId = ''
+    m = text.match(/Cajero\s*[:#]?\s*(\d+)/i)
+    if (m) cajeroId = m[1].trim()
+
+    let vendedorId = ''
+    m = text.match(/Vendedor\s*[:#]?\s*(\d+)/i)
+    if (m) vendedorId = m[1].trim()
+
+    let fechaVenta = ''
+    m = text.match(/Fecha\s*Venta:\s*([0-9a-zA-Z\/-]+)/i)
+    if (m) fechaVenta = m[1].trim()
+
+    // 7. Detectar si el PDF está cancelado
+    const isCancelado = /CANCELAD[OA]/i.test(text)
+
+    return {
+      ticketCaja,
+      ticketFolio,
+      noCliente,
+      observaciones,
+      cuentaPago,
+      uuidRelacionado,
+      cajeroId,
+      vendedorId,
+      fechaVenta,
+      isCancelado,
+      rawText: text
+    }
+  } catch (err) {
+    console.error('Error parseando PDF con pdf-parse:', err)
+    return null
+  }
+}
 
 /**
  * Convierte fecha ISO o string a formato YYYY-MM-DD HH:mm:ss para MySQL
@@ -38,8 +134,10 @@ async function guardarFacturaEnDb({
   cuentaPago = '',
   tipoFacturaCustom = '',
   uuidRelacionadoCustom = '',
+  estatus = null,
   usuarioCancela = null,
   motivoCancelacion = null,
+  fechaCancelacion = null,
   fechaFacturacionCustom = null
 }) {
   if (!xml) throw new Error('El XML es requerido para guardar en la BD')
@@ -96,48 +194,70 @@ async function guardarFacturaEnDb({
   // Verificar si ya existe por UUID o por Serie/Folio
   let existing = null
   if (uuid) {
-    existing = await queryOne('SELECT id FROM factura WHERE uuid = ?', [uuid])
+    existing = await queryOne(
+      'SELECT id, estatus, ticket_caja, ticket_folio, no_cliente, observaciones, cuenta_pago, usuario_cancela, motivo_cancelacion, fecha_cancelacion FROM factura WHERE uuid = ?',
+      [uuid]
+    )
   }
   if (!existing && serie && folio) {
-    existing = await queryOne('SELECT id FROM factura WHERE serie = ? AND folio = ?', [serie, folio])
+    existing = await queryOne(
+      'SELECT id, estatus, ticket_caja, ticket_folio, no_cliente, observaciones, cuenta_pago, usuario_cancela, motivo_cancelacion, fecha_cancelacion FROM factura WHERE serie = ? AND (folio = ? OR CAST(folio AS UNSIGNED) = CAST(? AS UNSIGNED)) LIMIT 1',
+      [serie, folio, folio]
+    )
   }
 
+  const finalCaja = ticketCaja || existing?.ticket_caja || null
+  const finalFolio = ticketFolio || existing?.ticket_folio || null
+  const finalNoCli = noCli || existing?.no_cliente || ''
+  const finalObs = obs || existing?.observaciones || ''
+  const finalCuenta = cuentaPago || existing?.cuenta_pago || ''
+  const finalEstatus = estatus || existing?.estatus || 'Activa'
+  const isCanc = String(finalEstatus).toUpperCase() === 'CANCELADA'
+  const finalFechaCanc = isCanc ? (fechaCancelacion || existing?.fecha_cancelacion || utils.nowDateTime()) : null
+  const finalUsuarioCanc = isCanc ? (usuarioCancela || existing?.usuario_cancela || 'Sistema') : null
+  const finalMotivoCanc = isCanc ? (motivoCancelacion || existing?.motivo_cancelacion || 'Cancelación') : null
+
+  console.log('en guardarFacturaEnDb() - existing', existing)
   if (existing) {
     await execute(
       `UPDATE factura SET
         serie = ?, folio = ?, observaciones = ?, ticket_caja = ?, ticket_folio = ?, rfc_receptor = ?, no_cliente = ?,
         razon_social = ?, fecha_facturacion = ?, importe_tasa_cero = ?, importe_exento = ?,
         importe_gravable = ?, importe_iva = ?, total = ?, forma_pago = ?, metodo_pago = ?,
-        uso_cfdi = ?, cuenta_pago = ?, tipo_factura = ?, uuid = ?, uuid_relacionado = ?,
-        xml = ?
+        uso_cfdi = ?, cuenta_pago = ?, tipo_factura = ?, estatus = ?,
+        usuario_cancela = ?, motivo_cancelacion = ?, fecha_cancelacion = ?,
+        uuid = ?, uuid_relacionado = ?, xml = ?
       WHERE id = ?`,
       [
-        serie, folio, obs, ticketCaja, ticketFolio, rfcReceptor, noCli,
+        serie, folio, finalObs, finalCaja, finalFolio, rfcReceptor, finalNoCli,
         razonSocial, fechaFacturacion, importeTasa0, importeExento,
         importeGravable, importeIva, total, formaPago, metodoPago,
-        usoCfdi, cuentaPago, tipoFactura, uuid, uuidRel,
-        xml, existing.id
+        usoCfdi, finalCuenta, tipoFactura, finalEstatus,
+        finalUsuarioCanc, finalMotivoCanc, finalFechaCanc,
+        uuid, uuidRel, xml, existing.id
       ]
     )
-    return { id: existing.id, serie, folio, uuid, updated: true }
+    return { id: existing.id, serie, folio, uuid, estatus: finalEstatus, updated: true }
   } else {
     const result = await execute(
       `INSERT INTO factura (
         serie, folio, observaciones, ticket_caja, ticket_folio, rfc_receptor, no_cliente,
         razon_social, fecha_facturacion, importe_tasa_cero, importe_exento,
         importe_gravable, importe_iva, total, forma_pago, metodo_pago,
-        uso_cfdi, cuenta_pago, tipo_factura, estatus, uuid, uuid_relacionado,
-        xml
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Activa', ?, ?, ?)`,
+        uso_cfdi, cuenta_pago, tipo_factura, estatus,
+        usuario_cancela, motivo_cancelacion, fecha_cancelacion,
+        uuid, uuid_relacionado, xml
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        serie, folio, obs, ticketCaja, ticketFolio, rfcReceptor, noCli,
+        serie, folio, finalObs, finalCaja, finalFolio, rfcReceptor, finalNoCli,
         razonSocial, fechaFacturacion, importeTasa0, importeExento,
         importeGravable, importeIva, total, formaPago, metodoPago,
-        usoCfdi, cuentaPago, tipoFactura, uuid, uuidRel,
-        xml
+        usoCfdi, finalCuenta, tipoFactura, finalEstatus,
+        finalUsuarioCanc, finalMotivoCanc, finalFechaCanc,
+        uuid, uuidRel, xml
       ]
     )
-    return { id: result.insertId, serie, folio, uuid, created: true }
+    return { id: result.insertId, serie, folio, uuid, estatus: finalEstatus, created: true }
   }
 }
 
@@ -364,6 +484,7 @@ router.get('/buscar-uuid-relacionado', async (req, res) => {
   }
 })
 
-export { guardarFacturaEnDb }
+export { guardarFacturaEnDb, parsePdfData }
+router.default = router
 export default router
 

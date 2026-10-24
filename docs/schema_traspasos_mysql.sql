@@ -113,7 +113,7 @@ CREATE TABLE `traspaso_header`(
 	`borrado` INT NOT NULL DEFAULT 0,
 	`fecha_borrado` DATETIME,
 	CONSTRAINT `fk_th_sucursal_origen` FOREIGN KEY (`id_sucursal_origen`) REFERENCES `sucursal`(`id`),
-	CONSTRAINT `ck_th_estado` CHECK (`estado` IN ('BORRADOR','GUARDADO')),
+	CONSTRAINT `ck_th_estado` CHECK (`estado` IN ('BORRADOR','GUARDADO','CANCELADO')),
 	CONSTRAINT `ck_th_cancelado` CHECK (`cancelado` IN (0,1)),
 	CONSTRAINT `ck_th_borrado` CHECK (`borrado` IN (0,1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -193,3 +193,22 @@ CREATE TRIGGER `trg_detail_update`
 	BEFORE UPDATE ON `traspaso_detail`
 	FOR EACH ROW
 	SET NEW.`fecha_actualizacion` = CURRENT_TIMESTAMP;
+
+
+-- ------------------------------------------
+-- Table "traspaso_plantilla"
+-- ------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `traspaso_plantilla` (
+	`id` INT PRIMARY KEY AUTO_INCREMENT,
+	`clave` varchar(15) NOT NULL,
+	`codigo_barras` varchar(20),
+	`descripcion` varchar(100),
+	`etiqueta` varchar(10),
+	`lote` varchar(30),
+	`fecha_caducidad` DATE,
+	`cantidad` INT NOT NULL DEFAULT 1,
+	`caja` varchar(30),
+	`fecha_registro` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`fecha_actualizacion` DATETIME
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

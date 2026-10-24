@@ -332,8 +332,10 @@ export default {
         method: 'get',
         url: '/api/facturacion/listado'
       }).then(resp => {
-        if (resp.data && resp.data.data) {
+        if (resp.data && Array.isArray(resp.data.data)) {
           this.facturasList = resp.data.data
+        } else if (Array.isArray(resp.data)) {
+          this.facturasList = resp.data
         }
       }).catch(error => {
         console.error('Error al cargar facturas de MySQL:', error)

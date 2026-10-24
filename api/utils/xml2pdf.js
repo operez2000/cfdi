@@ -4,7 +4,7 @@ import xml2js from 'xml2js'
 import PdfPrinter from 'pdfmake'
 import vfsFonts from 'pdfmake/build/vfs_fonts.js'
 import axios from 'axios'
-import config from '../../config.json'
+const config = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'config.json'), 'utf8'))
 
 // Inicializar fuentes de pdfmake usando vfs embebido
 const vfsObj = (vfsFonts && vfsFonts.pdfMake && vfsFonts.pdfMake.vfs)
